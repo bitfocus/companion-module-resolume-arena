@@ -87,59 +87,34 @@ instance.prototype.actions = function(system) {
         }
 			]
 		},
-		'send_int': {
-			label: 'Send integer',
+    'triggerColumn': {
+      label: 'Start Column',
+      options: [
+        {
+           type: 'textinput',
+           label: 'Column',
+           id: 'column',
+           default: '1'
+        }
+      ]
+    },
+		'clearLayer': {
+			label: 'Clear Layer',
 			options: [
 				{
 					 type: 'textinput',
-					 label: 'OSC Path',
-					 id: 'path',
-					 default: '/osc/path'
-				},
-				{
-					 type: 'textinput',
-					 label: 'Value',
-					 id: 'int',
-					 default: 1,
-					 regex: self.REGEX_SIGNED_NUMBER
+					 label: 'Layer',
+					 id: 'layer',
+					 default: '1',
 				}
 			]
 		},
-		'send_float': {
-			label: 'Send float',
-			options: [
-				{
-					 type: 'textinput',
-					 label: 'OSC Path',
-					 id: 'path',
-					 default: '/osc/path'
-				},
-				{
-					 type: 'textinput',
-					 label: 'Value',
-					 id: 'float',
-					 default: 1,
-					 regex: self.REGEX_SIGNED_FLOAT
-				}
-			]
+		'clearAll': {
+			label: 'Clear All Layers',
 		},
-		'send_string': {
-			label: 'Send string',
-			options: [
-				{
-					 type: 'textinput',
-					 label: 'OSC Path',
-					 id: 'path',
-					 default: '/osc/path'
-				},
-				{
-					 type: 'textinput',
-					 label: 'Value',
-					 id: 'string',
-					 default: "text"
-				}
-			]
-		}
+    'temptoTap': {
+      label: 'Tap Tempo',
+    }
 
 	});
 }
@@ -150,34 +125,50 @@ instance.prototype.action = function(action) {
 	debug('action: ', action);
 
 	if (action.action == 'triggerClip') {
-		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [1]);
-		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [1])
+    var bol = {
+        type: "i",
+        value: parseInt(1)
+    };
+		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ]);
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ])
 	}
 
-	if (action.action == 'send_int') {
-		var bol = {
-				type: "i",
-				value: parseInt(action.options.int)
-		};
-		self.system.emit('osc_send', self.config.host, self.config.port, action.options.path, [ bol ]);
+  if (action.action == 'triggerColumn') {
+    var bol = {
+        type: "i",
+        value: parseInt(1)
+    };
+    debug('sending',self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ]);
+    self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ])
+  }
+
+
+  if (action.action == 'clearLayer') {
+    var bol = {
+        type: "i",
+        value: parseInt(1)
+    };
+		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ])
 	}
 
-	if (action.action == 'send_float') {
-		var bol = {
-				type: "f",
-				value: parseFloat(action.options.float)
-		};
-		self.system.emit('osc_send', self.config.host, self.config.port, action.options.path, [ bol ]);
-	}
+  if (action.action == 'clearAll') {
+    var bol = {
+        type: "i",
+        value: parseInt(1)
+    };
+    debug('sending',self.config.host, self.config.port, '/composition/disconnectall', [ bol ]);
+    self.system.emit('osc_send', self.config.host, self.config.port, '/composition/disconnectall', [ bol ])
+  }
 
-	if (action.action == 'send_string') {
-		var bol = {
-				type: "s",
-				value: "" + action.options.string
-		};
-		self.system.emit('osc_send', self.config.host, self.config.port, action.options.path, [ bol ]);
-	}
-
+  if (action.action == 'tempoTap') {
+    var bol = {
+        type: "i",
+        value: parseInt(1)
+    };
+    debug('sending',self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ]);
+    self.system.emit('osc_send', self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
+  }
 };
 
 instance.module_info = {
