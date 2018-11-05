@@ -10,19 +10,6 @@ function instance(system, id, config) {
 
 	self.actions(); // export actions
 
-	// Example: When this script was committed, a fix needed to be made
-	// this will only be run if you had an instance of an older "version" before.
-	// "version" is calculated out from how many upgradescripts your intance config has run.
-	// So just add a addUpgradeScript when you commit a breaking change to the config, that fixes
-	// the config.
-
-	self.addUpgradeScript(function () {
-		// just an example
-		if (self.config.host !== undefined) {
-			self.config.old_host = self.config.host;
-		}
-	});
-
 	return self;
 }
 
@@ -31,6 +18,7 @@ instance.prototype.updateConfig = function(config) {
 
 	self.config = config;
 };
+
 instance.prototype.init = function() {
 	var self = this;
 
@@ -169,12 +157,6 @@ instance.prototype.action = function(action) {
     debug('sending',self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ]);
     self.system.emit('osc_send', self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
   }
-};
-
-instance.module_info = {
-	label: 'Resolume Arena 6',
-	id: 'resolume-arena-6',
-	version: '0.0.1'
 };
 
 instance_skel.extendedBy(instance);
