@@ -1,17 +1,21 @@
 {
 	"name": "resolume-arena",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Resolume Arena 6 module for companion",
 	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"license": "MIT",
 	"api_version": "1.0.0",
-	"keywords": [ "Video", "Software", "Graphics" ],
+	"keywords": [
+		"Video",
+		"Software",
+		"Graphics"
+	],
 	"manufacturer": "Resolume",
 	"product": "Arena",
 	"shortname": "arena",
 	"homepage": "https://resolume.com/",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"license": "MIT",
 	"author": "Oliver Herman <oliver@monoxane.com>"
 }
