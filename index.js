@@ -67,42 +67,69 @@ instance.prototype.actions = function(system) {
 					 id: 'layer',
 					 default: '1'
 				},
-        {
-           type: 'textinput',
-           label: 'Column',
-           id: 'column',
-           default: '1'
-        }
+				{
+					type: 'textinput',
+					label: 'Column',
+					id: 'column',
+					default: '1'
+				}
 			]
 		},
     'triggerColumn': {
-      label: 'Start Column',
-      options: [
-        {
-           type: 'textinput',
-           label: 'Column',
-           id: 'column',
-           default: '1'
-        }
-      ]
-    },
+			label: 'Start Column',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Column',
+					id: 'column',
+					default: '1'
+				}
+			]
+		},
 		'clearLayer': {
 			label: 'Clear Layer',
 			options: [
 				{
-					 type: 'textinput',
-					 label: 'Layer',
-					 id: 'layer',
-					 default: '1',
+					type: 'textinput',
+					label: 'Layer',
+					id: 'layer',
+					default: '1',
 				}
 			]
 		},
 		'clearAll': {
 			label: 'Clear All Layers',
 		},
-    'temptoTap': {
-      label: 'Tap Tempo',
-    }
+    	'temptoTap': {
+      		label: 'Tap Tempo',
+    	},
+		'custom': {
+			label: 'Custom OSC Command',
+			options: [
+				{
+					type:  'textinput',
+					label: 'Custom OSC Command',
+					id:    'customCmd',
+				},
+				{
+					type:  'dropdown',
+					label: 'OSC Type Flag',
+					id:    'oscType',
+					tooltip: 'select the type of the value data',
+					choices: [
+						{ id: 'i', label: 'integer' },
+						{ id: 'f', label: 'float' },
+						{ id: 's', label: 'string' }
+					]
+				},
+				{
+					type:     'textinput',
+					label:    'Value',
+					id:       'customValue'
+				}
+					
+			]
+		}
 
 	});
 }
@@ -113,10 +140,10 @@ instance.prototype.action = function(action) {
 	debug('action: ', action);
 
 	if (action.action == 'triggerClip') {
-    var bol = {
-        type: "i",
-        value: parseInt(1)
-    };
+		var bol = {
+			type: "i",
+			value: parseInt(1)
+		};
 		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ])
 	}
@@ -136,6 +163,13 @@ instance.prototype.action = function(action) {
         type: "i",
         value: parseInt(1)
     };
+		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
+	//sending second command with value 0 to reset the layer, else this command only works one time
+	var bol = {
+		type: "i",
+		value: parseInt(0)
+	};
 		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ])
 	}
@@ -157,6 +191,16 @@ instance.prototype.action = function(action) {
     debug('sending',self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ]);
     self.system.emit('osc_send', self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
   }
+
+  if (action.action == 'custom') {
+	var bol = {
+		type: action.options.oscType ,
+		value: action.options.customValue
+	};
+    debug('sending',self.config.host, self.config.port, action.options.customCmd );
+    self.system.emit('osc_send', self.config.host, self.config.port, action.options.customCmd, [ bol ])
+  }
+
 };
 
 instance_skel.extendedBy(instance);
