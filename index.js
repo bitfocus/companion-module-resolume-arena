@@ -336,8 +336,8 @@ instance.prototype.action = function(action) {
 		self.system.emit('osc_send', self.config.host, self.config.port, action.options.customCmd, [ bol ])
 	}
 	if (action.action == 'grpNextCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 		if (groupPos[action.options.groupNext] == undefined) {
@@ -353,8 +353,8 @@ instance.prototype.action = function(action) {
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect', [ bol ])
 	}
 	if (action.action == 'grpPrvCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 
@@ -371,34 +371,34 @@ instance.prototype.action = function(action) {
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect', [ bol ])
 	}
 	if (action.action == 'compNextCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 		currentCompCol ++;
 		if ( currentCompCol > action.options.colMaxCompNext ) {
 			currentCompCol = 1;
-		};
+		}
 
 		debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
 	}
 	if (action.action == 'compPrvCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 		currentCompCol --;
 		if ( currentCompCol < 1 ) {
 			currentCompCol = action.options.colMaxCompPrev;
-		};
+		}
 
 		debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
 	}
 	if (action.action == 'layNextCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 		if (layerPos[action.options.layerN] == undefined) {
@@ -413,8 +413,8 @@ instance.prototype.action = function(action) {
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layerN + '/clips/' + layerPos[action.options.layerN] + '/connect', [ bol ])
 	}
 	if (action.action == 'layPrvCol') {
-		var bol = { 
-			type: 'i', 
+		var bol = {
+			type: 'i',
 			value: '1'
 		};
 		if (layerPos[action.options.layerP] == undefined) {
