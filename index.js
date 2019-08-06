@@ -66,16 +66,22 @@ instance.prototype.actions = function(system) {
 			label: 'Start Clip',
 			options: [
 				{
-					type: 'textinput',
+					type: 'number',
 					label: 'Layer',
 					id: 'layer',
-					default: '1'
+					min: 1,
+					max: 100,
+					default: 1,
+					required: true
 				},
 				{
-					type: 'textinput',
+					type: 'number',
 					label: 'Column',
 					id: 'column',
-					default: '1'
+					min: 1,
+					max: 100,
+					default: 1,
+					required: true
 				}
 			]
 		},
@@ -83,10 +89,13 @@ instance.prototype.actions = function(system) {
 			label: 'Start Column',
 			options: [
 				{
-					type: 'textinput',
+					type: 'number',
 					label: 'Column',
 					id: 'column',
-					default: '1'
+					min: 1,
+					max: 100,
+					default: 1,
+					required: true
 				}
 			]
 		},
@@ -104,7 +113,7 @@ instance.prototype.actions = function(system) {
 		'clearAll': {
 			label: 'Clear All Layers',
 		},
-		'temptoTap': {
+		'tempoTap': {
 			label: 'Tap Tempo',
 		},
 		'grpNextCol': {
@@ -277,6 +286,8 @@ instance.prototype.action = function(action) {
 				type: "i",
 				value: parseInt(1)
 		};
+		currentCompCol = action.options.column;
+
 		debug('sending',self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ])
 	}
@@ -329,12 +340,12 @@ instance.prototype.action = function(action) {
 			type: 'i', 
 			value: '1'
 		};
-		if (isNaN(groupPos[action.options.groupNext])) {
+		if (groupPos[action.options.groupNext] == undefined) {
 			groupPos[action.options.groupNext] = 1;
 		} else {
 			groupPos[action.options.groupNext] ++;
 		}
-		if (groupPos[action.options.groupNext] < action.options.colMaxGroupNext) {
+		if (groupPos[action.options.groupNext] > action.options.colMaxGroupNext) {
 			groupPos[action.options.groupNext] = 1;
 		}
 
@@ -347,7 +358,7 @@ instance.prototype.action = function(action) {
 			value: '1'
 		};
 
-		if (isNaN(groupPos[action.options.groupPrev])) {
+		if (groupPos[action.options.groupPrev] == undefined) {
 			groupPos[action.options.groupPrev] = 1;
 		} else {
 			groupPos[action.options.groupPrev] --;
@@ -390,7 +401,7 @@ instance.prototype.action = function(action) {
 			type: 'i', 
 			value: '1'
 		};
-		if (isNaN(layerPos[action.options.layerN])) {
+		if (layerPos[action.options.layerN] == undefined) {
 			layerPos[action.options.layerN] = 1;
 		} else {
 			layerPos[action.options.layerN] ++;
@@ -406,7 +417,7 @@ instance.prototype.action = function(action) {
 			type: 'i', 
 			value: '1'
 		};
-		if (isNaN(layerPos[action.options.layerP])) {
+		if (layerPos[action.options.layerP] == undefined) {
 			layerPos[action.options.layerP] = 1;
 		} else {
 			layerPos[action.options.layerP] --;
