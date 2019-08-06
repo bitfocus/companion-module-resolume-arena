@@ -1,6 +1,9 @@
 var instance_skel = require('../../instance_skel');
 var debug;
 var log;
+var groupPos = [];
+var currentCompCol = 0;
+var layerPos = [];
 
 function instance(system, id, config) {
 	var self = this;
@@ -104,6 +107,126 @@ instance.prototype.actions = function(system) {
 		'temptoTap': {
 			label: 'Tap Tempo',
 		},
+		'grpNextCol': {
+			label: 'Group Next Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Group Number',
+					id: 'groupNext',
+					min: 1,
+					max: 100,
+					default: 1,
+					required: true
+				},
+				{
+					type: 'number',
+					label: 'Last Column',
+					id: 'colMaxGroupNext',
+					min: 1,
+					max: 100,
+					default: 4,
+					required: true
+				}
+			]
+		},
+		'grpPrvCol': {
+			label: 'Group Previous Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Group Number',
+					id: 'groupPrev',
+					min: 1,
+					max: 100,
+					default: '1',
+					required: true
+				},
+				{
+					type: 'number',
+					label: 'Last Column',
+					id: 'colMaxGroupPrev',
+					min: 1,
+					max: 100,
+					default: '4',
+					required: true
+				}
+			]
+		},
+		'compNextCol': {
+			label: 'Composition Next Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Last (max) Column',
+					id: 'colMaxCompNext',
+					min: 1,
+					max: 100,
+					default: '4',
+					required: true
+				}
+			]
+		},
+		'compPrvCol': {
+			label: 'Composition Previous Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Last (max) Column',
+					id: 'colMaxCompPrev',
+					min: 1,
+					max: 100,
+					default: '4',
+					required: true
+				}
+			]
+		},
+		'layNextCol': {
+			label: 'Layer Next Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Layer Number',
+					id: 'layerN',
+					min: 1,
+					max: 100,
+					default: '1',
+					required: true
+				},
+				{
+					type: 'number',
+					label: 'Last (max) Column',
+					id: 'colMaxLayerN',
+					min: 1,
+					max: 100,
+					default: '4',
+					required: true
+				}
+			]
+		},
+		'layPrvCol': {
+			label: 'Layer Previous Column',
+			options: [
+				{
+					type: 'number',
+					label: 'Layer Number',
+					id: 'layerP',
+					min: 1,
+					max: 100,
+					default: '1',
+					required: true
+				},
+				{
+					type: 'number',
+					label: 'Last (max) Column',
+					id: 'colMaxLayerP',
+					min: 1,
+					max: 100,
+					default: '4',
+					required: true
+				}
+			]
+		},
 		'custom': {
 			label: 'Custom OSC Command',
 			options: [
@@ -137,6 +260,7 @@ instance.prototype.actions = function(system) {
 instance.prototype.action = function(action) {
 	var self = this;
 
+
 	debug('action: ', action);
 
 	if (action.action == 'triggerClip') {
@@ -160,8 +284,8 @@ instance.prototype.action = function(action) {
 
 	if (action.action == 'clearLayer') {
 		var bol = {
-				type: "i",
-				value: parseInt(1)
+			type: "i",
+			value: parseInt(1)
 		};
 		debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
@@ -176,8 +300,8 @@ instance.prototype.action = function(action) {
 
 	if (action.action == 'clearAll') {
 		var bol = {
-				type: "i",
-				value: parseInt(1)
+			type: "i",
+			value: parseInt(1)
 		};
 		debug('sending',self.config.host, self.config.port, '/composition/disconnectall', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/disconnectall', [ bol ])
@@ -185,22 +309,114 @@ instance.prototype.action = function(action) {
 
 	if (action.action == 'tempoTap') {
 		var bol = {
-				type: "i",
-				value: parseInt(1)
+			type: "i",
+			value: parseInt(1)
 		};
 		debug('sending',self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ]);
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
 	}
 
 	if (action.action == 'custom') {
-	var bol = {
-		type: action.options.oscType ,
-		value: action.options.customValue
-	};
+		var bol = {
+			type: action.options.oscType ,
+			value: action.options.customValue
+		};
 		debug('sending',self.config.host, self.config.port, action.options.customCmd );
 		self.system.emit('osc_send', self.config.host, self.config.port, action.options.customCmd, [ bol ])
 	}
+	if (action.action == 'grpNextCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+		if (isNaN(groupPos[action.options.groupNext])) {
+			groupPos[action.options.groupNext] = 1;
+		} else {
+			groupPos[action.options.groupNext] ++;
+		}
+		if (groupPos[action.options.groupNext] < action.options.colMaxGroupNext) {
+			groupPos[action.options.groupNext] = 1;
+		}
 
+		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect', [ bol ])
+	}
+	if (action.action == 'grpPrvCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+
+		if (isNaN(groupPos[action.options.groupPrev])) {
+			groupPos[action.options.groupPrev] = 1;
+		} else {
+			groupPos[action.options.groupPrev] --;
+		}
+		if (groupPos[action.options.groupPrev] < 1) {
+			groupPos[action.options.groupPrev] = action.options.colMaxGroupPrev;
+		}
+
+		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect', [ bol ])
+	}
+	if (action.action == 'compNextCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+		currentCompCol ++;
+		if ( currentCompCol > action.options.colMaxCompNext ) {
+			currentCompCol = 1;
+		};
+
+		debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
+	}
+	if (action.action == 'compPrvCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+		currentCompCol --;
+		if ( currentCompCol < 1 ) {
+			currentCompCol = action.options.colMaxCompPrev;
+		};
+
+		debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
+	}
+	if (action.action == 'layNextCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+		if (isNaN(layerPos[action.options.layerN])) {
+			layerPos[action.options.layerN] = 1;
+		} else {
+			layerPos[action.options.layerN] ++;
+		}
+		if (layerPos[action.options.layerN] > action.options.colMaxLayerN) {
+			layerPos[action.options.layerN] = 1;
+		}
+		debug('sending', self.config.host, self.config.port, '/composition/layers/' + action.options.layerN + '/clips/' + layerPos[action.options.layerN] + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layerN + '/clips/' + layerPos[action.options.layerN] + '/connect', [ bol ])
+	}
+	if (action.action == 'layPrvCol') {
+		var bol = { 
+			type: 'i', 
+			value: '1'
+		};
+		if (isNaN(layerPos[action.options.layerP])) {
+			layerPos[action.options.layerP] = 1;
+		} else {
+			layerPos[action.options.layerP] --;
+		}
+		if (layerPos[action.options.layerP] < 1) {
+			layerPos[action.options.layerP] = action.options.colMaxLayerP;
+		}
+		debug('sending', self.config.host, self.config.port, '/composition/layers/' + action.options.layerP + '/clips/' + layerPos[action.options.layerP] + '/connect');
+		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/layers/' + action.options.layerP + '/clips/' + layerPos[action.options.layerP] + '/connect', [ bol ])
+	}
 };
 
 instance_skel.extendedBy(instance);
