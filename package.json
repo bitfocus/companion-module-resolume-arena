@@ -1,6 +1,6 @@
 {
 	"name": "resolume-arena",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Resolume Arena 6 module for companion",
 	"main": "index.js",
 	"api_version": "1.0.0",

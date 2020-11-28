@@ -241,8 +241,8 @@ instance.prototype.actions = function(system) {
 			options: [
 				{
 					type:  'textinput',
-					label: 'Custom OSC Command',
-					id:    'customCmd',
+					label: 'Custom OSC Path',
+					id:    'customPath',
 				},
 				{
 					type:  'dropdown',
@@ -327,13 +327,26 @@ instance.prototype.action = function(action) {
 		self.system.emit('osc_send', self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
 	}
 
-	if (action.action == 'custom') {
-		var bol = {
-			type: action.options.oscType ,
-			value: action.options.customValue
-		};
-		debug('sending',self.config.host, self.config.port, action.options.customCmd );
-		self.system.emit('osc_send', self.config.host, self.config.port, action.options.customCmd, [ bol ])
+	if (action.action == 'custom') { 
+		var args = [];
+		if(action.options.oscType == 'i') {
+			args = [{
+				type: 'i',
+				value: parseInt(action.options.customValue)
+			}];
+		} else if(action.options.oscType == 'f') {
+			args = [{
+				type: 'f',
+				value: parseFloat(action.options.customValue)
+			}];
+		} else if(action.options.oscType == 's') {
+			args = [{
+				type: 's',
+				value: '' + action.options.customValue
+			}];
+		}
+		debug('sending',self.config.host, self.config.port, action.options.customPath );
+		self.system.emit('osc_send', self.config.host, self.config.port, action.options.customPath, args)
 	}
 	if (action.action == 'grpNextCol') {
 		var bol = {
