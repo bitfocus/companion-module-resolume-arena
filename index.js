@@ -11,35 +11,35 @@ function instance(system, id, config) {
 	// super-constructor
 	instance_skel.apply(this, arguments);
 
-	self.addUpgradeScript((config, actions, releaseActions, feedbacks) => {
-		let changed = false
-
-		let checkUpgrade = (action, changed) => {
-			if (action.action == 'custom') {
-				if (action.options.customCmd !== undefined) {
-					action.options.customPath = action.options.customCmd
-					delete action.options.customCmd
-					changed = true
-				}
-			}
-
-			return changed
-		}
-
-		for (let k in actions) {
-			changed = checkUpgrade(actions[k], changed)
-		}
-
-		for (let k in releaseActions) {
-			changed = checkUpgrade(releaseActions[k], changed)
-		}
-
-		return changed
-	})
-
 	self.actions(); // export actions
 
 	return self;
+}
+
+instance.GetUpgradeScripts = function() {
+	return [
+		function (context, config, actions, feedbacks) {
+			let changed = false
+	
+			let checkUpgrade = (action, changed) => {
+				if (action.action == 'custom') {
+					if (action.options.customCmd !== undefined) {
+						action.options.customPath = action.options.customCmd
+						delete action.options.customCmd
+						changed = true
+					}
+				}
+	
+				return changed
+			}
+	
+			for (let k in actions) {
+				changed = checkUpgrade(actions[k], changed)
+			}
+		
+			return changed
+		}
+	]
 }
 
 instance.prototype.updateConfig = function(config) {
