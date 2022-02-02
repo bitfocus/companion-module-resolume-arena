@@ -12,10 +12,17 @@
 	"manufacturer": "Resolume",
 	"product": "Arena",
 	"shortname": "arena",
-	"homepage": "https://resolume.com/",
+	"homepage": "https://github.com/bitfocus/companion-module-resolume-arena#readme",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"license": "MIT",
-	"author": "Oliver Herman <oliver@monoxane.com>"
+	"author": "Oliver Herman <oliver@monoxane.com>",
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-resolume-arena/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
+	}
 }
