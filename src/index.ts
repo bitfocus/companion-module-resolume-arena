@@ -1,4 +1,4 @@
-var instance_skel = require('../../instance_skel');
+var instance_skel = require('../../../instance_skel');
 var debug;
 var log;
 var groupPos = [];
