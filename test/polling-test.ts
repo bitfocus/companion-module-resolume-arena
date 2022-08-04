@@ -17,7 +17,7 @@ qunit.test('get in use status when in use', async assert => {
       sharing: false
     });
 
-  let api = new ArenaApi('1.2.3.4', 5000, 'user', 'pass');
+  let api = new ArenaApi('1.2.3.4', 5000);
   let result = await api.isInUse();
   assert.equal(result.inUse, true);
 });
@@ -35,7 +35,7 @@ qunit.test('get in use status when not in use', async assert => {
       sharing: false
     });
 
-  let api = new ArenaApi('1.2.3.4', 5000, 'user', 'pass');
+  let api = new ArenaApi('1.2.3.4', 5000);
   let result = await api.isInUse();
   assert.equal(result.inUse, false);
 });
@@ -57,7 +57,7 @@ qunit.test('get in use status sends authentication', async assert => {
       sharing: false
     });
 
-  let api = new ArenaApi('1.2.3.4', 5000, 'user', 'pass');
+  let api = new ArenaApi('1.2.3.4', 5000);
   let result = await api.isInUse();
   assert.equal(result.inUse, false);
 });

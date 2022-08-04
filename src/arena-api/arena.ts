@@ -1,5 +1,8 @@
-import { Agent } from 'https';
+import { Agent as httpAgent } from 'http';
+import { Agent as httpsAgent } from 'https';
 import fetch, { HeadersInit, Response } from 'node-fetch';
+import { ArenaClipsApi } from './child-apis/ArenaClipsApi';
+import { ArenaLayersApi } from './child-apis/ArenaLayersApi';
 
 class HTTPResponseError extends Error {
   response: any;
@@ -24,26 +27,43 @@ export interface InUseStatus {
 
 type HttpMethod = 'get' | 'put' | 'post' | 'delete';
 
-type ArenaFetchFunction = (method: HttpMethod, relativeUrl: string, body?: any) => Promise<object>;
+type ArenaFetchJsonFunction = (method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any) => Promise<object>;
+type ArenaFetchBoolFunction = (method: HttpMethod, relativeUrl: string, returnType: 'bool', body?: any) => Promise<boolean>;
+type ArenaFetchOkFunction = (method: HttpMethod, relativeUrl: string, returnType: 'ok', body?: any) => Promise<boolean>;
+export type ArenaFetchFunction = 
+  ArenaFetchJsonFunction 
+  & ArenaFetchBoolFunction
+  & ArenaFetchOkFunction;
 
 export default class ArenaApi {
   private _host: string;
   private _port: number;
   private _defaultHeaders: HeadersInit;
-  private _agent: Agent;
+  private _agent: httpAgent | httpsAgent;
   private _apiVersion: string;
 
-  constructor(host: string, port: number) {
+  constructor(host: string, port: number, useSSL: boolean) {
     this._host = host;
     this._port = port;
     this._apiVersion = 'v1';
-    this.apiUrl = `https://${this._host}:${this._port}/api/${this._apiVersion}`;
+    var protocol = 'http';
+    if (useSSL) {
+      protocol += 's';
+    }
+    this.apiUrl = `${protocol}://${this._host}:${this._port}/api/${this._apiVersion}`;
     this._defaultHeaders = {
       Accept: 'application/json',
     };
-    this._agent = new Agent({  
-      rejectUnauthorized: false
-    });
+    if (useSSL) {
+      this._agent = new httpsAgent({  
+//        keepAlive: true,
+        rejectUnauthorized: false
+      });
+    } else {
+      this._agent = new httpAgent({
+//        keepAlive: true
+      });
+    }
   }
 
   private checkStatus (response: Response) {
@@ -63,53 +83,40 @@ export default class ArenaApi {
 
   private apiUrl: string;
 
-  private async arenaFetch(method: HttpMethod, relativeUrl: string, body?: any): Promise<object> {
+  private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'ok', body?: any): Promise<boolean>;
+  private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'bool', body?: any): Promise<boolean>;
+  private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any): Promise<object>;
+  private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: string, body?: any): Promise<any> {
+    var url = `${this.apiUrl}/${relativeUrl}`;
+    var options = {        
+      method,
+      headers: this._defaultHeaders,
+      agent: this._agent,
+      body: undefined
+    };
+    if (body != undefined && body != null) {
+      options.body = body.toString();
+    }
     const response = await fetch(
-      `${this.apiUrl}/${relativeUrl}`,
-      {
-        method,
-        headers: this._defaultHeaders,
-        agent: this._agent,
-        body: body
-      });
+      url,
+      options
+    );
     this.checkStatus(response);
-    return await response.json();
+    switch (returnType) {
+      case 'ok':
+        return response.ok;
+      case 'json':
+        return await response.json();
+      case 'bool':
+        return await (await response.text()).toLowerCase() == 'true';
+    }
   }
 
   public async productInfo(): Promise<ArenaProductResponse> {
-    const response = await this.arenaFetch('get', 'product');
+    const response = await this.arenaFetch('get', 'product', 'json');
     return response as ArenaProductResponse;
   }
 
-  public readonly Clips: ArenaClipsApi = new ArenaClipsApi(this.arenaFetch);
+  public readonly Clips: ArenaClipsApi = new ArenaClipsApi(this.arenaFetch.bind(this));
+  public readonly Layers: ArenaLayersApi = new ArenaLayersApi(this.arenaFetch.bind(this));
 } 
-
-export class ArenaClipsApi {
-  private arenaFetch: ArenaFetchFunction;
-  
-  constructor(fetchFn: ArenaFetchFunction) {
-    this.arenaFetch = fetchFn;
-  }
-
-  async select(layer: number, clip: number) {
-    var url = `composition/layers/${layer}/clips/${clip}/select`;
-    await this.arenaFetch('post', url);
-  }
-
-  async connect(layer: number, clip: number, connect: boolean) {
-    var url = `composition/layers/${layer}/clips/${clip}/select`;
-    await this.arenaFetch('post', url, connect);
-  }
-
-  async clear(layer: number, clip: number) {
-    var url = `composition/layers/${layer}/clips/${clip}/clear`;
-    await this.arenaFetch('post', url);
-  }
-
-  async loadFile(layer: number, clip: number, filename: string) {
-    var url = `composition/layers/${layer}/clips/${clip}/open`;
-    filename = filename.replace(/\\/g, "/"); // backslashes to forward slashes
-    var fileUri= `file:///${filename}`;
-    await this.arenaFetch('post', url, fileUri);
-  }
-}

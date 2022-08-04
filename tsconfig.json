@@ -29,7 +29,7 @@
     "lib": ["es6"],
     "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "types/**/*.ts"],
   "compileOnSave": false,
   "exclude": ["node_modules/**"]
 }
