@@ -6,10 +6,10 @@ import { ArenaLayersApi } from './child-apis/ArenaLayersApi';
 
 class HTTPResponseError extends Error {
   response: any;
-	constructor(response: Response) {
-		super(`HTTP Error Response: ${response.status} ${response.statusText}`);
-		this.response = response;
-	}
+  constructor(response: Response) {
+    super(`HTTP Error Response: ${response.status} ${response.statusText}`);
+    this.response = response;
+  }
 }
 
 interface ArenaProductResponse {
@@ -30,11 +30,17 @@ type HttpMethod = 'get' | 'put' | 'post' | 'delete';
 type ArenaFetchJsonFunction = (method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any) => Promise<object>;
 type ArenaFetchBoolFunction = (method: HttpMethod, relativeUrl: string, returnType: 'bool', body?: any) => Promise<boolean>;
 type ArenaFetchOkFunction = (method: HttpMethod, relativeUrl: string, returnType: 'ok', body?: any) => Promise<boolean>;
-export type ArenaFetchFunction = 
-  ArenaFetchJsonFunction 
+export type ArenaFetchFunction =
+  ArenaFetchJsonFunction
   & ArenaFetchBoolFunction
   & ArenaFetchOkFunction;
 
+interface FetchOptions {
+  method: string,
+  headers: HeadersInit,
+  agent: httpAgent | httpsAgent,
+  body: any
+}
 export default class ArenaApi {
   private _host: string;
   private _port: number;
@@ -55,18 +61,18 @@ export default class ArenaApi {
       Accept: 'application/json',
     };
     if (useSSL) {
-      this._agent = new httpsAgent({  
-//        keepAlive: true,
+      this._agent = new httpsAgent({
+        keepAlive: true,
         rejectUnauthorized: false
       });
     } else {
       this._agent = new httpAgent({
-//        keepAlive: true
+        keepAlive: true
       });
     }
   }
 
-  private checkStatus (response: Response) {
+  private checkStatus(response: Response) {
     if (response.ok) {
       // response.status >= 200 && response.status < 300
       return response;
@@ -88,14 +94,19 @@ export default class ArenaApi {
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any): Promise<object>;
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: string, body?: any): Promise<any> {
     var url = `${this.apiUrl}/${relativeUrl}`;
-    var options = {        
+    var options: FetchOptions = {
       method,
       headers: this._defaultHeaders,
       agent: this._agent,
-      body: undefined
+      body: null
     };
     if (body != undefined && body != null) {
-      options.body = body.toString();
+      console.log(typeof(body))
+      if (typeof(body) == 'object') {
+        options.body = JSON.stringify(body);
+      } else {
+        options.body = body.toString();
+      }
     }
     const response = await fetch(
       url,

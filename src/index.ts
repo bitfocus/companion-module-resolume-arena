@@ -1,7 +1,9 @@
-import { CompanionActions, SomeCompanionConfigField } from "../types/instance_skel_types";
+import { CompanionActions, CompanionFeedbackEvent, SomeCompanionConfigField } from "../types/instance_skel_types";
 import ArenaApi from "./arena-api/arena";
+import { ClipStatus } from "./arena-api/child-apis/clip-options/ClipStatus";
 import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
+import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
 
 interface ResolumeArenaConfig {
   host: string;
@@ -10,14 +12,26 @@ interface ResolumeArenaConfig {
   useSSL: boolean;
 }
 
+interface ClipSubscription {
+  layer: number,
+  column: number
+}
+
 class instance extends InstanceSkel<ResolumeArenaConfig> {
   private _api: ArenaApi | null = null;
   private isPolling: boolean = false;
+  private connectedClips: Set<string> = new Set<string>();
+  private clipStatusSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
+  private clipConnectedSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
+  private clipStatus: Map<string, LayerOptions> = new Map<string, LayerOptions>();
+  private bypassedLayers: Set<number> = new Set<number>();
+  private LayerBypassedSubscriptions: Set<number> = new Set<number>();
 
   constructor(system: any, id: any, config: any) {
     super(system, id, config);
     this.setupFeedback();
     this.setActions(this.actions);
+    this.setupPresets();
   }
 
   /**
@@ -83,16 +97,10 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
             default: 1,
             min: 1,
             max: 65535
-          },
-          {
-            id: 'connect',
-            type: 'checkbox',
-            label: 'Connect',
-            default: true
           }
         ],
         callback: async ({ options }: { options: any }) =>
-          await this._api?.Clips.connect(options.layer, options.column, options.connect)
+          await this._api?.Clips.connect(options.layer, options.column)
       },
       selectClip: {
         label: 'Select Clip',
@@ -130,23 +138,318 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           },
           {
             id: 'bypass',
-            type: 'checkbox',
-            label: 'Bypass',
-            default: true
+            type: 'dropdown',
+            choices: [
+              {
+                id: 'on',
+                label: 'On'
+              },
+              {
+                id: 'off',
+                label: 'Off'
+              },
+              {
+                id: 'toggle',
+                label: 'Toggle'
+              }
+            ],
+            default: 'toggle',
+            label: 'Bypass'
+          }
+        ],
+        callback: async ({ options }: { options: any }) => {
+          if (options.bypass == 'toggle') {
+            var settings = (await this._api?.Layers.getSettings(options.layer)) as LayerOptions;
+            await this._api?.Layers.updateSettings(options.layer, {
+              bypassed: !settings.bypassed?.value
+            })
+          } else {
+            await this._api?.Layers.updateSettings(options.layer, {
+              bypassed: options.bypass == 'on'
+            })
+          }
+        }
+      },
+      soloLayer: {
+        label: 'Solo Layer',
+        options: [
+          {
+            id: 'layer',
+            type: 'number',
+            label: 'Layer number',
+            default: 1,
+            min: 1,
+            max: 65535
+          },
+          {
+            id: 'solo',
+            type: 'dropdown',
+            choices: [
+              {
+                id: 'on',
+                label: 'On'
+              },
+              {
+                id: 'off',
+                label: 'Off'
+              },
+              {
+                id: 'toggle',
+                label: 'Toggle'
+              }
+            ],
+            default: 'toggle',
+            label: 'Solo'
+          }
+        ],
+        callback: async ({ options }: { options: any }) => {
+          if (options.bypass == 'toggle') {
+            var settings = (await this._api?.Layers.getSettings(options.layer)) as LayerOptions;
+            await this._api?.Layers.updateSettings(options.layer, {
+              solo: !settings.solo?.value
+            })
+          } else {
+            await this._api?.Layers.updateSettings(options.layer, {
+              solo: options.solo == 'on'
+            })
+          }
+        }
+      },
+      clearLayer: {
+        label: 'Clear Layer',
+        options: [
+          {
+            id: 'layer',
+            type: 'number',
+            label: 'Layer number',
+            default: 1,
+            min: 1,
+            max: 65535
           }
         ],
         callback: async ({ options }: { options: any }) =>
-          await this._api?.Layers.updateSettings(options.layer, {
-            bypassed: options.bypass
-          })
+          await this._api?.Layers.clear(options.layer)
       }
     }
   }
 
   setupFeedback() {
-
+    this.setFeedbackDefinitions({
+      connectedClip: {
+        type: 'boolean',
+        label: 'Connected Clip',
+        style: {
+          color: this.rgb(0, 0, 0),
+          bgcolor: this.rgb(0, 255, 0),
+        },
+        options: [
+          {
+            id: 'layer',
+            type: 'number',
+            label: 'Layer',
+            default: 1,
+            min: 1,
+            max: 65535
+          },
+          {
+            id: 'column',
+            type: 'number',
+            label: 'Column',
+            default: 1,
+            min: 1,
+            max: 65535
+          }
+        ],
+        callback: (feedback: CompanionFeedbackEvent): boolean => {
+          var layer = feedback.options.layer;
+          var column = feedback.options.column;
+          if (layer !== undefined && column !== undefined) {
+            return this.connectedClips.has(`${layer}-${column}`);
+          }
+          return false;
+        },
+        subscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          var column = feedback.options.column as number;
+          if (layer !== undefined && column !== undefined) {
+            this.addClipConnectedSubscription(layer, column);
+          }
+        },
+        unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          var column = feedback.options.column as number;
+          if (layer !== undefined && column !== undefined) {
+            this.addClipConnectedSubscription(layer, column);
+          }
+        }
+      },
+      clipInfo: {
+        type: 'advanced',
+        label: 'Clip Info',
+        options: [
+          {
+            id: 'layer',
+            type: 'number',
+            label: 'Layer',
+            default: 1,
+            min: 1,
+            max: 65535
+          },
+          {
+            id: 'column',
+            type: 'number',
+            label: 'Column',
+            default: 1,
+            min: 1,
+            max: 65535
+          }
+        ],
+        callback: (feedback: CompanionFeedbackEvent): {} => {
+          var layer = feedback.options.layer;
+          var column = feedback.options.column;
+          if (layer !== undefined && column !== undefined) {
+            var status = this.clipStatus.get(`${layer}-${column}`);
+            return {
+              text: status?.name?.value
+            };
+          }
+          return {
+            text: 'not found'
+          };
+        },
+        subscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          var column = feedback.options.column as number;
+          if (layer !== undefined && column !== undefined) {
+            this.addClipStatusSubscription(layer, column);
+          }
+        },
+        unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          var column = feedback.options.column as number;
+          if (layer !== undefined && column !== undefined) {
+            this.removeClipStatusSubscription(layer, column);
+          }
+        }
+      },
+      layerBypassed: {
+        type: 'boolean',
+        label: 'Layer Bypassed',
+        style: {
+          color: this.rgb(0, 0, 0),
+          bgcolor: this.rgb(255, 0, 0),
+        },
+        options: [
+          {
+            id: 'layer',
+            type: 'number',
+            label: 'Layer',
+            default: 1,
+            min: 1,
+            max: 65535
+          }
+        ],
+        callback: (feedback: CompanionFeedbackEvent): boolean => {
+          var layer = feedback.options.layer;
+          if (layer !== undefined) {
+            return this.bypassedLayers.has(layer as number);
+          }
+          return false;
+        },
+        subscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          if (layer !== undefined) {
+            this.addLayerBypassedSubscription(layer);
+          }
+        },
+        unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          var layer = feedback.options.layer as number;
+          if (layer !== undefined) {
+            this.addLayerBypassedSubscription(layer);
+          }
+        }
+      }
+    });
   }
 
+  setupPresets() {
+    this.setPresetDefinitions([
+      {
+        category: 'Commands',
+        label: 'Stinger',
+        bank: {
+          style: 'text',
+          size: '18',
+          text: 'Stinger Clip',
+          color: this.rgb(255, 255, 255),
+          bgcolor: this.rgb(0, 0, 0)
+        },
+        actions: [{
+          action: 'connectClip',
+          options: {
+            layer: '1',
+            column: '1',
+          }
+        }],
+        feedbacks: [
+          {
+            type: 'connectedClip',
+            options: {
+              layer: '1',
+              column: '1',
+            }
+          },
+          {
+            type: 'clipInfo',
+            options: {
+              layer: '1',
+              column: '1',
+            }
+          }
+        ]
+      }
+    ]);
+  }
+
+  addLayerBypassedSubscription(layer: number) {
+    this.LayerBypassedSubscriptions.add(layer);
+    this.pollStatus();
+    this.checkFeedbacks();
+  }
+
+  removeLayerBypassedSubscription(layer: number) {
+    this.LayerBypassedSubscriptions.delete(layer);
+  }
+
+  addClipConnectedSubscription(layer: number, column: number) {
+    this.clipConnectedSubscriptions.add({ layer, column });
+    this.pollStatus();
+    this.checkFeedbacks();
+  }
+
+  removeClipConnectedSubscription(layer: number, column: number) {
+    for (var clip of this.clipConnectedSubscriptions) {
+      if (clip.layer == layer && clip.column == column) {
+        this.clipConnectedSubscriptions.delete(clip);
+        break;
+      }
+    }
+  }
+
+  addClipStatusSubscription(layer: number, column: number) {
+    this.clipStatusSubscriptions.add({ layer, column });
+    this.pollStatus();
+    this.checkFeedbacks();
+  }
+
+  removeClipStatusSubscription(layer: number, column: number) {
+    for (var clip of this.clipStatusSubscriptions) {
+      if (clip.layer == layer && clip.column == column) {
+        this.clipStatusSubscriptions.delete(clip);
+        break;
+      }
+    }
+  }
   /**
    * When the instance configuration is saved by the user, 
    * this update will fire with the new configuration
@@ -204,21 +507,13 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           /*let status =*/ await this._api.productInfo();
           //          console.log(status)
           this.status(this.STATUS_OK);
-          // if (this.isInUse !== status.inUse) {
-          //   // status changed
-          //   this.isInUse = status.inUse;
-          //   this.checkFeedbacks('available', 'inUse', 'idle');
-          // }
-          // if (this.isSharing !== status.sharing) {
-          //   // status changed
-          //   this.isSharing = status.sharing;
-          //   this.checkFeedbacks('available', 'sharing');
-          // }
+          await this.pollClips();
+          await this.pollLayers();
         }
         catch (e: any) {
           this.status(this.STATUS_ERROR, e.message);
         }
-        await sleep(750);
+        await sleep(500);
       }
     }
     finally {
@@ -226,6 +521,52 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     }
   }
 
+  async pollLayers() {
+    try {
+      for (var layer of this.LayerBypassedSubscriptions) {
+        var status = (await this._api?.Layers.getSettings(layer)) as LayerOptions;
+        if (status.bypassed?.value) {
+          this.bypassedLayers.add(layer);
+          this.checkFeedbacks();
+        } else {
+          this.bypassedLayers.delete(layer);
+          this.checkFeedbacks();
+        }
+      }
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
+
+  async pollClips() {
+    var clips = new Set<ClipSubscription>();
+
+    for (var clip of this.clipStatusSubscriptions) {
+      clips.add(clip);
+    }
+    for (var clip of this.clipConnectedSubscriptions) {
+      clips.add(clip);
+    }
+    for (var clip of clips) {
+      var status = (await this._api?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
+      var isConnected = status.connected.value === 'Connected';
+      var key = `${clip.layer}-${clip.column}`;
+      this.clipStatus.set(key, status as {});
+      if (isConnected) {
+        if (!this.connectedClips.has(key)) {
+          this.connectedClips.add(key);
+          this.checkFeedbacks();
+        }
+      } else {
+        if (this.connectedClips.has(key)) {
+          this.connectedClips.delete(key);
+          this.checkFeedbacks();
+        }
+      }
+    }
+
+  }
 }
 
 /*

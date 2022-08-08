@@ -7,12 +7,17 @@ export class ArenaClipsApi {
     this.arenaFetch = fetchFn;
   }
 
+  async getStatus(layer: number, clip: number): Promise<{}> {
+    var url = `composition/layers/${layer}/clips/${clip}`;
+    return await this.arenaFetch('get', url, 'json');
+  }
+
   async select(layer: number, clip: number) {
     var url = `composition/layers/${layer}/clips/${clip}/select`;
     await this.arenaFetch('post', url, 'bool');
   }
 
-  async connect(layer: number, clip: number, connect: boolean) {
+  async connect(layer: number, clip: number, connect?: boolean) {
     var url = `composition/layers/${layer}/clips/${clip}/connect`;
     await this.arenaFetch('post', url, 'ok', connect);
   }
