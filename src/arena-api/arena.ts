@@ -28,10 +28,12 @@ export interface InUseStatus {
 type HttpMethod = 'get' | 'put' | 'post' | 'delete';
 
 type ArenaFetchJsonFunction = (method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any) => Promise<object>;
+type ArenaFetchBase64Function = (method: HttpMethod, relativeUrl: string, returnType: 'base64', body?: any) => Promise<string>;
 type ArenaFetchBoolFunction = (method: HttpMethod, relativeUrl: string, returnType: 'bool', body?: any) => Promise<boolean>;
 type ArenaFetchOkFunction = (method: HttpMethod, relativeUrl: string, returnType: 'ok', body?: any) => Promise<boolean>;
 export type ArenaFetchFunction =
   ArenaFetchJsonFunction
+  & ArenaFetchBase64Function
   & ArenaFetchBoolFunction
   & ArenaFetchOkFunction;
 
@@ -92,6 +94,7 @@ export default class ArenaApi {
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'ok', body?: any): Promise<boolean>;
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'bool', body?: any): Promise<boolean>;
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'json', body?: any): Promise<object>;
+  private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'base64', body?: any): Promise<string>;
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: string, body?: any): Promise<any> {
     var url = `${this.apiUrl}/${relativeUrl}`;
     var options: FetchOptions = {
@@ -118,6 +121,9 @@ export default class ArenaApi {
         return response.ok;
       case 'json':
         return await response.json();
+      case 'base64':
+        var buffer = await response.buffer();
+        return buffer.toString('base64');
       case 'bool':
         return await (await response.text()).toLowerCase() == 'true';
     }

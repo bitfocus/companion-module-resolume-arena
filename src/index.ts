@@ -22,8 +22,10 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   private isPolling: boolean = false;
   private connectedClips: Set<string> = new Set<string>();
   private clipStatusSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
+  private clipThumbSubscriptions: Set<string> = new Set<string>();
   private clipConnectedSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
-  private clipStatus: Map<string, LayerOptions> = new Map<string, LayerOptions>();
+  private clipStatus: Map<string, ClipStatus> = new Map<string, ClipStatus>();
+  private clipThumbs: Map<string, string> = new Map<string, string>();
   private bypassedLayers: Set<number> = new Set<number>();
   private LayerBypassedSubscriptions: Set<number> = new Set<number>();
 
@@ -302,16 +304,31 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
             default: 1,
             min: 1,
             max: 65535
+          },
+          {
+            id: 'showThumb',
+            type: 'checkbox',
+            label: 'Thumbnail',
+            default: false
           }
         ],
         callback: (feedback: CompanionFeedbackEvent): {} => {
           var layer = feedback.options.layer;
           var column = feedback.options.column;
           if (layer !== undefined && column !== undefined) {
-            var status = this.clipStatus.get(`${layer}-${column}`);
-            return {
-              text: status?.name?.value
+            var key = `${layer}-${column}`;
+            var status = this.clipStatus.get(key);
+            var result: {
+              text: string | undefined,
+              png64: string | undefined
+            } = {
+              text: status?.name?.value,
+              png64: undefined
             };
+            if (feedback.options.showThumb) {
+              result.png64 = this.clipThumbs.get(key);
+            }
+            return result;
           }
           return {
             text: 'not found'
@@ -322,6 +339,11 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           var column = feedback.options.column as number;
           if (layer !== undefined && column !== undefined) {
             this.addClipStatusSubscription(layer, column);
+            if (feedback.options.showThumb) {
+              this.addClipThumbSubscription(layer, column);
+            } else {
+              this.removeClipThumbSubscription(layer, column);
+            }
           }
         },
         unsubscribe: (feedback: CompanionFeedbackEvent) => {
@@ -329,6 +351,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           var column = feedback.options.column as number;
           if (layer !== undefined && column !== undefined) {
             this.removeClipStatusSubscription(layer, column);
+            this.removeClipThumbSubscription(layer, column);
           }
         }
       },
@@ -450,6 +473,17 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       }
     }
   }
+
+  addClipThumbSubscription(layer: number, column: number) {
+    this.clipThumbSubscriptions.add(`${layer}-${column}`);
+    this.pollStatus();
+    this.checkFeedbacks();
+  }
+
+  removeClipThumbSubscription(layer: number, column: number) {
+    this.clipThumbSubscriptions.delete(`${layer}-${column}`);
+  }
+
   /**
    * When the instance configuration is saved by the user, 
    * this update will fire with the new configuration
@@ -525,21 +559,22 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
 
   get hasPollingSubscriptions(): boolean {
     return this.LayerBypassedSubscriptions.size > 0 ||
-           this.clipConnectedSubscriptions.size > 0 ||
-           this.clipStatusSubscriptions.size > 0;
+      this.clipConnectedSubscriptions.size > 0 ||
+      this.clipStatusSubscriptions.size > 0;
   }
 
   async pollLayers() {
     try {
-      for (var layer of this.LayerBypassedSubscriptions) {
-        var status = (await this._api?.Layers.getSettings(layer)) as LayerOptions;
-        if (status.bypassed?.value) {
-          this.bypassedLayers.add(layer);
-          this.checkFeedbacks();
-        } else {
-          this.bypassedLayers.delete(layer);
-          this.checkFeedbacks();
+      if (this.LayerBypassedSubscriptions.size > 0) {
+        for (var layer of this.LayerBypassedSubscriptions) {
+          var status = (await this._api?.Layers.getSettings(layer)) as LayerOptions;
+          if (status.bypassed?.value) {
+            this.bypassedLayers.add(layer);
+          } else {
+            this.bypassedLayers.delete(layer);
+          }
         }
+        this.checkFeedbacks('layerBypassed');
       }
     }
     catch (e) {
@@ -549,29 +584,40 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
 
   async pollClips() {
     var clips = new Set<ClipSubscription>();
-
+    // combine sets
     for (var clip of this.clipStatusSubscriptions) {
       clips.add(clip);
     }
     for (var clip of this.clipConnectedSubscriptions) {
       clips.add(clip);
     }
-    for (var clip of clips) {
-      var status = (await this._api?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
-      var isConnected = status.connected.value === 'Connected';
-      var key = `${clip.layer}-${clip.column}`;
-      this.clipStatus.set(key, status as {});
-      if (isConnected) {
-        if (!this.connectedClips.has(key)) {
-          this.connectedClips.add(key);
-          this.checkFeedbacks();
+    if (clips.size > 0) {
+      let connectedChanged = false;
+      for (var clip of clips) {
+        var key = `${clip.layer}-${clip.column}`;
+        var oldStatus = this.clipStatus.get(key);
+        var status = (await this._api?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
+        this.clipStatus.set(key, status);
+        var isConnected = status?.connected.value === 'Connected';
+        if (isConnected) {
+          if (!this.connectedClips.has(key)) {
+            connectedChanged = true;
+            this.connectedClips.add(key);
+          }
+        } else {
+          if (this.connectedClips.has(key)) {
+            connectedChanged = true;
+            this.connectedClips.delete(key);
+          }
         }
-      } else {
-        if (this.connectedClips.has(key)) {
-          this.connectedClips.delete(key);
-          this.checkFeedbacks();
+        if ((oldStatus?.name?.value !== status?.name?.value) && this.clipThumbSubscriptions.has(key)) {
+          this.clipThumbs.set(key, await this._api?.Clips.getThumb(clip.layer, clip.column) ?? '');
         }
       }
+      if (connectedChanged) {
+        this.checkFeedbacks('connectedClip');
+      }
+      this.checkFeedbacks('clipInfo');
     }
 
   }

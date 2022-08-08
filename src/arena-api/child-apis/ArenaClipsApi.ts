@@ -12,6 +12,11 @@ export class ArenaClipsApi {
     return await this.arenaFetch('get', url, 'json');
   }
 
+  async getThumb(layer: number, clip: number): Promise<string> {
+    var url = `composition/layers/${layer}/clips/${clip}/thumbnail`;
+    return await this.arenaFetch('get', url, 'base64');
+  }
+
   async select(layer: number, clip: number) {
     var url = `composition/layers/${layer}/clips/${clip}/select`;
     await this.arenaFetch('post', url, 'bool');
