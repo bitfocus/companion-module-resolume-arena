@@ -504,11 +504,13 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       while (this._api) {
         // check the status via the api
         try {
-          /*let status =*/ await this._api.productInfo();
-          //          console.log(status)
-          this.status(this.STATUS_OK);
+          // only poll status if there are no other subscriptions
+          if (this.hasPollingSubscriptions) {
+            await this._api.productInfo();
+          }
           await this.pollClips();
           await this.pollLayers();
+          this.status(this.STATUS_OK);
         }
         catch (e: any) {
           this.status(this.STATUS_ERROR, e.message);
@@ -519,6 +521,12 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     finally {
       this.isPolling = false;
     }
+  }
+
+  get hasPollingSubscriptions(): boolean {
+    return this.LayerBypassedSubscriptions.size > 0 ||
+           this.clipConnectedSubscriptions.size > 0 ||
+           this.clipStatusSubscriptions.size > 0;
   }
 
   async pollLayers() {
