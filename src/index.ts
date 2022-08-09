@@ -4,13 +4,12 @@ import { ClipStatus } from "./arena-api/child-apis/clip-options/ClipStatus";
 import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
 import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
-
-interface ResolumeArenaConfig {
-  host: string;
-  port: number;
-  webapiPort: number;
-  useSSL: boolean;
-}
+import { configFields, ResolumeArenaConfig } from "./config-fields";
+import { connectClip } from './actions/connect-clip';
+import { selectClip } from './actions/select-clip';
+import { bypassLayer } from './actions/bypass-layer';
+import { soloLayer } from './actions/solo-layer';
+import { clearLayer } from './actions/clear-layer';
 
 interface ClipSubscription {
   layer: number,
@@ -26,6 +25,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   private clipConnectedSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
   private clipStatus: Map<string, ClipStatus> = new Map<string, ClipStatus>();
   private clipThumbs: Map<string, string> = new Map<string, string>();
+  private clipNames: Map<string, string> = new Map<string, string>();
   private bypassedLayers: Set<number> = new Set<number>();
   private LayerBypassedSubscriptions: Set<number> = new Set<number>();
 
@@ -43,195 +43,20 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * @return {object[]}
    */
   config_fields(): SomeCompanionConfigField[] {
-    return [
-      {
-        type: 'textinput',
-        id: 'host',
-        label: 'Resolume Host IP',
-        width: 8,
-        regex: this.REGEX_IP
-      },
-      {
-        type: 'number',
-        id: 'port',
-        label: 'Resolume OSC Port',
-        width: 6,
-        min: 1,
-        max: 65536,
-        default: 7000
-      },
-      {
-        type: 'checkbox',
-        id: 'useSSL',
-        label: 'Use SSL for web api calls',
-        width: 6,
-        default: false
-      },
-      {
-        type: 'number',
-        id: 'webapiPort',
-        label: 'Resolume WebAPI Port',
-        width: 6,
-        min: 1,
-        max: 65536,
-        default: 8080
-      },
-    ];
+    return configFields(this);
+  }
+
+  getApi(): ArenaApi | null {
+    return this._api;
   }
 
   get actions(): CompanionActions {
     return {
-      connectClip: {
-        label: 'Connect Clip',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer number',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'column',
-            type: 'number',
-            label: 'Column number',
-            default: 1,
-            min: 1,
-            max: 65535
-          }
-        ],
-        callback: async ({ options }: { options: any }) =>
-          await this._api?.Clips.connect(options.layer, options.column)
-      },
-      selectClip: {
-        label: 'Select Clip',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer number',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'column',
-            type: 'number',
-            label: 'Column number',
-            default: 1,
-            min: 1,
-            max: 65535
-          }
-        ],
-        callback: async ({ options }: { options: any }) =>
-          await this._api?.Clips.select(options.layer, options.column)
-      },
-      bypassLayer: {
-        label: 'Bypass Layer',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer number',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'bypass',
-            type: 'dropdown',
-            choices: [
-              {
-                id: 'on',
-                label: 'On'
-              },
-              {
-                id: 'off',
-                label: 'Off'
-              },
-              {
-                id: 'toggle',
-                label: 'Toggle'
-              }
-            ],
-            default: 'toggle',
-            label: 'Bypass'
-          }
-        ],
-        callback: async ({ options }: { options: any }) => {
-          if (options.bypass == 'toggle') {
-            var settings = (await this._api?.Layers.getSettings(options.layer)) as LayerOptions;
-            await this._api?.Layers.updateSettings(options.layer, {
-              bypassed: !settings.bypassed?.value
-            })
-          } else {
-            await this._api?.Layers.updateSettings(options.layer, {
-              bypassed: options.bypass == 'on'
-            })
-          }
-        }
-      },
-      soloLayer: {
-        label: 'Solo Layer',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer number',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'solo',
-            type: 'dropdown',
-            choices: [
-              {
-                id: 'on',
-                label: 'On'
-              },
-              {
-                id: 'off',
-                label: 'Off'
-              },
-              {
-                id: 'toggle',
-                label: 'Toggle'
-              }
-            ],
-            default: 'toggle',
-            label: 'Solo'
-          }
-        ],
-        callback: async ({ options }: { options: any }) => {
-          if (options.bypass == 'toggle') {
-            var settings = (await this._api?.Layers.getSettings(options.layer)) as LayerOptions;
-            await this._api?.Layers.updateSettings(options.layer, {
-              solo: !settings.solo?.value
-            })
-          } else {
-            await this._api?.Layers.updateSettings(options.layer, {
-              solo: options.solo == 'on'
-            })
-          }
-        }
-      },
-      clearLayer: {
-        label: 'Clear Layer',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer number',
-            default: 1,
-            min: 1,
-            max: 65535
-          }
-        ],
-        callback: async ({ options }: { options: any }) =>
-          await this._api?.Layers.clear(options.layer)
-      }
+      connectClip: connectClip(this.getApi),
+      selectClip: selectClip(this.getApi),
+      bypassLayer: bypassLayer(this.getApi),
+      soloLayer: soloLayer(this.getApi),
+      clearLayer: clearLayer(this.getApi)
     }
   }
 
@@ -317,12 +142,12 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           var column = feedback.options.column;
           if (layer !== undefined && column !== undefined) {
             var key = `${layer}-${column}`;
-            var status = this.clipStatus.get(key);
+            var name = this.clipNames.get(key);
             var result: {
               text: string | undefined,
               png64: string | undefined
             } = {
-              text: status?.name?.value,
+              text: name,
               png64: undefined
             };
             if (feedback.options.showThumb) {
@@ -437,7 +262,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   addLayerBypassedSubscription(layer: number) {
     this.LayerBypassedSubscriptions.add(layer);
     this.pollStatus();
-    this.checkFeedbacks();
+    this.checkFeedbacks('layerBypassed');
   }
 
   removeLayerBypassedSubscription(layer: number) {
@@ -447,7 +272,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   addClipConnectedSubscription(layer: number, column: number) {
     this.clipConnectedSubscriptions.add({ layer, column });
     this.pollStatus();
-    this.checkFeedbacks();
+    this.checkFeedbacks('connectedClip');
   }
 
   removeClipConnectedSubscription(layer: number, column: number) {
@@ -462,7 +287,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   addClipStatusSubscription(layer: number, column: number) {
     this.clipStatusSubscriptions.add({ layer, column });
     this.pollStatus();
-    this.checkFeedbacks();
+    this.checkFeedbacks('clipInfo');
   }
 
   removeClipStatusSubscription(layer: number, column: number) {
@@ -477,7 +302,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   addClipThumbSubscription(layer: number, column: number) {
     this.clipThumbSubscriptions.add(`${layer}-${column}`);
     this.pollStatus();
-    this.checkFeedbacks();
+    this.checkFeedbacks('clipInfo');
   }
 
   removeClipThumbSubscription(layer: number, column: number) {
@@ -593,11 +418,17 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     }
     if (clips.size > 0) {
       let connectedChanged = false;
+      let nameChanged = false;
+      let thumbChanged = false;
       for (var clip of clips) {
         var key = `${clip.layer}-${clip.column}`;
-        var oldStatus = this.clipStatus.get(key);
         var status = (await this._api?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
+        var name = status?.name?.value;
         this.clipStatus.set(key, status);
+        if (name !== this.clipNames.get(key)) {
+          this.clipNames.set(key, name);
+          nameChanged = true;
+        }
         var isConnected = status?.connected.value === 'Connected';
         if (isConnected) {
           if (!this.connectedClips.has(key)) {
@@ -610,14 +441,17 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
             this.connectedClips.delete(key);
           }
         }
-        if ((oldStatus?.name?.value !== status?.name?.value) && this.clipThumbSubscriptions.has(key)) {
+        if (nameChanged && this.clipThumbSubscriptions.has(key)) {
           this.clipThumbs.set(key, await this._api?.Clips.getThumb(clip.layer, clip.column) ?? '');
+          thumbChanged = true;
         }
       }
       if (connectedChanged) {
         this.checkFeedbacks('connectedClip');
       }
-      this.checkFeedbacks('clipInfo');
+      if (nameChanged || thumbChanged) {
+        this.checkFeedbacks('clipInfo');
+      }
     }
 
   }
