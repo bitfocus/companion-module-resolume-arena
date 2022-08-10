@@ -1,7 +1,8 @@
-import { CompanionAction } from "../../../../../instance_skel_types"
-import { ArenaOscApi } from "../../arena-api/osc"
+import { CompanionAction } from "../../../../instance_skel_types"
+import ArenaOscApi from "../arena-api/osc"
+import ArenaRestApi from "../arena-api/rest";
 
-export function oscTriggerColumn(oscApi: () => ArenaOscApi | null): CompanionAction {
+export function triggerColumn(_restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionAction {
   return {
     label: 'Start Column',
     options: [

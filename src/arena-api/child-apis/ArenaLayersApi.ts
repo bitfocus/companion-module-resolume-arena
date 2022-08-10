@@ -22,4 +22,5 @@ export class ArenaLayersApi {
     var url = `composition/layers/${layer}/clear`;
     await this.arenaFetch('post', url, 'bool');
   }
+
 }

@@ -22,10 +22,11 @@ function integerArg(value: number): OSCMetaArgument {
 }
 */
 
-export class ArenaOscApi {
+export default class ArenaOscApi {
   private _host: string;
   private _port: number;
   private _oscSend: OscSendFunc;
+  private groupPos: number[] = [];
 //  private _system: CompanionSystem;
 
   constructor(host: string, port: number, oscSend: OscSendFunc, _system: CompanionSystem) {
@@ -51,5 +52,45 @@ export class ArenaOscApi {
 
   public triggerColumn(column: number) {
     this.send(`/composition/columns/${column}/connect`, OscArgs.One);
+  }
+
+  public clearLayer(layer: number) {
+    let path = `/composition/layers/${layer}/clear`
+    this.send(path, OscArgs.One);
+    this.send(path, OscArgs.Zero)
+  }
+
+  public clearAllLayers() {
+    this.send('/composition/disconnectall', OscArgs.One);
+  }
+
+  public tempoTap() {
+    this.send('/composition/tempocontroller/tempotap', OscArgs.One);
+  }
+
+  public groupNextCol(groupNext: number, colMaxGroupNext: number) {
+    if (this.groupPos[groupNext] == undefined) {
+      this.groupPos[groupNext] = 1;
+    } else {
+      this.groupPos[groupNext] ++;
+    }
+    if (this.groupPos[groupNext] > colMaxGroupNext) {
+      this.groupPos[groupNext] = 1;
+    }
+
+    this.send(`/composition/groups/${groupNext}//composition/columns/${this.groupPos[groupNext]}/connect`, OscArgs.One);
+  }
+
+  public groupPrevCol(groupPrev: number, colMaxGroupPrev: number) {
+    if (this.groupPos[groupPrev] == undefined) {
+      this.groupPos[groupPrev] = 1;
+    } else {
+      this.groupPos[groupPrev] --;
+    }
+    if (this.groupPos[groupPrev] < 1) {
+      this.groupPos[groupPrev] = colMaxGroupPrev;
+    }
+
+    this.send(`/composition/groups/${groupPrev}//composition/columns/${this.groupPos[groupPrev]}/connect`, OscArgs.One);
   }
 }

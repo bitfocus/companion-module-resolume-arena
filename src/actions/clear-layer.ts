@@ -1,7 +1,8 @@
-import { CompanionAction } from "../../../../../instance_skel_types"
-import ArenaRestApi from "../../arena-api/rest"
+import { CompanionAction } from "../../../../instance_skel_types"
+import ArenaOscApi from "../arena-api/osc";
+import ArenaRestApi from "../arena-api/rest"
 
-export function clearLayer(restApi: () => ArenaRestApi | null): CompanionAction {
+export function clearLayer(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionAction {
   return {
     label: 'Clear Layer',
     options: [

@@ -1,18 +1,21 @@
 import { CompanionActions, CompanionFeedbackEvent, SomeCompanionConfigField } from "../types/instance_skel_types";
 import ArenaRestApi from "./arena-api/rest";
+import ArenaOscApi from "./arena-api/osc";
 import { ClipStatus } from "./arena-api/child-apis/clip-options/ClipStatus";
 import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
 import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
 import { configFields, ResolumeArenaConfig } from "./config-fields";
-import { connectClip } from './actions/rest/connect-clip';
-import { selectClip } from './actions/rest/select-clip';
-import { bypassLayer } from './actions/rest/bypass-layer';
-import { soloLayer } from './actions/rest/solo-layer';
-import { clearLayer } from './actions/rest/clear-layer';
-import { oscTriggerClip } from './actions/osc/trigger-clip';
-import { ArenaOscApi } from "./arena-api/osc";
-import { oscTriggerColumn } from "./actions/osc/trigger-column";
+import { connectClip } from './actions/connect-clip';
+import { selectClip } from './actions/select-clip';
+import { bypassLayer } from './actions/bypass-layer';
+import { soloLayer } from './actions/solo-layer';
+import { clearLayer } from './actions/clear-layer';
+import { clearAllLayers } from './actions/clear-all-layers';
+import { triggerColumn } from "./actions/trigger-column";
+import { tempoTap } from "./actions/tempo-tap";
+import { groupNextCol } from "./actions/group-next-col";
+import { groupPrevCol } from "./actions/group-prev-col";
 
 interface ClipSubscription {
   layer: number,
@@ -61,23 +64,18 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   get actions(): CompanionActions {
     var restApi = this.getRestApi.bind(this);
     var oscApi = this.getOscApi.bind(this);
-    var actions: CompanionActions = {};
-    if (this._restApi) {
-      // preferentially available via rest api
-      actions.triggerClip = connectClip(restApi);
-      actions.selectClip = selectClip(restApi);
-      actions.bypassLayer = bypassLayer(restApi);
-      actions.soloLayer = soloLayer(restApi);
-      actions.clearLayer = clearLayer(restApi);
-    } else if (this._oscApi) {
-      // fall back to osc for these ones
-      actions.triggerClip = oscTriggerClip(oscApi);
+    var actions: CompanionActions = {
+      bypassLayer: bypassLayer(restApi, oscApi),
+      clearAll: clearAllLayers(restApi, oscApi),
+      clearLayer: clearLayer(restApi, oscApi),
+      grpNextCol: groupNextCol(restApi, oscApi),
+      grpPrevCol: groupPrevCol(restApi, oscApi),
+      selectClip: selectClip(restApi, oscApi),
+      soloLayer: soloLayer(restApi, oscApi),
+      tempoTap: tempoTap(restApi, oscApi),
+      triggerClip: connectClip(restApi, oscApi),
+      triggerColumn: triggerColumn(restApi, oscApi),
     }
-    if (this._oscApi) {
-      // only available in osc
-      actions.triggerColumn = oscTriggerColumn(oscApi);
-    }
-
     return actions;
   }
 
@@ -529,46 +527,6 @@ instance.GetUpgradeScripts = function() {
 instance.prototype.actions = function(system) {
   var self = this;
   self.setActions({
-    'clearLayer': {
-      label: 'Clear Layer',
-      options: [
-        {
-          type: 'textinput',
-          label: 'Layer',
-          id: 'layer',
-          default: '1',
-        }
-      ]
-    },
-    'clearAll': {
-      label: 'Clear All Layers',
-    },
-    'tempoTap': {
-      label: 'Tap Tempo',
-    },
-    'grpNextCol': {
-      label: 'Group Next Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Group Number',
-          id: 'groupNext',
-          min: 1,
-          max: 100,
-          default: 1,
-          required: true
-        },
-        {
-          type: 'number',
-          label: 'Last Column',
-          id: 'colMaxGroupNext',
-          min: 1,
-          max: 100,
-          default: 4,
-          required: true
-        }
-      ]
-    },
     'grpPrvCol': {
       label: 'Group Previous Column',
       options: [
@@ -702,40 +660,6 @@ instance.prototype.action = function(action) {
 
   debug('action: ', action);
 
-  if (action.action == 'clearLayer') {
-    var bol = {
-      type: "i",
-      value: parseInt(1)
-    };
-    debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
-    //sending second command with value 0 to reset the layer, else this command only works one time
-    var bol = {
-      type: "i",
-      value: parseInt(0)
-    };
-    debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clear', [ bol ])
-  }
-
-  if (action.action == 'clearAll') {
-    var bol = {
-      type: "i",
-      value: parseInt(1)
-    };
-    debug('sending',self.config.host, self.config.port, '/composition/disconnectall', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/disconnectall', [ bol ])
-  }
-
-  if (action.action == 'tempoTap') {
-    var bol = {
-      type: "i",
-      value: parseInt(1)
-    };
-    debug('sending',self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/tempocontroller/tempotap', [ bol ])
-  }
-
   if (action.action == 'custom') { 
     var args = [];
     if(action.options.oscType == 'i') {
@@ -757,41 +681,7 @@ instance.prototype.action = function(action) {
     debug('sending',self.config.host, self.config.port, action.options.customPath );
     self.oscSend(self.config.host, self.config.port, action.options.customPath, args)
   }
-  if (action.action == 'grpNextCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-    if (groupPos[action.options.groupNext] == undefined) {
-      groupPos[action.options.groupNext] = 1;
-    } else {
-      groupPos[action.options.groupNext] ++;
-    }
-    if (groupPos[action.options.groupNext] > action.options.colMaxGroupNext) {
-      groupPos[action.options.groupNext] = 1;
-    }
 
-    debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect', [ bol ])
-  }
-  if (action.action == 'grpPrvCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-
-    if (groupPos[action.options.groupPrev] == undefined) {
-      groupPos[action.options.groupPrev] = 1;
-    } else {
-      groupPos[action.options.groupPrev] --;
-    }
-    if (groupPos[action.options.groupPrev] < 1) {
-      groupPos[action.options.groupPrev] = action.options.colMaxGroupPrev;
-    }
-
-    debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect', [ bol ])
-  }
   if (action.action == 'compNextCol') {
     var bol = {
       type: 'i',
