@@ -18,7 +18,7 @@ export function compPrevCol(_restApi: () => ArenaRestApi | null, oscApi: () => A
     ],
 
     callback: async ({ options }: { options: any }) => {
-      oscApi()?.compNextCol(options.colMaxCompNext);
+      oscApi()?.compPrevCol(options.colMaxCompPrev);
     }
   }
 }

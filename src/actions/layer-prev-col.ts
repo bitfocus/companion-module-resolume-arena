@@ -27,7 +27,7 @@ export function layerPrevCol(_restApi: () => ArenaRestApi | null, oscApi: () => 
     ],
 
     callback: async ({ options }: { options: any }) => {
-      oscApi()?.layerNextCol(options.layerP, options.colMaxLayerP);
+      oscApi()?.layerPrevCol(options.layerP, options.colMaxLayerP);
     }
   }
 }

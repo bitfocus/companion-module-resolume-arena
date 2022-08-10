@@ -4,7 +4,7 @@ import ArenaRestApi from "../arena-api/rest"
 
 export function connectClip(restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionAction {
   return {
-    label: 'Connect Clip',
+    label: 'Trigger Clip',
     options: [
       {
         id: 'layer',
