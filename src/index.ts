@@ -410,7 +410,6 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     this.isPolling = true;
     try {
       // loop until we don't need to poll any more
-      console.log('polling for status');
       while (this._restApi) {
         // check the status via the api
         try {
@@ -426,6 +425,10 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           this.status(this.STATUS_ERROR, e.message);
         }
         await sleep(500);
+      }
+      if (!this._restApi) {
+        // no way to tell if OSC is connected
+        this.status(this.STATUS_OK);
       }
     }
     finally {
