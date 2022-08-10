@@ -21,6 +21,7 @@ import { selectClip } from './actions/select-clip';
 import { soloLayer } from './actions/solo-layer';
 import { tempoTap } from "./actions/tempo-tap";
 import { triggerColumn } from "./actions/trigger-column";
+import { customOscCommand } from "./actions/custom-osc";
 
 interface ClipSubscription {
   layer: number,
@@ -75,6 +76,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       clearLayer: clearLayer(restApi, oscApi),
       compNextCol: compNextCol(restApi, oscApi),
       compPrevCol: compPrevCol(restApi, oscApi),
+      custom: customOscCommand(oscApi),
       grpNextCol: groupNextCol(restApi, oscApi),
       grpPrevCol: groupPrevCol(restApi, oscApi),
       layNextCol: layerNextCol(restApi, oscApi),
@@ -376,7 +378,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       this._restApi = null;
     }
     if (config.port) {
-      this._oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this), this.system);
+      this._oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this));
     } else {
       this._oscApi = null;
     }
@@ -532,69 +534,6 @@ instance.GetUpgradeScripts = function() {
     }
   ]
 }
-
-instance.prototype.actions = function(system) {
-  var self = this;
-  self.setActions({
-
-    'custom': {
-      label: 'Custom OSC Command',
-      options: [
-        {
-          type:  'textinput',
-          label: 'Custom OSC Path',
-          id:    'customPath',
-        },
-        {
-          type:  'dropdown',
-          label: 'OSC Type Flag',
-          id:    'oscType',
-          tooltip: 'select the type of the value data',
-          choices: [
-            { id: 'i', label: 'integer' },
-            { id: 'f', label: 'float' },
-            { id: 's', label: 'string' }
-          ]
-        },
-        {
-          type:  'textinput',
-          label: 'Value',
-          id:    'customValue'
-        }
-      ]
-    }
-
-  });
-}
-
-instance.prototype.action = function(action) {
-  var self = this;
-
-
-  debug('action: ', action);
-
-  if (action.action == 'custom') { 
-    var args = [];
-    if(action.options.oscType == 'i') {
-      args = [{
-        type: 'i',
-        value: parseInt(action.options.customValue)
-      }];
-    } else if(action.options.oscType == 'f') {
-      args = [{
-        type: 'f',
-        value: parseFloat(action.options.customValue)
-      }];
-    } else if(action.options.oscType == 's') {
-      args = [{
-        type: 's',
-        value: '' + action.options.customValue
-      }];
-    }
-    debug('sending',self.config.host, self.config.port, action.options.customPath );
-    self.oscSend(self.config.host, self.config.port, action.options.customPath, args)
-  }
-};
 
 */
 

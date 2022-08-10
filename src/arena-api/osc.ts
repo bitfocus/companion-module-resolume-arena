@@ -1,4 +1,4 @@
-import { CompanionSystem, OSCSomeArguments } from "../../../../instance_skel_types";
+import { CompanionSystem, OSCMetaArgument, OSCSomeArguments } from "../../../../instance_skel_types";
 
 export type OscSendFunc = (host: string, port: number, path: string, args: OSCSomeArguments) => void;
 
@@ -30,13 +30,10 @@ export default class ArenaOscApi {
   private layerPos: number[] = [];
   private currentCompCol: number = 0;
 
-  //  private _system: CompanionSystem;
-
-  constructor(host: string, port: number, oscSend: OscSendFunc, _system: CompanionSystem) {
+  constructor(host: string, port: number, oscSend: OscSendFunc) {
     this._host = host;
     this._port = port;
     this._oscSend = oscSend;
-    //    this._system = system;
   }
 
   public send(path: string, args: OSCSomeArguments) {
@@ -44,13 +41,8 @@ export default class ArenaOscApi {
     this._oscSend(this._host, this._port, path, args);
   }
 
-  public connectClip(layer: number, column: number/*, value: string */) {
-    // this._system.emit('variable_parse', value, (evaluatedValue: string) => {
-    //   var args = [
-    //     integerArg(parseInt(evaluatedValue))
-    //   ];
+  public connectClip(layer: number, column: number) {
     this.send(`/composition/layers/${layer}/clips/${column}/connect`, OscArgs.One);
-    //  });
   }
 
   public triggerColumn(column: number) {
@@ -139,6 +131,31 @@ export default class ArenaOscApi {
     }
 
     this.send(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`, OscArgs.One);
+  }
+
+  public customOsc(customPath: string, oscType: string, customValue: string) {
+    var args: OSCMetaArgument[] = [];
+    switch (oscType) {
+      case 'i':
+        args.push({
+          type: 'i',
+          value: parseInt(customValue)
+        });
+        break;
+      case 'f':
+        args.push({
+          type: 'f',
+          value: parseFloat(customValue)
+        });
+        break;
+      case 's':
+        args.push({
+          type: 's',
+          value: '' + customValue
+        });
+        break;
+    }
+    this.send(customPath, args);
   }
 
 }
