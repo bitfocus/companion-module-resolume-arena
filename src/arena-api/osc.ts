@@ -27,13 +27,16 @@ export default class ArenaOscApi {
   private _port: number;
   private _oscSend: OscSendFunc;
   private groupPos: number[] = [];
-//  private _system: CompanionSystem;
+  private layerPos: number[] = [];
+  private currentCompCol: number = 0;
+
+  //  private _system: CompanionSystem;
 
   constructor(host: string, port: number, oscSend: OscSendFunc, _system: CompanionSystem) {
     this._host = host;
     this._port = port;
     this._oscSend = oscSend;
-//    this._system = system;
+    //    this._system = system;
   }
 
   public send(path: string, args: OSCSomeArguments) {
@@ -46,8 +49,8 @@ export default class ArenaOscApi {
     //   var args = [
     //     integerArg(parseInt(evaluatedValue))
     //   ];
-      this.send(`/composition/layers/${layer}/clips/${column}/connect`, OscArgs.One);
-  //  });
+    this.send(`/composition/layers/${layer}/clips/${column}/connect`, OscArgs.One);
+    //  });
   }
 
   public triggerColumn(column: number) {
@@ -72,7 +75,7 @@ export default class ArenaOscApi {
     if (this.groupPos[groupNext] == undefined) {
       this.groupPos[groupNext] = 1;
     } else {
-      this.groupPos[groupNext] ++;
+      this.groupPos[groupNext]++;
     }
     if (this.groupPos[groupNext] > colMaxGroupNext) {
       this.groupPos[groupNext] = 1;
@@ -85,7 +88,7 @@ export default class ArenaOscApi {
     if (this.groupPos[groupPrev] == undefined) {
       this.groupPos[groupPrev] = 1;
     } else {
-      this.groupPos[groupPrev] --;
+      this.groupPos[groupPrev]--;
     }
     if (this.groupPos[groupPrev] < 1) {
       this.groupPos[groupPrev] = colMaxGroupPrev;
@@ -93,4 +96,49 @@ export default class ArenaOscApi {
 
     this.send(`/composition/groups/${groupPrev}//composition/columns/${this.groupPos[groupPrev]}/connect`, OscArgs.One);
   }
+
+  public compNextCol(colMaxCompNext: number) {
+    this.currentCompCol++;
+    if (this.currentCompCol > colMaxCompNext) {
+      this.currentCompCol = 1;
+    }
+
+    this.send(`/composition/columns/${this.currentCompCol}/connect`, OscArgs.One);
+  }
+
+  public compPrevCol(colMaxCompPrev: number) {
+    this.currentCompCol--;
+    if (this.currentCompCol < 1) {
+      this.currentCompCol = colMaxCompPrev;
+    }
+
+    this.send(`/composition/columns/${this.currentCompCol}/connect`, OscArgs.One);
+  }
+
+  public layerNextCol(layerN: number, colMaxLayerN: number) {
+    if (this.layerPos[layerN] == undefined) {
+      this.layerPos[layerN] = 1;
+    } else {
+      this.layerPos[layerN] ++;
+    }
+    if (this.layerPos[layerN] > colMaxLayerN) {
+      this.layerPos[layerN] = 1;
+    }
+
+    this.send(`/composition/layers/${layerN}/clips/${this.layerPos[layerN]}/connect`, OscArgs.One);
+  }
+
+  public layerPrevCol(layerP: number, colMaxLayerP: number) {
+    if (this.layerPos[layerP] == undefined) {
+      this.layerPos[layerP] = 1;
+    } else {
+      this.layerPos[layerP] --;
+    }
+    if (this.layerPos[layerP] < 1) {
+      this.layerPos[layerP] = colMaxLayerP;
+    }
+
+    this.send(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`, OscArgs.One);
+  }
+
 }

@@ -6,16 +6,21 @@ import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
 import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
 import { configFields, ResolumeArenaConfig } from "./config-fields";
-import { connectClip } from './actions/connect-clip';
-import { selectClip } from './actions/select-clip';
+
 import { bypassLayer } from './actions/bypass-layer';
-import { soloLayer } from './actions/solo-layer';
 import { clearLayer } from './actions/clear-layer';
 import { clearAllLayers } from './actions/clear-all-layers';
-import { triggerColumn } from "./actions/trigger-column";
-import { tempoTap } from "./actions/tempo-tap";
+import { compNextCol } from "./actions/comp-next-col";
+import { compPrevCol } from "./actions/comp-prev-col";
+import { connectClip } from './actions/connect-clip';
 import { groupNextCol } from "./actions/group-next-col";
 import { groupPrevCol } from "./actions/group-prev-col";
+import { layerNextCol } from "./actions/layer-next-col";
+import { layerPrevCol } from "./actions/layer-prev-col";
+import { selectClip } from './actions/select-clip';
+import { soloLayer } from './actions/solo-layer';
+import { tempoTap } from "./actions/tempo-tap";
+import { triggerColumn } from "./actions/trigger-column";
 
 interface ClipSubscription {
   layer: number,
@@ -68,8 +73,12 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       bypassLayer: bypassLayer(restApi, oscApi),
       clearAll: clearAllLayers(restApi, oscApi),
       clearLayer: clearLayer(restApi, oscApi),
+      compNextCol: compNextCol(restApi, oscApi),
+      compPrevCol: compPrevCol(restApi, oscApi),
       grpNextCol: groupNextCol(restApi, oscApi),
       grpPrevCol: groupPrevCol(restApi, oscApi),
+      layNextCol: layerNextCol(restApi, oscApi),
+      layPrevCol: layerPrevCol(restApi, oscApi),
       selectClip: selectClip(restApi, oscApi),
       soloLayer: soloLayer(restApi, oscApi),
       tempoTap: tempoTap(restApi, oscApi),
@@ -527,103 +536,7 @@ instance.GetUpgradeScripts = function() {
 instance.prototype.actions = function(system) {
   var self = this;
   self.setActions({
-    'grpPrvCol': {
-      label: 'Group Previous Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Group Number',
-          id: 'groupPrev',
-          min: 1,
-          max: 100,
-          default: '1',
-          required: true
-        },
-        {
-          type: 'number',
-          label: 'Last Column',
-          id: 'colMaxGroupPrev',
-          min: 1,
-          max: 100,
-          default: '4',
-          required: true
-        }
-      ]
-    },
-    'compNextCol': {
-      label: 'Composition Next Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Last (max) Column',
-          id: 'colMaxCompNext',
-          min: 1,
-          max: 100,
-          default: '4',
-          required: true
-        }
-      ]
-    },
-    'compPrvCol': {
-      label: 'Composition Previous Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Last (max) Column',
-          id: 'colMaxCompPrev',
-          min: 1,
-          max: 100,
-          default: '4',
-          required: true
-        }
-      ]
-    },
-    'layNextCol': {
-      label: 'Layer Next Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Layer Number',
-          id: 'layerN',
-          min: 1,
-          max: 100,
-          default: '1',
-          required: true
-        },
-        {
-          type: 'number',
-          label: 'Last (max) Column',
-          id: 'colMaxLayerN',
-          min: 1,
-          max: 100,
-          default: '4',
-          required: true
-        }
-      ]
-    },
-    'layPrvCol': {
-      label: 'Layer Previous Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Layer Number',
-          id: 'layerP',
-          min: 1,
-          max: 100,
-          default: '1',
-          required: true
-        },
-        {
-          type: 'number',
-          label: 'Last (max) Column',
-          id: 'colMaxLayerP',
-          min: 1,
-          max: 100,
-          default: '4',
-          required: true
-        }
-      ]
-    },
+
     'custom': {
       label: 'Custom OSC Command',
       options: [
@@ -680,65 +593,6 @@ instance.prototype.action = function(action) {
     }
     debug('sending',self.config.host, self.config.port, action.options.customPath );
     self.oscSend(self.config.host, self.config.port, action.options.customPath, args)
-  }
-
-  if (action.action == 'compNextCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-    currentCompCol ++;
-    if ( currentCompCol > action.options.colMaxCompNext ) {
-      currentCompCol = 1;
-    }
-
-    debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
-  }
-  if (action.action == 'compPrvCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-    currentCompCol --;
-    if ( currentCompCol < 1 ) {
-      currentCompCol = action.options.colMaxCompPrev;
-    }
-
-    debug('sending', self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/columns/' + currentCompCol + '/connect', [ bol ])
-  }
-  if (action.action == 'layNextCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-    if (layerPos[action.options.layerN] == undefined) {
-      layerPos[action.options.layerN] = 1;
-    } else {
-      layerPos[action.options.layerN] ++;
-    }
-    if (layerPos[action.options.layerN] > action.options.colMaxLayerN) {
-      layerPos[action.options.layerN] = 1;
-    }
-    debug('sending', self.config.host, self.config.port, '/composition/layers/' + action.options.layerN + '/clips/' + layerPos[action.options.layerN] + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/layers/' + action.options.layerN + '/clips/' + layerPos[action.options.layerN] + '/connect', [ bol ])
-  }
-  if (action.action == 'layPrvCol') {
-    var bol = {
-      type: 'i',
-      value: '1'
-    };
-    if (layerPos[action.options.layerP] == undefined) {
-      layerPos[action.options.layerP] = 1;
-    } else {
-      layerPos[action.options.layerP] --;
-    }
-    if (layerPos[action.options.layerP] < 1) {
-      layerPos[action.options.layerP] = action.options.colMaxLayerP;
-    }
-    debug('sending', self.config.host, self.config.port, '/composition/layers/' + action.options.layerP + '/clips/' + layerPos[action.options.layerP] + '/connect');
-    self.oscSend(self.config.host, self.config.port, '/composition/layers/' + action.options.layerP + '/clips/' + layerPos[action.options.layerP] + '/connect', [ bol ])
   }
 };
 
