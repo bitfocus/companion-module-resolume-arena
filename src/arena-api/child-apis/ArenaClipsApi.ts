@@ -1,4 +1,4 @@
-import { ArenaFetchFunction } from '../arena';
+import { ArenaFetchFunction } from '../rest';
 
 export class ArenaClipsApi {
   private arenaFetch: ArenaFetchFunction;

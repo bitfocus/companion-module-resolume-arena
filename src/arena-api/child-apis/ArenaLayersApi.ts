@@ -1,4 +1,4 @@
-import { ArenaFetchFunction } from "../arena";
+import { ArenaFetchFunction } from "../rest";
 import { LayerOptions, LayerWriteOptions } from "./layer-options/LayerOptions";
 
 export class ArenaLayersApi {

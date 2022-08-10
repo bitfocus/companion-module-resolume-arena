@@ -1,15 +1,18 @@
 import { CompanionActions, CompanionFeedbackEvent, SomeCompanionConfigField } from "../types/instance_skel_types";
-import ArenaApi from "./arena-api/arena";
+import ArenaRestApi from "./arena-api/rest";
 import { ClipStatus } from "./arena-api/child-apis/clip-options/ClipStatus";
 import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
 import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
 import { configFields, ResolumeArenaConfig } from "./config-fields";
-import { connectClip } from './actions/connect-clip';
-import { selectClip } from './actions/select-clip';
-import { bypassLayer } from './actions/bypass-layer';
-import { soloLayer } from './actions/solo-layer';
-import { clearLayer } from './actions/clear-layer';
+import { connectClip } from './actions/rest/connect-clip';
+import { selectClip } from './actions/rest/select-clip';
+import { bypassLayer } from './actions/rest/bypass-layer';
+import { soloLayer } from './actions/rest/solo-layer';
+import { clearLayer } from './actions/rest/clear-layer';
+import { oscTriggerClip } from './actions/osc/trigger-clip';
+import { ArenaOscApi } from "./arena-api/osc";
+import { oscTriggerColumn } from "./actions/osc/trigger-column";
 
 interface ClipSubscription {
   layer: number,
@@ -17,7 +20,8 @@ interface ClipSubscription {
 }
 
 class instance extends InstanceSkel<ResolumeArenaConfig> {
-  private _api: ArenaApi | null = null;
+  private _restApi: ArenaRestApi | null = null;
+  private _oscApi: ArenaOscApi | null = null;
   private isPolling: boolean = false;
   private connectedClips: Set<string> = new Set<string>();
   private clipStatusSubscriptions: Set<ClipSubscription> = new Set<ClipSubscription>();
@@ -46,217 +50,243 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     return configFields(this);
   }
 
-  getApi(): ArenaApi | null {
-    return this._api;
+  getRestApi(): ArenaRestApi | null {
+    return this._restApi;
+  }
+
+  getOscApi(): ArenaOscApi | null {
+    return this._oscApi;
   }
 
   get actions(): CompanionActions {
-    return {
-      connectClip: connectClip(this.getApi),
-      selectClip: selectClip(this.getApi),
-      bypassLayer: bypassLayer(this.getApi),
-      soloLayer: soloLayer(this.getApi),
-      clearLayer: clearLayer(this.getApi)
+    var restApi = this.getRestApi.bind(this);
+    var oscApi = this.getOscApi.bind(this);
+    var actions: CompanionActions = {};
+    if (this._restApi) {
+      // preferentially available via rest api
+      actions.triggerClip = connectClip(restApi);
+      actions.selectClip = selectClip(restApi);
+      actions.bypassLayer = bypassLayer(restApi);
+      actions.soloLayer = soloLayer(restApi);
+      actions.clearLayer = clearLayer(restApi);
+    } else if (this._oscApi) {
+      // fall back to osc for these ones
+      actions.triggerClip = oscTriggerClip(oscApi);
     }
+    if (this._oscApi) {
+      // only available in osc
+      actions.triggerColumn = oscTriggerColumn(oscApi);
+    }
+
+    return actions;
   }
 
   setupFeedback() {
-    this.setFeedbackDefinitions({
-      connectedClip: {
-        type: 'boolean',
-        label: 'Connected Clip',
-        style: {
-          color: this.rgb(0, 0, 0),
-          bgcolor: this.rgb(0, 255, 0),
-        },
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer',
-            default: 1,
-            min: 1,
-            max: 65535
+    if (this._restApi) {
+      this.setFeedbackDefinitions({
+        connectedClip: {
+          type: 'boolean',
+          label: 'Connected Clip',
+          style: {
+            color: this.rgb(0, 0, 0),
+            bgcolor: this.rgb(0, 255, 0),
           },
-          {
-            id: 'column',
-            type: 'number',
-            label: 'Column',
-            default: 1,
-            min: 1,
-            max: 65535
-          }
-        ],
-        callback: (feedback: CompanionFeedbackEvent): boolean => {
-          var layer = feedback.options.layer;
-          var column = feedback.options.column;
-          if (layer !== undefined && column !== undefined) {
-            return this.connectedClips.has(`${layer}-${column}`);
-          }
-          return false;
-        },
-        subscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          var column = feedback.options.column as number;
-          if (layer !== undefined && column !== undefined) {
-            this.addClipConnectedSubscription(layer, column);
-          }
-        },
-        unsubscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          var column = feedback.options.column as number;
-          if (layer !== undefined && column !== undefined) {
-            this.addClipConnectedSubscription(layer, column);
-          }
-        }
-      },
-      clipInfo: {
-        type: 'advanced',
-        label: 'Clip Info',
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'column',
-            type: 'number',
-            label: 'Column',
-            default: 1,
-            min: 1,
-            max: 65535
-          },
-          {
-            id: 'showThumb',
-            type: 'checkbox',
-            label: 'Thumbnail',
-            default: false
-          }
-        ],
-        callback: (feedback: CompanionFeedbackEvent): {} => {
-          var layer = feedback.options.layer;
-          var column = feedback.options.column;
-          if (layer !== undefined && column !== undefined) {
-            var key = `${layer}-${column}`;
-            var name = this.clipNames.get(key);
-            var result: {
-              text: string | undefined,
-              png64: string | undefined
-            } = {
-              text: name,
-              png64: undefined
-            };
-            if (feedback.options.showThumb) {
-              result.png64 = this.clipThumbs.get(key);
+          options: [
+            {
+              id: 'layer',
+              type: 'number',
+              label: 'Layer',
+              default: 1,
+              min: 1,
+              max: 65535
+            },
+            {
+              id: 'column',
+              type: 'number',
+              label: 'Column',
+              default: 1,
+              min: 1,
+              max: 65535
             }
-            return result;
+          ],
+          callback: (feedback: CompanionFeedbackEvent): boolean => {
+            var layer = feedback.options.layer;
+            var column = feedback.options.column;
+            if (layer !== undefined && column !== undefined) {
+              return this.connectedClips.has(`${layer}-${column}`);
+            }
+            return false;
+          },
+          subscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            var column = feedback.options.column as number;
+            if (layer !== undefined && column !== undefined) {
+              this.addClipConnectedSubscription(layer, column);
+            }
+          },
+          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            var column = feedback.options.column as number;
+            if (layer !== undefined && column !== undefined) {
+              this.addClipConnectedSubscription(layer, column);
+            }
           }
-          return {
-            text: 'not found'
-          };
         },
-        subscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          var column = feedback.options.column as number;
-          if (layer !== undefined && column !== undefined) {
-            this.addClipStatusSubscription(layer, column);
-            if (feedback.options.showThumb) {
-              this.addClipThumbSubscription(layer, column);
-            } else {
+        clipInfo: {
+          type: 'advanced',
+          label: 'Clip Info',
+          options: [
+            {
+              id: 'layer',
+              type: 'number',
+              label: 'Layer',
+              default: 1,
+              min: 1,
+              max: 65535
+            },
+            {
+              id: 'column',
+              type: 'number',
+              label: 'Column',
+              default: 1,
+              min: 1,
+              max: 65535
+            },
+            {
+              id: 'showThumb',
+              type: 'checkbox',
+              label: 'Thumbnail',
+              default: false
+            }
+          ],
+          callback: (feedback: CompanionFeedbackEvent): {} => {
+            var layer = feedback.options.layer;
+            var column = feedback.options.column;
+            if (layer !== undefined && column !== undefined) {
+              var key = `${layer}-${column}`;
+              var name = this.clipNames.get(key);
+              var result: {
+                text: string | undefined,
+                png64: string | undefined
+              } = {
+                text: name,
+                png64: undefined
+              };
+              if (feedback.options.showThumb) {
+                result.png64 = this.clipThumbs.get(key);
+              }
+              return result;
+            }
+            return {
+              text: 'not found'
+            };
+          },
+          subscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            var column = feedback.options.column as number;
+            if (layer !== undefined && column !== undefined) {
+              this.addClipStatusSubscription(layer, column);
+              if (feedback.options.showThumb) {
+                this.addClipThumbSubscription(layer, column);
+              } else {
+                this.removeClipThumbSubscription(layer, column);
+              }
+            }
+          },
+          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            var column = feedback.options.column as number;
+            if (layer !== undefined && column !== undefined) {
+              this.removeClipStatusSubscription(layer, column);
               this.removeClipThumbSubscription(layer, column);
             }
           }
         },
-        unsubscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          var column = feedback.options.column as number;
-          if (layer !== undefined && column !== undefined) {
-            this.removeClipStatusSubscription(layer, column);
-            this.removeClipThumbSubscription(layer, column);
+        layerBypassed: {
+          type: 'boolean',
+          label: 'Layer Bypassed',
+          style: {
+            color: this.rgb(0, 0, 0),
+            bgcolor: this.rgb(255, 0, 0),
+          },
+          options: [
+            {
+              id: 'layer',
+              type: 'number',
+              label: 'Layer',
+              default: 1,
+              min: 1,
+              max: 65535
+            }
+          ],
+          callback: (feedback: CompanionFeedbackEvent): boolean => {
+            var layer = feedback.options.layer;
+            if (layer !== undefined) {
+              return this.bypassedLayers.has(layer as number);
+            }
+            return false;
+          },
+          subscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            if (layer !== undefined) {
+              this.addLayerBypassedSubscription(layer);
+            }
+          },
+          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+            var layer = feedback.options.layer as number;
+            if (layer !== undefined) {
+              this.addLayerBypassedSubscription(layer);
+            }
           }
         }
-      },
-      layerBypassed: {
-        type: 'boolean',
-        label: 'Layer Bypassed',
-        style: {
-          color: this.rgb(0, 0, 0),
-          bgcolor: this.rgb(255, 0, 0),
-        },
-        options: [
-          {
-            id: 'layer',
-            type: 'number',
-            label: 'Layer',
-            default: 1,
-            min: 1,
-            max: 65535
-          }
-        ],
-        callback: (feedback: CompanionFeedbackEvent): boolean => {
-          var layer = feedback.options.layer;
-          if (layer !== undefined) {
-            return this.bypassedLayers.has(layer as number);
-          }
-          return false;
-        },
-        subscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          if (layer !== undefined) {
-            this.addLayerBypassedSubscription(layer);
-          }
-        },
-        unsubscribe: (feedback: CompanionFeedbackEvent) => {
-          var layer = feedback.options.layer as number;
-          if (layer !== undefined) {
-            this.addLayerBypassedSubscription(layer);
-          }
-        }
-      }
-    });
+      });
+    } else {
+      this.setFeedbackDefinitions({});
+    }
   }
 
   setupPresets() {
-    this.setPresetDefinitions([
-      {
-        category: 'Commands',
-        label: 'Stinger',
-        bank: {
-          style: 'text',
-          size: '18',
-          text: 'Stinger Clip',
-          color: this.rgb(255, 255, 255),
-          bgcolor: this.rgb(0, 0, 0)
-        },
-        actions: [{
-          action: 'connectClip',
-          options: {
-            layer: '1',
-            column: '1',
-          }
-        }],
-        feedbacks: [
-          {
-            type: 'connectedClip',
-            options: {
-              layer: '1',
-              column: '1',
-            }
+    if (this._restApi) {
+      this.setPresetDefinitions([
+        {
+          category: 'Commands',
+          label: 'Play Clip',
+          bank: {
+            style: 'text',
+            size: '18',
+            text: 'Play Clip',
+            color: this.rgb(255, 255, 255),
+            bgcolor: this.rgb(0, 0, 0)
           },
-          {
-            type: 'clipInfo',
+          actions: [{
+            action: 'triggerClip',
             options: {
               layer: '1',
               column: '1',
             }
-          }
-        ]
-      }
-    ]);
+          }],
+          feedbacks: [
+            {
+              type: 'connectedClip',
+              options: {
+                layer: '1',
+                column: '1',
+              }
+            },
+            {
+              type: 'clipInfo',
+              options: {
+                layer: '1',
+                column: '1',
+              }
+            }
+          ]
+        }
+      ]);
+    }
+    else {
+      this.setPresetDefinitions([]);
+    }
   }
 
   addLayerBypassedSubscription(layer: number) {
@@ -317,7 +347,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    */
   updateConfig(config: ResolumeArenaConfig): void {
     this.config = config;
-    this.restartApi();
+    this.restartApis();
   }
 
   /**
@@ -327,13 +357,24 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * @return {void}
    */
   init(): void {
-    this.restartApi();
+    this.restartApis();
     this.subscribeFeedbacks();
   }
 
-  private restartApi() {
+  private restartApis() {
     const config = this.config;
-    this._api = new ArenaApi(config.host, config.webapiPort, config.useSSL);
+    if (config.webapiPort) {
+      this._restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
+    } else {
+      this._restApi = null;
+    }
+    if (config.port) {
+      this._oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this), this.system);
+    } else {
+      this._oscApi = null;
+    }
+    this.setupFeedback();
+    this.setActions(this.actions);
     this.pollStatus();
   }
   /**
@@ -344,7 +385,8 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * @return {void}
    */
   destroy(): void {
-    this._api = null;
+    this._restApi = null;
+    this._oscApi = null;
   }
 
   /**
@@ -360,12 +402,12 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     try {
       // loop until we don't need to poll any more
       console.log('polling for status');
-      while (this._api) {
+      while (this._restApi) {
         // check the status via the api
         try {
           // only poll status if there are no other subscriptions
           if (this.hasPollingSubscriptions) {
-            await this._api.productInfo();
+            await this._restApi?.productInfo();
           }
           await this.pollClips();
           await this.pollLayers();
@@ -392,7 +434,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     try {
       if (this.LayerBypassedSubscriptions.size > 0) {
         for (var layer of this.LayerBypassedSubscriptions) {
-          var status = (await this._api?.Layers.getSettings(layer)) as LayerOptions;
+          var status = (await this._restApi?.Layers.getSettings(layer)) as LayerOptions;
           if (status.bypassed?.value) {
             this.bypassedLayers.add(layer);
           } else {
@@ -422,7 +464,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       let thumbChanged = false;
       for (var clip of clips) {
         var key = `${clip.layer}-${clip.column}`;
-        var status = (await this._api?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
+        var status = (await this._restApi?.Clips.getStatus(clip.layer, clip.column)) as ClipStatus;
         var name = status?.name?.value;
         this.clipStatus.set(key, status);
         if (name !== this.clipNames.get(key)) {
@@ -442,7 +484,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           }
         }
         if (nameChanged && this.clipThumbSubscriptions.has(key)) {
-          this.clipThumbs.set(key, await this._api?.Clips.getThumb(clip.layer, clip.column) ?? '');
+          this.clipThumbs.set(key, await this._restApi?.Clips.getThumb(clip.layer, clip.column) ?? '');
           thumbChanged = true;
         }
       }
@@ -458,17 +500,6 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
 }
 
 /*
-function instance(system, id, config) {
-  var self = this;
-
-  // super-constructor
-  instance_skel.apply(this, arguments);
-
-  self.actions(); // export actions
-
-  return self;
-}
-
 instance.GetUpgradeScripts = function() {
   return [
     function (context, config, actions, feedbacks) {
@@ -495,89 +526,9 @@ instance.GetUpgradeScripts = function() {
   ]
 }
 
-instance.prototype.updateConfig = function(config) {
-  var self = this;
-
-  self.config = config;
-};
-
-instance.prototype.init = function() {
-  var self = this;
-
-  self.status(self.STATE_OK);
-
-  debug = self.debug;
-  log = self.log;
-};
-
-// Return config fields for web config
-instance.prototype.config_fields = function () {
-  var self = this;
-  return [
-    {
-      type: 'textinput',
-      id: 'host',
-      label: 'Resolume Host IP',
-      width: 8,
-      regex: self.REGEX_IP
-    },
-    {
-      type: 'textinput',
-      id: 'port',
-      label: 'Resolume Port',
-      width: 4,
-      regex: self.REGEX_PORT,
-      default: '7000'
-    }
-  ]
-};
-
-// When module gets deleted
-instance.prototype.destroy = function() {
-  var self = this;
-  debug("destroy");
-};
-
 instance.prototype.actions = function(system) {
   var self = this;
   self.setActions({
-    'triggerClip': {
-      label: 'Start Clip',
-      options: [
-        {
-          type: 'number',
-          label: 'Layer',
-          id: 'layer',
-          min: 1,
-          max: 100,
-          default: 1,
-          required: true
-        },
-        {
-          type: 'number',
-          label: 'Column',
-          id: 'column',
-          min: 1,
-          max: 100,
-          default: 1,
-          required: true
-        }
-      ]
-    },
-    'triggerColumn': {
-      label: 'Start Column',
-      options: [
-        {
-          type: 'number',
-          label: 'Column',
-          id: 'column',
-          min: 1,
-          max: 100,
-          default: 1,
-          required: true
-        }
-      ]
-    },
     'clearLayer': {
       label: 'Clear Layer',
       options: [
@@ -750,27 +701,6 @@ instance.prototype.action = function(action) {
 
 
   debug('action: ', action);
-
-  if (action.action == 'triggerClip') {
-    var bol = {
-      type: "i",
-      value: parseInt(1)
-    };
-    debug('sending',self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/layers/' + action.options.layer + '/clips/' + action.options.column + '/connect', [ bol ])
-  }
-
-  if (action.action == 'triggerColumn') {
-    var bol = {
-        type: "i",
-        value: parseInt(1)
-    };
-    currentCompCol = action.options.column;
-
-    debug('sending',self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ]);
-    self.oscSend(self.config.host, self.config.port, '/composition/columns/' + action.options.column + '/connect', [ bol ])
-  }
-
 
   if (action.action == 'clearLayer') {
     var bol = {

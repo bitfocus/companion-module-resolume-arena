@@ -1,10 +1,10 @@
-import { LayerOptions } from "../arena-api/child-apis/layer-options/LayerOptions";
-import { CompanionAction } from "../../../../instance_skel_types"
-import ArenaApi from "../arena-api/arena"
+import { LayerOptions } from "../../arena-api/child-apis/layer-options/LayerOptions";
+import { CompanionAction } from "../../../../../instance_skel_types"
+import ArenaRestApi from "../../arena-api/rest"
 
-export function bypassLayer(api: () => ArenaApi | null): CompanionAction {
+export function soloLayer(restApi: () => ArenaRestApi | null): CompanionAction {
   return {
-    label: 'Bypass Layer',
+    label: 'Solo Layer',
     options: [
       {
         id: 'layer',
@@ -15,7 +15,7 @@ export function bypassLayer(api: () => ArenaApi | null): CompanionAction {
         max: 65535
       },
       {
-        id: 'bypass',
+        id: 'solo',
         type: 'dropdown',
         choices: [
           {
@@ -32,19 +32,19 @@ export function bypassLayer(api: () => ArenaApi | null): CompanionAction {
           }
         ],
         default: 'toggle',
-        label: 'Bypass'
+        label: 'Solo'
       }
     ],
     callback: async ({ options }: { options: any }) => {
-      let theApi = api();
+      let theApi = restApi();
       if (options.bypass == 'toggle') {
         var settings = (await theApi?.Layers.getSettings(options.layer)) as LayerOptions;
         await theApi?.Layers.updateSettings(options.layer, {
-          bypassed: !settings.bypassed?.value
+          solo: !settings.solo?.value
         })
       } else {
         await theApi?.Layers.updateSettings(options.layer, {
-          bypassed: options.bypass == 'on'
+          solo: options.solo == 'on'
         })
       }
     }

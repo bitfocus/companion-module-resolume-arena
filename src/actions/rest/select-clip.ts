@@ -1,7 +1,7 @@
-import { CompanionAction } from "../../../../instance_skel_types"
-import ArenaApi from "../arena-api/arena"
+import { CompanionAction } from "../../../../../instance_skel_types"
+import ArenaRestApi from "../../arena-api/rest"
 
-export function selectClip(api: () => ArenaApi | null): CompanionAction {
+export function selectClip(restApi: () => ArenaRestApi | null): CompanionAction {
   return {
     label: 'Select Clip',
     options: [
@@ -23,6 +23,6 @@ export function selectClip(api: () => ArenaApi | null): CompanionAction {
       }
     ],
     callback: async ({ options }: { options: any }) =>
-      await api()?.Clips.select(options.layer, options.column)
+      await restApi()?.Clips.select(options.layer, options.column)
   }
 }

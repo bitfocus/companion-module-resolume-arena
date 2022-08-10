@@ -43,7 +43,7 @@ interface FetchOptions {
   agent: httpAgent | httpsAgent,
   body: any
 }
-export default class ArenaApi {
+export default class ArenaRestApi {
   private _host: string;
   private _port: number;
   private _defaultHeaders: HeadersInit;

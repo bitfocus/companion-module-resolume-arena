@@ -1,7 +1,7 @@
-import { CompanionAction } from "../../../../instance_skel_types"
-import ArenaApi from "../arena-api/arena"
+import { CompanionAction } from "../../../../../instance_skel_types"
+import ArenaRestApi from "../../arena-api/rest"
 
-export function connectClip(api: () => ArenaApi | null): CompanionAction {
+export function connectClip(restApi: () => ArenaRestApi | null): CompanionAction {
   return {
     label: 'Connect Clip',
     options: [
@@ -23,6 +23,6 @@ export function connectClip(api: () => ArenaApi | null): CompanionAction {
       }
     ],
     callback: async ({ options }: { options: any }): Promise<void> =>
-      await api()?.Clips.connect(options.layer, options.column)
+      await restApi()?.Clips.connect(options.layer, options.column)
   }
 }
