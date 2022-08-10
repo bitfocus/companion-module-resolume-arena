@@ -1,4 +1,4 @@
-import { CompanionSystem, OSCMetaArgument, OSCSomeArguments } from "../../../../instance_skel_types";
+import { OSCMetaArgument, OSCSomeArguments } from "../../../../instance_skel_types";
 
 export type OscSendFunc = (host: string, port: number, path: string, args: OSCSomeArguments) => void;
 
