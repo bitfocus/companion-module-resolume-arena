@@ -13,14 +13,6 @@ export class OscArgs {
     value: 0
   }
 }
-/*
-function integerArg(value: number): OSCMetaArgument {
-  return {
-    type: 'i',
-    value
-  }
-}
-*/
 
 export default class ArenaOscApi {
   private _host: string;
