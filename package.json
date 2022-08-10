@@ -2,7 +2,7 @@
 	"name": "resolume-arena",
   "main": "dist/index.js",
   "version": "1.0.7",
-	"description": "Resolume Arena 6 module for companion",
+	"description": "Resolume Arena 6 & 7 module for companion",
 	"api_version": "1.0.0",
 	"keywords": [
 		"Video",
