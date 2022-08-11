@@ -65,7 +65,7 @@ export default class ArenaOscApi {
       this.groupPos[groupNext] = 1;
     }
 
-    this.send(`/composition/groups/${groupNext}//composition/columns/${this.groupPos[groupNext]}/connect`, OscArgs.One);
+    this.send(`/composition/groups/${groupNext}/columns/${this.groupPos[groupNext]}/connect`, OscArgs.One);
   }
 
   public groupPrevCol(groupPrev: number, colMaxGroupPrev: number) {
@@ -78,7 +78,7 @@ export default class ArenaOscApi {
       this.groupPos[groupPrev] = colMaxGroupPrev;
     }
 
-    this.send(`/composition/groups/${groupPrev}//composition/columns/${this.groupPos[groupPrev]}/connect`, OscArgs.One);
+    this.send(`/composition/groups/${groupPrev}/columns/${this.groupPos[groupPrev]}/connect`, OscArgs.One);
   }
 
   public compNextCol(colMaxCompNext: number) {
