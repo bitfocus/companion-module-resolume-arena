@@ -1,28 +1,23 @@
 {
 	"name": "resolume-arena",
-	"version": "1.0.7",
-	"description": "Resolume Arena 6 module for companion",
-	"main": "index.js",
-	"api_version": "1.0.0",
-	"keywords": [
-		"Video",
-		"Software",
-		"Graphics"
-	],
-	"manufacturer": "Resolume",
-	"product": "Arena",
-	"shortname": "arena",
-	"homepage": "https://github.com/bitfocus/companion-module-resolume-arena#readme",
+	"version": "2.0.0",
+	"main": "src/index.js",
+	"type": "module",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"license": "MIT",
-	"author": "Oliver Herman <oliver@monoxane.com>",
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-resolume-arena/issues"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"format": "prettier --write ."
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
-	}
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@companion-module/base": "~1.2"
+	},
+	"devDependencies": {
+		"@companion-module/tools": "~1.1",
+		"prettier": "^2.8.3"
+	},
+	"prettier": "@companion-module/tools/.prettierrc.json"
 }
