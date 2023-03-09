@@ -388,8 +388,8 @@ instance.prototype.action = function(action) {
 			groupPos[action.options.groupNext] = 1;
 		}
 
-		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect');
-		self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '//composition/columns/' + groupPos[action.options.groupNext] + '/connect', [ bol ])
+		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '/columns/' + groupPos[action.options.groupNext] + '/connect');
+		self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupNext + '/columns/' + groupPos[action.options.groupNext] + '/connect', [ bol ])
 	}
 	if (action.action == 'grpPrvCol') {
 		var bol = {
@@ -406,8 +406,8 @@ instance.prototype.action = function(action) {
 			groupPos[action.options.groupPrev] = action.options.colMaxGroupPrev;
 		}
 
-		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect');
-		self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '//composition/columns/' + groupPos[action.options.groupPrev] + '/connect', [ bol ])
+		debug('sending', self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '/columns/' + groupPos[action.options.groupPrev] + '/connect');
+		self.oscSend(self.config.host, self.config.port, '/composition/groups/' + action.options.groupPrev + '/columns/' + groupPos[action.options.groupPrev] + '/connect', [ bol ])
 	}
 	if (action.action == 'compNextCol') {
 		var bol = {
