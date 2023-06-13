@@ -100,6 +100,23 @@ class ResolumeArenaInstance extends InstanceBase {
 			this.log('debug', `Host, port, or command not defined: ${cmd}`)
 		}
 	}
+
+
+	/**
+	 * Send an OSC command
+	 *
+	 * @param {string} cmd - the command
+	 * @param {Object} arg - extra arguments
+	 * @access protected
+	 */
+	sendCommandWoArgs(cmd) {
+		if (cmd && this.config.host !== undefined && this.config.port !== undefined) {
+			this.log('debug', `Sending command2: ${cmd}`)
+			this.oscSend(this.config.host, this.config.port, cmd, [])
+		} else {
+			this.log('debug', `Host, port, or command not defined: ${cmd}`)
+		}
+	}
 }
 
 runEntrypoint(ResolumeArenaInstance, [upgrade_v1_0_4])

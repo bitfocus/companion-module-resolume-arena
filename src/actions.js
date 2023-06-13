@@ -198,11 +198,12 @@ export function updateActions() {
 					id: 'oscType',
 					tooltip: 'select the type of the value data',
 					choices: [
+						{ id: 'n', label: 'none' },
 						{ id: 'i', label: 'integer' },
 						{ id: 'f', label: 'float' },
 						{ id: 's', label: 'string' },
 					],
-					default: 'i',
+					default: 'n',
 				},
 				{
 					type: 'textinput',
@@ -236,7 +237,8 @@ export function updateActions() {
 				if (arg) {
 					this.sendCommand(options.customPath, arg)
 				} else {
-					this.log('error', 'Invalid type in custom OSC command')
+					// this.log('error', 'Invalid type in custom OSC command')
+					this.sendCommandWoArgs(options.customPath)
 				}
 			},
 		},
