@@ -1,7 +1,7 @@
 export function upgrade_v1_0_4(context, props) {
 	let updateActions = []
 	const upgradePass = (action) => {
-		switch (action.action) {
+		switch (action.actionId) {
 			case 'custom':
 				if (action.options !== undefined && action.options.customCmd !== undefined) {
 					action.options.customPath = action.options.customCmd
