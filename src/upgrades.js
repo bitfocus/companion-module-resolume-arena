@@ -1,6 +1,7 @@
 export function upgrade_v1_0_4(context, props) {
 	let updateActions = []
-	const upgradePass = (action) => {
+	
+	for (const action of props.actions) {
 		switch (action.actionId) {
 			case 'custom':
 				if (action.options !== undefined && action.options.customCmd !== undefined) {
@@ -9,12 +10,6 @@ export function upgrade_v1_0_4(context, props) {
 					updateActions.push(action)
 				}
 				break
-		}
-	}
-
-	if (props.actions) {
-		for (let k in actions) {
-			upgradePass(actions[k])
 		}
 	}
 
