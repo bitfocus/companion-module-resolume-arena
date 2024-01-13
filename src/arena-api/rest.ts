@@ -50,7 +50,7 @@ export default class ArenaRestApi {
   private _agent: httpAgent | httpsAgent;
   private _apiVersion: string;
 
-  constructor(host: string, port: number, useSSL: boolean) {
+  constructor(host: string, port: number, useSSL: boolean = false) {
     this._host = host;
     this._port = port;
     this._apiVersion = 'v1';
@@ -79,7 +79,13 @@ export default class ArenaRestApi {
       // response.status >= 200 && response.status < 300
       return response;
     } else {
-      throw new HTTPResponseError(response);
+      if(response.status===404){
+        console.log("404 on", response.url)
+        return response;
+      }else{
+
+        throw new HTTPResponseError(response);
+      }
     }
   }
 

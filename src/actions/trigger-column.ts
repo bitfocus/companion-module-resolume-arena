@@ -1,10 +1,10 @@
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc"
 import ArenaRestApi from "../arena-api/rest";
 
-export function triggerColumn(_restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionAction {
+export function triggerColumn(_restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Start Column',
+    name: 'Start Column',
     options: [
       {
         type: 'number',

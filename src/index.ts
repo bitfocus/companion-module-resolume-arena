@@ -1,8 +1,6 @@
-import { CompanionActions, CompanionFeedbackEvent, SomeCompanionConfigField } from "../types/instance_skel_types";
 import ArenaRestApi from "./arena-api/rest";
 import ArenaOscApi from "./arena-api/osc";
 import { ClipStatus } from "./arena-api/child-apis/clip-options/ClipStatus";
-import InstanceSkel from '../../../instance_skel';
 import sleep from "./sleep";
 import { LayerOptions } from "./arena-api/child-apis/layer-options/LayerOptions";
 import { configFields, ResolumeArenaConfig } from "./config-fields";
@@ -22,13 +20,27 @@ import { soloLayer } from './actions/solo-layer';
 import { tempoTap } from "./actions/tempo-tap";
 import { triggerColumn } from "./actions/trigger-column";
 import { customOscCommand } from "./actions/custom-osc";
+import {
+  combineRgb,
+  CompanionActionDefinitions,
+  CompanionFeedbackInfo,
+  CompanionStaticUpgradeProps,
+  CompanionStaticUpgradeResult,
+  CompanionStaticUpgradeScript,
+  CompanionUpgradeContext,
+  InstanceBase,
+  InstanceStatus,
+  runEntrypoint,
+  SomeCompanionConfigField,
+} from "@companion-module/base";
 
 interface ClipSubscription {
   layer: number,
   column: number
 }
 
-class instance extends InstanceSkel<ResolumeArenaConfig> {
+class instance extends InstanceBase<ResolumeArenaConfig> {
+  private config!: ResolumeArenaConfig;
   private _restApi: ArenaRestApi | null = null;
   private _oscApi: ArenaOscApi | null = null;
   private isPolling: boolean = false;
@@ -42,11 +54,8 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   private bypassedLayers: Set<number> = new Set<number>();
   private LayerBypassedSubscriptions: Set<number> = new Set<number>();
 
-  constructor(system: any, id: any, config: any) {
-    super(system, id, config);
-    this.setupFeedback();
-    this.setActions(this.actions);
-    this.setupPresets();
+  constructor(internal: unknown) {
+    super(internal);
   }
 
   /**
@@ -55,8 +64,8 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * instance configuration screen.
    * @return {object[]}
    */
-  config_fields(): SomeCompanionConfigField[] {
-    return configFields(this);
+  getConfigFields(): SomeCompanionConfigField[] {
+    return configFields();
   }
 
   getRestApi(): ArenaRestApi | null {
@@ -67,10 +76,10 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
     return this._oscApi;
   }
 
-  get actions(): CompanionActions {
+  get actions(): CompanionActionDefinitions {
     var restApi = this.getRestApi.bind(this);
     var oscApi = this.getOscApi.bind(this);
-    var actions: CompanionActions = {
+    var actions: CompanionActionDefinitions = {
       bypassLayer: bypassLayer(restApi, oscApi),
       clearAll: clearAllLayers(restApi, oscApi),
       clearLayer: clearLayer(restApi, oscApi),
@@ -95,10 +104,10 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       this.setFeedbackDefinitions({
         connectedClip: {
           type: 'boolean',
-          label: 'Connected Clip',
-          style: {
-            color: this.rgb(0, 0, 0),
-            bgcolor: this.rgb(0, 255, 0),
+          name: 'Connected Clip',
+          defaultStyle: {
+            color: combineRgb(0, 0, 0),
+            bgcolor: combineRgb(0, 255, 0),
           },
           options: [
             {
@@ -118,7 +127,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
               max: 65535
             }
           ],
-          callback: (feedback: CompanionFeedbackEvent): boolean => {
+          callback: (feedback: CompanionFeedbackInfo): boolean => {
             var layer = feedback.options.layer;
             var column = feedback.options.column;
             if (layer !== undefined && column !== undefined) {
@@ -126,24 +135,24 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
             }
             return false;
           },
-          subscribe: (feedback: CompanionFeedbackEvent) => {
+          subscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             var column = feedback.options.column as number;
             if (layer !== undefined && column !== undefined) {
               this.addClipConnectedSubscription(layer, column);
             }
           },
-          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          unsubscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             var column = feedback.options.column as number;
             if (layer !== undefined && column !== undefined) {
               this.addClipConnectedSubscription(layer, column);
             }
-          }
+          },
         },
         clipInfo: {
           type: 'advanced',
-          label: 'Clip Info',
+          name: 'Clip Info',
           options: [
             {
               id: 'layer',
@@ -168,7 +177,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
               default: false
             }
           ],
-          callback: (feedback: CompanionFeedbackEvent): {} => {
+          callback: (feedback: CompanionFeedbackInfo): {} => {
             var layer = feedback.options.layer;
             var column = feedback.options.column;
             if (layer !== undefined && column !== undefined) {
@@ -190,7 +199,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
               text: 'not found'
             };
           },
-          subscribe: (feedback: CompanionFeedbackEvent) => {
+          subscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             var column = feedback.options.column as number;
             if (layer !== undefined && column !== undefined) {
@@ -202,21 +211,21 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
               }
             }
           },
-          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          unsubscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             var column = feedback.options.column as number;
             if (layer !== undefined && column !== undefined) {
               this.removeClipStatusSubscription(layer, column);
               this.removeClipThumbSubscription(layer, column);
             }
-          }
+          },
         },
         layerBypassed: {
           type: 'boolean',
-          label: 'Layer Bypassed',
-          style: {
-            color: this.rgb(0, 0, 0),
-            bgcolor: this.rgb(255, 0, 0),
+          name: 'Layer Bypassed',
+          defaultStyle: {
+            color: combineRgb(0, 0, 0),
+            bgcolor: combineRgb(255, 0, 0),
           },
           options: [
             {
@@ -228,20 +237,20 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
               max: 65535
             }
           ],
-          callback: (feedback: CompanionFeedbackEvent): boolean => {
+          callback: (feedback: CompanionFeedbackInfo): boolean => {
             var layer = feedback.options.layer;
             if (layer !== undefined) {
               return this.bypassedLayers.has(layer as number);
             }
             return false;
           },
-          subscribe: (feedback: CompanionFeedbackEvent) => {
+          subscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             if (layer !== undefined) {
               this.addLayerBypassedSubscription(layer);
             }
           },
-          unsubscribe: (feedback: CompanionFeedbackEvent) => {
+          unsubscribe: (feedback: CompanionFeedbackInfo) => {
             var layer = feedback.options.layer as number;
             if (layer !== undefined) {
               this.addLayerBypassedSubscription(layer);
@@ -256,34 +265,41 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
 
   setupPresets() {
     if (this._restApi) {
-      this.setPresetDefinitions([
-        {
+      this.setPresetDefinitions({
+        playClip: {
+          type: 'button',
           category: 'Commands',
-          label: 'Play Clip',
-          bank: {
-            style: 'text',
+          name: 'Play Clip',
+          style: {
             size: '18',
             text: 'Play Clip',
-            color: this.rgb(255, 255, 255),
-            bgcolor: this.rgb(0, 0, 0)
+            color: combineRgb(255, 255, 255),
+            bgcolor: combineRgb(0, 0, 0),
           },
-          actions: [{
-            action: 'triggerClip',
-            options: {
-              layer: '1',
-              column: '1',
-            }
-          }],
+          steps: [
+            {
+              down: [
+                {
+                  actionId: 'triggerClip',
+                  options: {
+                    layer: '1',
+                    column: '1',
+                  },
+                },
+              ],
+              up: [],
+            },
+          ],
           feedbacks: [
             {
-              type: 'connectedClip',
+              feedbackId: 'connectedClip',
               options: {
                 layer: '1',
                 column: '1',
-              }
+              },
             },
             {
-              type: 'clipInfo',
+              feedbackId: 'clipInfo',
               options: {
                 layer: '1',
                 column: '1',
@@ -291,10 +307,9 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
             }
           ]
         }
-      ]);
-    }
-    else {
-      this.setPresetDefinitions([]);
+      })
+    } else {
+      this.setPresetDefinitions({});
     }
   }
 
@@ -349,15 +364,16 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
   }
 
   /**
-   * When the instance configuration is saved by the user, 
-   * this update will fire with the new configuration
-   * @param {BarcoClickShareConfig} config
-   * @return {void}
-   */
-  updateConfig(config: ResolumeArenaConfig): void {
+  * Called when the configuration is updated.
+  * @param config The new config object
+  */
+  async configUpdated(config: ResolumeArenaConfig): Promise<void> {
     this.config = config;
     this.restartApis();
+    this.subscribeFeedbacks();
+    return Promise.resolve();
   }
+  
 
   /**
    * Main initialization function called once the module is 
@@ -365,9 +381,13 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * the module should establish a connection to the device.
    * @return {void}
    */
-  init(): void {
+  async init(config: ResolumeArenaConfig, _isFirstInit: boolean): Promise<void> {
+    this.config = config;
     this.restartApis();
     this.subscribeFeedbacks();
+    this.setupFeedback();
+    this.setActionDefinitions(this.actions);
+    this.setupPresets();
   }
 
   private restartApis() {
@@ -383,7 +403,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
       this._oscApi = null;
     }
     this.setupFeedback();
-    this.setActions(this.actions);
+    this.setActionDefinitions(this.actions);
     this.pollStatus();
   }
   /**
@@ -393,7 +413,7 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
    * connections here.
    * @return {void}
    */
-  destroy(): void {
+  async destroy(): Promise<void> {
     this._restApi = null;
     this._oscApi = null;
   }
@@ -419,16 +439,15 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
           }
           await this.pollClips();
           await this.pollLayers();
-          this.status(this.STATUS_OK);
-        }
-        catch (e: any) {
-          this.status(this.STATUS_ERROR, e.message);
+          this.updateStatus(InstanceStatus.Ok);
+        } catch (e: any) {
+          this.updateStatus(InstanceStatus.UnknownError, e.message);
         }
         await sleep(500);
       }
       if (!this._restApi) {
         // no way to tell if OSC is connected
-        this.status(this.STATUS_OK);
+        this.updateStatus(InstanceStatus.Ok);
       }
     }
     finally {
@@ -507,37 +526,23 @@ class instance extends InstanceSkel<ResolumeArenaConfig> {
         this.checkFeedbacks('clipInfo');
       }
     }
-
   }
 }
 
-/*
-instance.GetUpgradeScripts = function() {
-  return [
-    function (context, config, actions, feedbacks) {
-      let changed = false
-	
-      let checkUpgrade = (action, changed) => {
-        if (action.action == 'custom') {
-          if (action.options.customCmd !== undefined) {
-            action.options.customPath = action.options.customCmd
-            delete action.options.customCmd
-            changed = true
-          }
-        }
-	
-        return changed
-      }
-	
-      for (let k in actions) {
-        changed = checkUpgrade(actions[k], changed)
-      }
-  	
-      return changed
-    }
-  ]
-}
-
-*/
+ function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaConfig>[] {
+   return [
+     function (
+       _context: CompanionUpgradeContext<ResolumeArenaConfig>,
+       _props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
+     ): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+       return {
+         updatedConfig: null,
+         updatedActions: [],
+         updatedFeedbacks: [],
+       };
+     },
+   ];
+ }
 
 exports = module.exports = instance;
+runEntrypoint(instance, getUpgradeScripts());

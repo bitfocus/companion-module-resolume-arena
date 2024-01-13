@@ -1,10 +1,10 @@
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc";
 import ArenaRestApi from "../arena-api/rest"
 
-export function layerPrevCol(_restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionAction {
+export function layerPrevCol(_restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Layer Previous Column',
+    name: 'Layer Previous Column',
     options: [
       {
         type: 'number',

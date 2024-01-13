@@ -1,9 +1,9 @@
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc";
 
-export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAction {
+export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Custom OSC Command',
+    name: 'Custom OSC Command',
     options: [
       {
         type: 'textinput',
@@ -20,7 +20,7 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
           { id: 'f', label: 'float' },
           { id: 's', label: 'string' }
         ],
-        multiple: false,
+        // multiple: false,
         default: 's'
       },
       {

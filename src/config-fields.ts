@@ -1,5 +1,4 @@
-import InstanceSkel from "../../../instance_skel";
-import { SomeCompanionConfigField } from "../../../instance_skel_types";
+import { Regex, SomeCompanionConfigField } from "@companion-module/base";
 
 export interface ResolumeArenaConfig {
   host: string;
@@ -8,14 +7,14 @@ export interface ResolumeArenaConfig {
   useSSL: boolean;
 }
 
-export function configFields(instance: InstanceSkel<ResolumeArenaConfig>): SomeCompanionConfigField[] {
+export function configFields(): SomeCompanionConfigField[] {
   return [
     {
       type: 'textinput',
       id: 'host',
       label: 'Resolume Host IP',
       width: 8,
-      regex: instance.REGEX_IP
+      regex: Regex.IP
     },
     {
       type: 'number',

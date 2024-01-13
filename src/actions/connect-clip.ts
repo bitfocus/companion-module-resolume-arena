@@ -1,10 +1,10 @@
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc";
 import ArenaRestApi from "../arena-api/rest"
 
-export function connectClip(restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionAction {
+export function connectClip(restApi: () => ArenaRestApi | null, oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Trigger Clip',
+    name: 'Trigger Clip',
     options: [
       {
         id: 'layer',

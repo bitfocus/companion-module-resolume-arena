@@ -1,11 +1,11 @@
 import { LayerOptions } from "../arena-api/child-apis/layer-options/LayerOptions";
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc";
 import ArenaRestApi from "../arena-api/rest"
 
-export function soloLayer(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionAction {
+export function soloLayer(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Solo Layer',
+    name: 'Solo Layer',
     options: [
       {
         id: 'layer',

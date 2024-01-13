@@ -1,10 +1,10 @@
-import { CompanionAction } from "../../../../instance_skel_types"
+import { CompanionActionDefinition } from "@companion-module/base";
 import ArenaOscApi from "../arena-api/osc";
 import ArenaRestApi from "../arena-api/rest"
 
-export function selectClip(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionAction {
+export function selectClip(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Select Clip',
+    name: 'Select Clip',
     options: [
       {
         id: 'layer',

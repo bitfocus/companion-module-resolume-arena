@@ -1,11 +1,11 @@
+import { CompanionActionDefinition } from "@companion-module/base";
 import { LayerOptions } from "../arena-api/child-apis/layer-options/LayerOptions";
-import { CompanionAction } from "../../../../instance_skel_types"
 import ArenaOscApi from "../arena-api/osc";
 import ArenaRestApi from "../arena-api/rest"
 
-export function bypassLayer(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionAction {
+export function bypassLayer(restApi: () => ArenaRestApi | null, _oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
   return {
-    label: 'Bypass Layer',
+    name: 'Bypass Layer',
     options: [
       {
         id: 'layer',
