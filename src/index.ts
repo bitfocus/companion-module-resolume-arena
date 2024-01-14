@@ -40,7 +40,7 @@ import {
 } from './defaults';
 import {ClipUtils} from './domain/clip/clip-utils';
 import {LayerUtils} from './domain/layers/layer-util';
-import { selectLayer } from './actions/select-layer';
+import {selectLayer} from './actions/select-layer';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -276,7 +276,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 							style: getDefaultStyleGreen(),
 						},
 					],
-				},				
+				},
 				clearLayer: {
 					type: 'button',
 					category: 'Commands',
@@ -342,7 +342,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 							style: getDefaultStyleGreen(),
 						},
 					],
-				},		
+				},
 			});
 		} else {
 			this.setPresetDefinitions({});
@@ -452,11 +452,26 @@ function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaConfig>[
 	return [
 		function (
 			_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-			_props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
+			props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
 		): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+			// upgrade_v1_0_4
+			let updateActions = [];
+
+			for (const action of props.actions) {
+				switch (action.actionId) {
+					case 'custom':
+						if (action.options !== undefined && action.options.customCmd !== undefined) {
+							action.options.customPath = action.options.customCmd;
+							delete action.options.customCmd;
+							updateActions.push(action);
+						}
+						break;
+				}
+			}
+
 			return {
 				updatedConfig: null,
-				updatedActions: [],
+				updatedActions: updateActions,
 				updatedFeedbacks: [],
 			};
 		},
