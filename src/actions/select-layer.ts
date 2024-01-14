@@ -3,20 +3,13 @@ import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {getLayerOption} from '../defaults';
 
-export function clearLayer(
+export function selectLayer(
 	restApi: () => ArenaRestApi | null,
-	oscApi: () => ArenaOscApi | null
+	_oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
-		name: 'Clear Layer',
+		name: 'Select Layer',
 		options: [...getLayerOption()],
-		callback: async ({options}: {options: any}) => {
-			let rest = restApi();
-			if (rest) {
-				await rest.Layers.clear(options.layer);
-			} else {
-				oscApi()?.clearLayer(options.layer);
-			}
-		},
+		callback: async ({options}: {options: any}) => await restApi()?.Layers.select(options.layer),
 	};
 }

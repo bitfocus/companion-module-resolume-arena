@@ -2,6 +2,7 @@ import { LayerOptionsPropertyChoice } from "../layer-options/properties/LayerOpt
 import { LayerOptionsPropertyString } from "../layer-options/properties/LayerOptionsPropertyString";
 
 export interface ClipStatus {
+  id: number,
   name: LayerOptionsPropertyString,
   connected: LayerOptionsPropertyChoice
 }

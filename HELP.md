@@ -23,6 +23,7 @@ so the module will always show an OK status if you only specify the OSC port.
 * Start Column
 * Bypass Layer
 * Solo Layer
+* Select Layer
 * Clear Layer
 * Clear All Layers
 * Group Next Column

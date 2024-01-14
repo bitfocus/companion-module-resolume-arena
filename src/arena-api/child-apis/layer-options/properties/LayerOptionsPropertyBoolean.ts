@@ -1,6 +1,5 @@
-
 export interface LayerOptionsPropertyBoolean {
-  id?: number;
-  valuetype?: 'ParamBoolean';
-  value: boolean;
+	id?: number;
+	valuetype?: 'ParamBoolean';
+	value: boolean;
 }

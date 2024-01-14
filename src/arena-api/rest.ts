@@ -110,7 +110,6 @@ export default class ArenaRestApi {
       body: null
     };
     if (body != undefined && body != null) {
-      console.log(typeof(body))
       if (typeof(body) == 'object') {
         options.body = JSON.stringify(body);
       } else {

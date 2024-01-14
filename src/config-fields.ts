@@ -5,6 +5,7 @@ export interface ResolumeArenaConfig {
   port: number;
   webapiPort: number;
   useSSL: boolean;
+  useRest: boolean;
 }
 
 export function configFields(): SomeCompanionConfigField[] {
@@ -14,7 +15,8 @@ export function configFields(): SomeCompanionConfigField[] {
       id: 'host',
       label: 'Resolume Host IP',
       width: 8,
-      regex: Regex.IP
+      regex: Regex.IP,
+      default: '127.0.0.1'
     },
     {
       type: 'number',
@@ -26,13 +28,6 @@ export function configFields(): SomeCompanionConfigField[] {
       default: 7000
     },
     {
-      type: 'checkbox',
-      id: 'useSSL',
-      label: 'Use SSL for web api calls',
-      width: 6,
-      default: false
-    },
-    {
       type: 'number',
       id: 'webapiPort',
       label: 'Resolume WebAPI Port',
@@ -40,6 +35,20 @@ export function configFields(): SomeCompanionConfigField[] {
       min: 1,
       max: 65536,
       default: 8080
+    },
+    {
+      type: 'checkbox',
+      id: 'useRest',
+      label: 'Use Rest for web api calls (if false fallback to OSC)',
+      width: 6,
+      default: true
+    },
+    {
+      type: 'checkbox',
+      id: 'useSSL',
+      label: 'Use SSL for web api calls',
+      width: 6,
+      default: false
     },
   ]
 };
