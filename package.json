@@ -15,7 +15,7 @@
 	"homepage": "https://github.com/bitfocus/companion-module-resolume-arena#readme",
 	"scripts": {
 		"dev": "yarn build:watch",
-		"build": "npx rimraf dist && npx -p typescript tsc -p tsconfig.build.json",
+		"build": "rimraf dist && tsc -p tsconfig.build.json",
 		"build:main": "tsc -p tsconfig.build.json",
 		"build:watch": "tsc -p tsconfig.build.json --watch",
 		"lint": "eslint . --ext .ts",
@@ -35,11 +35,11 @@
 		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
 	},
 	"dependencies": {
-		"node-fetch": "^2.0.0",
-		"typescript": "^4.5.5",
-		"@companion-module/base": "~1.5.1"
+		"node-fetch": "^2.0.0"
 	},
 	"devDependencies": {
+		"typescript": "^4.5.5",
+		"@companion-module/base": "~1.5.1",
 		"@companion-module/tools": "^1.4.1",
 		"@types/node": "^17.0.14",
 		"@types/node-fetch": "^2.6.1",

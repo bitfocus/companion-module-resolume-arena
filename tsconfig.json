@@ -1,35 +1,31 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "strict": true,
-    "alwaysStrict": false,
-    "esModuleInterop": true,
-    "strictPropertyInitialization": true,
-    "strictFunctionTypes": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "moduleResolution": "node",
-    "sourceMap": false,
-    "outDir": "dist",
-    "baseUrl": "./",
-    "paths": {
-      "*": ["node_modules/*", "types/*"]
-    },
-    "declaration": false,
-    "importHelpers": false,
-    "listFiles": false,
-    "traceResolution": false,
-    "pretty": true,
-    "lib": ["es6"],
-    "types": ["node", "jest"]
-  },
-  "include": ["src/**/*.ts", "types/**/*.ts"],
-  "compileOnSave": false,
-  "exclude": ["node_modules/**"]
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2022",
+		"noImplicitAny": true,
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"paths": {
+			"*": ["../node_modules/*"]
+		},
+		"declaration": false,
+		"importHelpers": false,
+		"listFiles": false,
+		"traceResolution": false,
+		"pretty": true,
+		"lib": ["es2022"],
+		"types": ["node"],
+		"strict": true,
+		"alwaysStrict": false,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+    "outDir": "dist"
+	},
+	"compileOnSave": false
 }

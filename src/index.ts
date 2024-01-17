@@ -478,5 +478,4 @@ function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaConfig>[
 	];
 }
 
-exports = module.exports = ResolumeArenaModuleInstance;
 runEntrypoint(ResolumeArenaModuleInstance, getUpgradeScripts());
