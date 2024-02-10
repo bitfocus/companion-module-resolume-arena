@@ -14,7 +14,7 @@ export function triggerColumn(
 				label: 'Column',
 				id: 'column',
 				min: 1,
-				max: 100,
+				max: 65535,
 				default: 1,
 				required: true,
 			},
