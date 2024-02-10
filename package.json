@@ -1,22 +1,51 @@
 {
 	"name": "resolume-arena",
-	"version": "2.0.2",
-	"main": "src/index.js",
-	"type": "module",
+	"main": "dist/index.js",
+	"version": "3.0.0",
+	"description": "Resolume Arena 6 & 7 module for companion",
+	"api_version": "1.0.0",
+	"keywords": [
+		"Video",
+		"Software",
+		"Graphics"
+	],
+	"manufacturer": "Resolume",
+	"product": "Arena",
+	"shortname": "arena",
+	"homepage": "https://github.com/bitfocus/companion-module-resolume-arena#readme",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"format": "prettier --write ."
+		"dev": "yarn build:watch",
+		"build": "rimraf dist && tsc -p tsconfig.build.json",
+		"build:main": "tsc -p tsconfig.build.json",
+		"build:watch": "tsc -p tsconfig.build.json --watch",
+		"lint": "eslint . --ext .ts",
+		"postinstall": "yarn build",
+		"test": "qunit --require ts-node/register 'test/**/*-test.ts'"
+	},
+	"license": "MIT",
+	"authors": [
+		"Oliver Herman <oliver@monoxane.com>",
+		"Bryan Crotaz <bgcrotaz@hotmail.com>"
+	],
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-resolume-arena/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
 	},
-	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "~1.4"
+		"node-fetch": "^2.0.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "~1.3"
-	},
-	"prettier": "@companion-module/tools/.prettierrc.json"
+		"typescript": "^4.5.5",
+		"@companion-module/base": "~1.5.1",
+		"@companion-module/tools": "^1.4.1",
+		"@types/node": "^17.0.14",
+		"@types/node-fetch": "^2.6.1",
+		"@types/qunit": "^2.11.3",
+		"nock": "^13.2.2",
+		"qunit": "^2.17.2",
+		"ts-node": "^10.4.0"
+	}
 }

@@ -2,8 +2,8 @@
 	"id": "resolume-arena",
 	"name": "resolume-arena",
 	"shortname": "arena",
-	"description": "Resolume Arena 6 module for companion",
-	"version": "2.0.0",
+	"description": "Resolume Arena 6 & 7 module for companion",
+	"version": "3.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-resolume-arena.git",
 	"bugs": "https://github.com/bitfocus/companion-module-resolume-arena/issues",
@@ -18,7 +18,7 @@
 		"type": "node18",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
-		"entrypoint": "..\\src\\index.js"
+		"entrypoint": "../dist/index.js"
 	},
 	"manufacturer": "Resolume",
 	"products": ["Arena"],
