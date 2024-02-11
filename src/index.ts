@@ -475,6 +475,30 @@ function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaConfig>[
 				updatedFeedbacks: [],
 			};
 		},
+		function (
+			_context: CompanionUpgradeContext<ResolumeArenaConfig>,
+			props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
+		): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+			// upgrade_v3_0_1
+			let updateActions = [];
+
+			for (const action of props.actions) {
+				switch (action.actionId) {
+					case 'custom':
+						if (action.options !== undefined && action.options.relativeType === undefined) {
+							action.options.relativeType = 'n';
+							updateActions.push(action);
+						}
+						break;
+				}
+			}
+
+			return {
+				updatedConfig: null,
+				updatedActions: updateActions,
+				updatedFeedbacks: [],
+			};
+		},
 	];
 }
 

@@ -125,8 +125,32 @@ export default class ArenaOscApi {
 		this.send(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`, OscArgs.One);
 	}
 
-	public customOsc(customPath: string, oscType: string, customValue: string) {
+	public customOsc(customPath: string, oscType: string, customValue: string, relativeType?: string) {
 		var args: OSCMetaArgument[] = [];
+		switch (relativeType) {
+			case '+':
+				args.push({
+					type: 's',
+					value: '' + relativeType,
+				});
+				break;
+			case '-':
+				args.push({
+					type: 's',
+					value: '' + relativeType,
+				});
+				break;
+			case '*':
+				args.push({
+					type: 's',
+					value: '' + relativeType,
+				});
+				break;
+			case 'n':
+			default:
+				break;
+		}
+
 		switch (oscType) {
 			case 'i':
 				args.push({
