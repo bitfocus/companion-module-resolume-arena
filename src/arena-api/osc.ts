@@ -29,7 +29,6 @@ export default class ArenaOscApi {
 	}
 
 	public send(path: string, args: OSCSomeArguments) {
-		console.log(this._host, this._port, path, args);
 		this._oscSend(this._host, this._port, path, args);
 	}
 
