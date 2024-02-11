@@ -1,7 +1,7 @@
 {
 	"name": "resolume-arena",
 	"main": "dist/index.js",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"description": "Resolume Arena 6 & 7 module for companion",
 	"api_version": "1.0.0",
 	"keywords": [
@@ -25,7 +25,8 @@
 	"license": "MIT",
 	"authors": [
 		"Oliver Herman <oliver@monoxane.com>",
-		"Bryan Crotaz <bgcrotaz@hotmail.com>"
+		"Bryan Crotaz <bgcrotaz@hotmail.com>",
+		"Axel Bergmans <axel@4xel.be>"
 	],
 	"bugs": {
 		"url": "https://github.com/bitfocus/companion-module-resolume-arena/issues"
@@ -35,12 +36,12 @@
 		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
 	},
 	"dependencies": {
+		"@companion-module/base": "~1.7.0",
 		"node-fetch": "^2.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^4.5.5",
-		"@companion-module/base": "~1.5.1",
-		"@companion-module/tools": "^1.4.1",
+		"@companion-module/tools": "^1.4.2",
 		"@types/node": "^17.0.14",
 		"@types/node-fetch": "^2.6.1",
 		"@types/qunit": "^2.11.3",
