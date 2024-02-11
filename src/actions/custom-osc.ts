@@ -12,6 +12,19 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 			},
 			{
 				type: 'dropdown',
+				label: 'OSC Relative Type',
+				id: 'relativeType',
+				tooltip: 'select the relative type of the value data',
+				choices: [
+					{id: 'n', label: 'none'},
+					{id: '+', label: 'add'},
+					{id: '-', label: 'subtract'},
+					{id: '*', label: 'multiply'},
+				],
+				default: 'n',
+			},
+			{
+				type: 'dropdown',
 				label: 'OSC Type Flag',
 				id: 'oscType',
 				tooltip: 'select the type of the value data',
@@ -21,7 +34,6 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 					{id: 'f', label: 'float'},
 					{id: 's', label: 'string'},
 				],
-				// multiple: false,
 				default: 'n',
 			},
 			{
@@ -31,6 +43,6 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 			},
 		],
 		callback: async ({options}: {options: any}) =>
-			oscApi()?.customOsc(options.customPath, options.oscType, options.customValue),
+			oscApi()?.customOsc(options.customPath, options.oscType, options.customValue, options.relativeType),
 	};
 }
