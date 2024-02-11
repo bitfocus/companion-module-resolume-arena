@@ -2,17 +2,17 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 
-export function groupPrevCol(
+export function layerGroupPrevCol(
 	_restApi: () => ArenaRestApi | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
-		name: 'Group Previous Column',
+		name: 'Layer Group Previous Column',
 		options: [
 			{
 				type: 'number',
-				label: 'Group Number',
-				id: 'groupPrev',
+				label: 'Layer Group Number',
+				id: 'layerGroup',
 				min: 1,
 				max: 65535,
 				default: 1,
@@ -21,7 +21,7 @@ export function groupPrevCol(
 			{
 				type: 'number',
 				label: 'Last Column',
-				id: 'colMaxGroupPrev',
+				id: 'lastColumn',
 				min: 1,
 				max: 65535,
 				default: 4,
@@ -29,7 +29,7 @@ export function groupPrevCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			oscApi()?.groupPrevCol(options.groupPrev, options.colMaxGroupPrev);
+			oscApi()?.groupPrevCol(options.layerGroup, options.lastColumn);
 		},
 	};
 }

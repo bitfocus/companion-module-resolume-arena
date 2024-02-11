@@ -26,6 +26,19 @@ export function  getLayerOption(): SomeCompanionFeedbackInputField[] {
     ];
 }
 
+export function  getLayerGroupOption(): SomeCompanionFeedbackInputField[] {
+    return [
+        {
+            id: 'layerGroup',
+            type: 'number',
+            label: 'Layer Group',
+            default: 1,
+            min: 1,
+            max: 65535,
+        },
+    ];
+}
+
 export function  getDefaultLayerColumnOptions() {
     return {
         layer: '-1',

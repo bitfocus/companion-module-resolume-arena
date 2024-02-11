@@ -19,17 +19,31 @@ you've misconfigured Resolume). There is no way to tell if the OSC port is conne
 so the module will always show an OK status if you only specify the OSC port.
 
 ### Available Actions
+
+#### Clips
 * Start Clip
+
+#### Columns
 * Start Column
+* Layer Next Column
+* Layer Previous Column
+* Layer Group Next Column
+* Layer Group Previous Column
+* Composition Next Column
+* Composition Previous Column
+
+#### Layers 
 * Bypass Layer
 * Solo Layer
 * Select Layer
 * Clear Layer
 * Clear All Layers
-* Group Next Column
-* Group Previous Column
-* Composition Next Column
-* Composition Previous Column
-* Layer Next Column
-* Layer Previous Column
+
+#### Layer Groups
+* Bypass Layer Group
+* Solo Layer Group
+* Select Layer Group
+* Clear Layer Group
+
+#### Custom
 * Custom OSC Command

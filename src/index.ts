@@ -22,8 +22,8 @@ import {compNextCol} from './actions/comp-next-col';
 import {compPrevCol} from './actions/comp-prev-col';
 import {connectClip} from './actions/connect-clip';
 import {customOscCommand} from './actions/custom-osc';
-import {groupNextCol} from './actions/group-next-col';
-import {groupPrevCol} from './actions/group-prev-col';
+import {layerGroupNextCol} from './actions/layer-group-next-col';
+import {layerGroupPrevCol} from './actions/layer-group-prev-col';
 import {layerNextCol} from './actions/layer-next-col';
 import {layerPrevCol} from './actions/layer-prev-col';
 import {selectClip} from './actions/select-clip';
@@ -37,10 +37,16 @@ import {
 	getDefaultStyleGreen,
 	getLayerOption,
 	getDefaultStyleBlue,
+	getLayerGroupOption,
 } from './defaults';
 import {ClipUtils} from './domain/clip/clip-utils';
 import {LayerUtils} from './domain/layers/layer-util';
 import {selectLayer} from './actions/select-layer';
+import {soloLayerGroup} from './actions/solo-layer-group';
+import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
+import {selectLayerGroup} from './actions/select-layer-group';
+import {bypassLayerGroup} from './actions/bypass-layer-group';
+import {clearLayerGroup} from './actions/clear-layer-group';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -50,12 +56,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 	private clipUtils: ClipUtils;
 	private layerUtils: LayerUtils;
+	private layerGroupUtils: LayerGroupUtils;
 
 	constructor(internal: unknown) {
 		super(internal);
 
 		this.clipUtils = new ClipUtils(this);
 		this.layerUtils = new LayerUtils(this);
+		this.layerGroupUtils = new LayerGroupUtils(this);
 	}
 
 	/**
@@ -77,18 +85,22 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		var oscApi = this.getOscApi.bind(this);
 		var actions: CompanionActionDefinitions = {
 			bypassLayer: bypassLayer(restApi, oscApi),
+			bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
 			clearAll: clearAllLayers(restApi, oscApi),
 			clearLayer: clearLayer(restApi, oscApi),
+			clearLayerGroup: clearLayerGroup(oscApi),
 			compNextCol: compNextCol(restApi, oscApi),
 			compPrevCol: compPrevCol(restApi, oscApi),
 			custom: customOscCommand(oscApi),
-			grpNextCol: groupNextCol(restApi, oscApi),
-			grpPrevCol: groupPrevCol(restApi, oscApi),
+			grpNextCol: layerGroupNextCol(restApi, oscApi),
+			grpPrevCol: layerGroupPrevCol(restApi, oscApi),
 			layNextCol: layerNextCol(restApi, oscApi),
 			layPrevCol: layerPrevCol(restApi, oscApi),
 			selectClip: selectClip(restApi, oscApi),
 			selectLayer: selectLayer(restApi, oscApi),
+			selectLayerGroup: selectLayerGroup(restApi, oscApi),
 			soloLayer: soloLayer(restApi, oscApi),
+			soloLayerGroup: soloLayerGroup(restApi, oscApi),
 			tempoTap: tempoTap(restApi, oscApi),
 			triggerClip: connectClip(restApi, oscApi),
 			triggerColumn: triggerColumn(restApi, oscApi),
@@ -166,6 +178,42 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.layerUtils.layerSelectedFeedbackCallback.bind(this.layerUtils),
 					subscribe: this.layerUtils.layerSelectedFeedbackSubscribe.bind(this.layerUtils),
 					unsubscribe: this.layerUtils.layerSelectedFeedbackUnsubscribe.bind(this.layerUtils),
+				},
+				layerGroupBypassed: {
+					type: 'boolean',
+					name: 'Layer Group Bypassed',
+					defaultStyle: getDefaultStyleRed(),
+					options: [...getLayerGroupOption()],
+					callback: this.layerGroupUtils.layerGroupBypassedFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupBypassedFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupBypassedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				layerGroupSolo: {
+					type: 'boolean',
+					name: 'Layer Group Solo',
+					defaultStyle: getDefaultStyleGreen(),
+					options: [...getLayerGroupOption()],
+					callback: this.layerGroupUtils.layerGroupSoloFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupSoloFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupSoloFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				layerGroupActive: {
+					type: 'boolean',
+					name: 'Layer Group Active',
+					defaultStyle: getDefaultStyleBlue(),
+					options: [...getLayerGroupOption()],
+					callback: this.layerGroupUtils.layerGroupActiveFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupActiveFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupActiveFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				layerGroupSelected: {
+					type: 'boolean',
+					name: 'Layer Group Selected',
+					defaultStyle: getDefaultStyleGreen(),
+					options: [...getLayerGroupOption()],
+					callback: this.layerGroupUtils.layerGroupSelectedFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
 			});
 		} else {
@@ -343,6 +391,140 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 						},
 					],
 				},
+				bypassLayerGroup: {
+					type: 'button',
+					category: 'Commands',
+					name: 'Bypass Layer Group',
+					style: {
+						size: '14',
+						text: 'Bypass Layer Group',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'bypassLayerGroup',
+									options: {
+										layerGroup: '1',
+										bypass: 'toggle',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'layerGroupBypassed',
+							options: {
+								layerGroup: '1',
+							},
+							style: getDefaultStyleRed(),
+						},
+					],
+				},
+				soloLayerGroup: {
+					type: 'button',
+					category: 'Commands',
+					name: 'Solo Layer Group',
+					style: {
+						size: '14',
+						text: 'Solo Layer Group',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'soloLayerGroup',
+									options: {
+										layerGroup: '1',
+										solo: 'toggle',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'layerGroupSolo',
+							options: {
+								layerGroup: '1',
+							},
+							style: getDefaultStyleGreen(),
+						},
+					],
+				},
+				clearLayerGroup: {
+					type: 'button',
+					category: 'Commands',
+					name: 'Clear Layer Group',
+					style: {
+						size: '14',
+						text: 'Clear Layer Group',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'clearLayerGroup',
+									options: {
+										layerGroup: '1',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'layerGroupActive',
+							options: {
+								layerGroup: '1',
+							},
+							style: getDefaultStyleBlue(),
+						},
+					],
+				},
+				selectLayerGroup: {
+					type: 'button',
+					category: 'Commands',
+					name: 'Select Layer Group',
+					style: {
+						size: '14',
+						text: 'Select Layer Group',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'selectLayerGroup',
+									options: {
+										layerGroup: '1',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'layerGroupSelected',
+							options: {
+								layerGroup: '1',
+							},
+							style: getDefaultStyleGreen(),
+						},
+					],
+				},
 			});
 		} else {
 			this.setPresetDefinitions({});
@@ -398,6 +580,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					}
 					await this.clipUtils.poll();
 					await this.layerUtils.poll();
+					await this.layerGroupUtils.poll();
 					this.updateStatus(InstanceStatus.Ok);
 				} catch (e: any) {
 					this.updateStatus(InstanceStatus.UnknownError, e.message);

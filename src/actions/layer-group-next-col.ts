@@ -2,17 +2,17 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 
-export function groupNextCol(
+export function layerGroupNextCol(
 	_restApi: () => ArenaRestApi | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
-		name: 'Group Next Column',
+		name: 'Layer Group Next Column',
 		options: [
 			{
 				type: 'number',
-				label: 'Group Number',
-				id: 'groupNext',
+				label: 'Layer Group Number',
+				id: 'layerGroup',
 				min: 1,
 				max: 65535,
 				default: 1,
@@ -21,7 +21,7 @@ export function groupNextCol(
 			{
 				type: 'number',
 				label: 'Last Column',
-				id: 'colMaxGroupNext',
+				id: 'lastColumn',
 				min: 1,
 				max: 65535,
 				default: 4,
@@ -29,7 +29,7 @@ export function groupNextCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			oscApi()?.groupNextCol(options.groupNext, options.colMaxGroupNext);
+			oscApi()?.layerGroupNextCol(options.layerGroup, options.lastColumn);
 		},
 	};
 }

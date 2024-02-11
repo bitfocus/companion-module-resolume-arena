@@ -1,5 +1,5 @@
-import { LayerOptionsPropertyChoice } from "../layer-options/properties/LayerOptionsPropertyChoice";
-import { LayerOptionsPropertyString } from "../layer-options/properties/LayerOptionsPropertyString";
+import { LayerOptionsPropertyChoice } from "../common-options/properties/LayerOptionsPropertyChoice";
+import { LayerOptionsPropertyString } from "../common-options/properties/LayerOptionsPropertyString";
 
 export interface ClipStatus {
   id: number,
