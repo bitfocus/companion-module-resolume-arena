@@ -7,7 +7,7 @@ export class LayerUtils {
 	private bypassedLayers: Set<number> = new Set<number>();
 	private layerBypassedSubscriptions: Set<number> = new Set<number>();
 
-	private soloLayer: number | undefined = undefined;
+	private soloLayers: Set<number> = new Set<number>();
 	private layerSoloSubscriptions: Set<number> = new Set<number>();
 
 	private activeLayers: Set<number> = new Set<number>();
@@ -36,16 +36,13 @@ export class LayerUtils {
 		}
 
 		if (this.layerSoloSubscriptions.size > 0) {
-			var soloSet = false;
 			for (var layer of this.layerSoloSubscriptions) {
 				var status = (await this.resolumeArenaInstance.restApi?.Layers.getSettings(layer)) as LayerOptions;
 				if (status.solo?.value) {
-					this.soloLayer = layer;
-					soloSet = true;
+					this.soloLayers.add(layer);
+				} else {
+					this.soloLayers.delete(layer);
 				}
-			}
-			if (!soloSet) {
-				this.soloLayer = undefined;
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerSolo');
 		}
@@ -117,7 +114,7 @@ export class LayerUtils {
 	layerSoloFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layer = feedback.options.layer;
 		if (layer !== undefined) {
-			return this.soloLayer === (layer as number);
+			return this.soloLayers.has(layer as number);
 		}
 		return false;
 	}

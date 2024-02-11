@@ -17,6 +17,11 @@ export class ArenaLayersApi {
 		var url = `composition/layers/${layer}`;
 		return (await this.arenaFetch('get', url, 'json')) as LayerOptions;
 	}
+	
+	async getSettingsById(layerId: number): Promise<LayerOptions> {
+		var url = `composition/layers/by-id/${layerId}`;
+		return (await this.arenaFetch('get', url, 'json')) as LayerOptions;
+	}
 
 	async updateSettings(layer: number, options: LayerWriteOptions) {
 		var url = `composition/layers/${layer}`;

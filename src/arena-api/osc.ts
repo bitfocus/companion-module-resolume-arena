@@ -46,6 +46,12 @@ export default class ArenaOscApi {
 		this.send(path, OscArgs.One);
 		this.send(path, OscArgs.Zero);
 	}
+  
+	public clearLayerGroup(layerGroup: number) {
+		let path = `/composition/groups/${layerGroup}/disconnectlayers`;
+		this.send(path, OscArgs.One);
+		this.send(path, OscArgs.Zero);
+	}
 
 	public clearAllLayers() {
 		this.send('/composition/disconnectall', OscArgs.One);
@@ -55,30 +61,30 @@ export default class ArenaOscApi {
 		this.send('/composition/tempocontroller/tempotap', OscArgs.One);
 	}
 
-	public groupNextCol(groupNext: number, colMaxGroupNext: number) {
-		if (this.groupPos[groupNext] == undefined) {
-			this.groupPos[groupNext] = 1;
+	public layerGroupNextCol(layerGroup: number, lastColumn: number) {
+		if (this.groupPos[layerGroup] == undefined) {
+			this.groupPos[layerGroup] = 1;
 		} else {
-			this.groupPos[groupNext]++;
+			this.groupPos[layerGroup]++;
 		}
-		if (this.groupPos[groupNext] > colMaxGroupNext) {
-			this.groupPos[groupNext] = 1;
+		if (this.groupPos[layerGroup] > lastColumn) {
+			this.groupPos[layerGroup] = 1;
 		}
 
-		this.send(`/composition/groups/${groupNext}/columns/${this.groupPos[groupNext]}/connect`, OscArgs.One);
+		this.send(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`, OscArgs.One);
 	}
 
-	public groupPrevCol(groupPrev: number, colMaxGroupPrev: number) {
-		if (this.groupPos[groupPrev] == undefined) {
-			this.groupPos[groupPrev] = 1;
+	public groupPrevCol(layerGroup: number, lastColumn: number) {
+		if (this.groupPos[layerGroup] == undefined) {
+			this.groupPos[layerGroup] = 1;
 		} else {
-			this.groupPos[groupPrev]--;
+			this.groupPos[layerGroup]--;
 		}
-		if (this.groupPos[groupPrev] < 1) {
-			this.groupPos[groupPrev] = colMaxGroupPrev;
+		if (this.groupPos[layerGroup] < 1) {
+			this.groupPos[layerGroup] = lastColumn;
 		}
 
-		this.send(`/composition/groups/${groupPrev}/columns/${this.groupPos[groupPrev]}/connect`, OscArgs.One);
+		this.send(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`, OscArgs.One);
 	}
 
 	public compNextCol(colMaxCompNext: number) {
