@@ -16,12 +16,13 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 				id: 'oscType',
 				tooltip: 'select the type of the value data',
 				choices: [
+					{id: 'n', label: 'none'},
 					{id: 'i', label: 'integer'},
 					{id: 'f', label: 'float'},
 					{id: 's', label: 'string'},
 				],
 				// multiple: false,
-				default: 's',
+				default: 'n',
 			},
 			{
 				type: 'textinput',
