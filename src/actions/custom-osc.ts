@@ -1,7 +1,11 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
+import {ResolumeArenaModuleInstance} from '..';
 
-export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionActionDefinition {
+export function customOscCommand(
+	oscApi: () => ArenaOscApi | null,
+	resolumeArenaInstance: ResolumeArenaModuleInstance
+): CompanionActionDefinition {
 	return {
 		name: 'Custom OSC Command',
 		options: [
@@ -9,6 +13,10 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 				type: 'textinput',
 				label: 'Custom OSC Path',
 				id: 'customPath',
+				tooltip: 'must start with /',
+				required: true,
+				regex: '/^((\\/\\w+)+|(\\$\\(\\w+\\:\\w+\\)))$/',
+				useVariables: true,
 			},
 			{
 				type: 'dropdown',
@@ -40,9 +48,15 @@ export function customOscCommand(oscApi: () => ArenaOscApi | null): CompanionAct
 				type: 'textinput',
 				label: 'Value',
 				id: 'customValue',
+				useVariables: true,
 			},
 		],
 		callback: async ({options}: {options: any}) =>
-			oscApi()?.customOsc(options.customPath, options.oscType, options.customValue, options.relativeType),
+			oscApi()?.customOsc(
+				await resolumeArenaInstance.parseVariablesInString(options.customPath),
+				options.oscType,
+				await resolumeArenaInstance.parseVariablesInString(options.customValue),
+				options.relativeType
+			),
 	};
 }

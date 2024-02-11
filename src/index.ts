@@ -91,7 +91,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			clearLayerGroup: clearLayerGroup(oscApi),
 			compNextCol: compNextCol(restApi, oscApi),
 			compPrevCol: compPrevCol(restApi, oscApi),
-			custom: customOscCommand(oscApi),
+			custom: customOscCommand(oscApi, this),
 			grpNextCol: layerGroupNextCol(restApi, oscApi),
 			grpPrevCol: layerGroupPrevCol(restApi, oscApi),
 			layNextCol: layerNextCol(restApi, oscApi),
