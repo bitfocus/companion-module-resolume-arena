@@ -1,4 +1,4 @@
-export interface LayerOptionsPropertyRange {
+export interface CommonOptionsPropertyRange {
 	id: number;
 	valuetype: 'ParamRange';
 	min: number;

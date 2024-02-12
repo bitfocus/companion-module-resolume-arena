@@ -1,25 +1,25 @@
 import {LayerOptionsAudioEffect} from './LayerOptionsAudioEffect';
-import { LayerOptionsPropertyBoolean } from './properties/LayerOptionsPropertyBoolean';
-import { LayerOptionsPropertyChoice } from './properties/LayerOptionsPropertyChoice';
-import { LayerOptionsPropertyRange } from './properties/LayerOptionsPropertyRange';
-import { LayerOptionsPropertyString } from './properties/LayerOptionsPropertyString';
+import { CommonOptionsPropertyBoolean } from './properties/CommonOptionsPropertyBoolean';
+import { CommonOptionsPropertyChoice } from './properties/CommonOptionsPropertyChoice';
+import { CommonOptionsPropertyRange } from './properties/CommonOptionsPropertyRange';
+import { CommonOptionsPropertyString } from './properties/CommonOptionsPropertyString';
 
 export interface CommonLayerOptions {
 	id: number;
-	name?: LayerOptionsPropertyString;
-	colorid?: LayerOptionsPropertyChoice;
-	bypassed?: LayerOptionsPropertyBoolean;
-	solo?: LayerOptionsPropertyBoolean;
-	selected?: LayerOptionsPropertyBoolean;
-	crossfadergroup?: LayerOptionsPropertyChoice;
-	maskmode?: LayerOptionsPropertyChoice;
-	master?: LayerOptionsPropertyRange;
-	ignorecolumntrigger?: LayerOptionsPropertyBoolean;
-	faderstart?: LayerOptionsPropertyBoolean;
-	dashboard?: {[index: string]: LayerOptionsPropertyString};
+	name?: CommonOptionsPropertyString;
+	colorid?: CommonOptionsPropertyChoice;
+	bypassed?: CommonOptionsPropertyBoolean;
+	solo?: CommonOptionsPropertyBoolean;
+	selected?: CommonOptionsPropertyBoolean;
+	crossfadergroup?: CommonOptionsPropertyChoice;
+	maskmode?: CommonOptionsPropertyChoice;
+	master?: CommonOptionsPropertyRange;
+	ignorecolumntrigger?: CommonOptionsPropertyBoolean;
+	faderstart?: CommonOptionsPropertyBoolean;
+	dashboard?: {[index: string]: CommonOptionsPropertyString};
 	audio?: {
-		volume?: LayerOptionsPropertyRange;
-		pan?: LayerOptionsPropertyRange;
+		volume?: CommonOptionsPropertyRange;
+		pan?: CommonOptionsPropertyRange;
 		effects?: LayerOptionsAudioEffect[];
 	};
 }
@@ -29,15 +29,15 @@ export interface CommonLayerWriteOptions {
 	colorid?: 'a' | 'b';
 	bypassed?: boolean;
 	solo?: boolean;
-	crossfadergroup?: LayerOptionsPropertyChoice;
-	maskmode?: LayerOptionsPropertyChoice;
-	master?: LayerOptionsPropertyRange;
+	crossfadergroup?: CommonOptionsPropertyChoice;
+	maskmode?: CommonOptionsPropertyChoice;
+	master?: CommonOptionsPropertyRange;
 	ignorecolumntrigger?: boolean;
 	faderstart?: boolean;
-	dashboard?: {[index: string]: LayerOptionsPropertyString};
+	dashboard?: {[index: string]: CommonOptionsPropertyString};
 	audio?: {
-		volume?: LayerOptionsPropertyRange;
-		pan?: LayerOptionsPropertyRange;
+		volume?: CommonOptionsPropertyRange;
+		pan?: CommonOptionsPropertyRange;
 		effects?: LayerOptionsAudioEffect[];
 	};
 }

@@ -1,8 +1,8 @@
-import {LayerOptionsPropertyString} from './properties/LayerOptionsPropertyString';
-import {LayerOptionsPropertyBoolean} from './properties/LayerOptionsPropertyBoolean';
+import {CommonOptionsPropertyString} from './properties/CommonOptionsPropertyString';
+import {CommonOptionsPropertyBoolean} from './properties/CommonOptionsPropertyBoolean';
 
 export interface LayerOptionsAudioEffect {
 	name?: string;
-	bypassed?: LayerOptionsPropertyBoolean;
-	params?: {[index: string]: LayerOptionsPropertyString};
+	bypassed?: CommonOptionsPropertyBoolean;
+	params?: {[index: string]: CommonOptionsPropertyString};
 }

@@ -1,8 +1,8 @@
-import { LayerOptionsPropertyChoice } from "../common-options/properties/LayerOptionsPropertyChoice";
-import { LayerOptionsPropertyString } from "../common-options/properties/LayerOptionsPropertyString";
+import { CommonOptionsPropertyChoice } from "../common-options/properties/CommonOptionsPropertyChoice";
+import { CommonOptionsPropertyString } from "../common-options/properties/CommonOptionsPropertyString";
 
 export interface ClipStatus {
   id: number,
-  name: LayerOptionsPropertyString,
-  connected: LayerOptionsPropertyChoice
+  name: CommonOptionsPropertyString,
+  connected: CommonOptionsPropertyChoice
 }

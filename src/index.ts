@@ -47,6 +47,8 @@ import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
 import {selectLayerGroup} from './actions/select-layer-group';
 import {bypassLayerGroup} from './actions/bypass-layer-group';
 import {clearLayerGroup} from './actions/clear-layer-group';
+import { ColumnUtils } from './domain/columns/column-util';
+import { triggerLayerGroupColumn } from './actions/trigger-layer-group-column';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -57,6 +59,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private clipUtils: ClipUtils;
 	private layerUtils: LayerUtils;
 	private layerGroupUtils: LayerGroupUtils;
+	private columnUtils: ColumnUtils;
 
 	constructor(internal: unknown) {
 		super(internal);
@@ -64,6 +67,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.clipUtils = new ClipUtils(this);
 		this.layerUtils = new LayerUtils(this);
 		this.layerGroupUtils = new LayerGroupUtils(this);
+		this.columnUtils = new ColumnUtils(this);
 	}
 
 	/**
@@ -104,6 +108,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			tempoTap: tempoTap(restApi, oscApi),
 			triggerClip: connectClip(restApi, oscApi),
 			triggerColumn: triggerColumn(restApi, oscApi),
+			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 		};
 		return actions;
 	}
@@ -215,6 +220,25 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerGroupUtils.layerGroupSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
+				columnSelected: {
+					type: 'boolean',
+					name: 'Column Selected',
+					defaultStyle: getDefaultStyleGreen(),
+					options: [...getColumnOption()],
+					callback: this.columnUtils.columnSelectedFeedbackCallback.bind(this.columnUtils),
+					subscribe: this.columnUtils.columnSelectedFeedbackSubscribe.bind(this.columnUtils),
+					unsubscribe: this.columnUtils.columnSelectedFeedbackUnsubscribe.bind(this.columnUtils),
+				},
+				layerGroupColumnsSelected: {
+					type: 'boolean',
+					name: 'Layer Group Selected',
+					defaultStyle: getDefaultStyleGreen(),
+					options: [...getLayerGroupOption(), ...getColumnOption()],
+					callback: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				
 			});
 		} else {
 			this.setFeedbackDefinitions({});
@@ -226,7 +250,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			this.setPresetDefinitions({
 				playClip: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Clip',
 					name: 'Play Clip',
 					style: {
 						size: '18',
@@ -259,7 +283,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				bypassLayer: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer',
 					name: 'Bypass Layer',
 					style: {
 						size: '14',
@@ -293,7 +317,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				soloLayer: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer',
 					name: 'Solo Layer',
 					style: {
 						size: '14',
@@ -327,7 +351,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				clearLayer: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer',
 					name: 'Clear Layer',
 					style: {
 						size: '14',
@@ -393,7 +417,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				bypassLayerGroup: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer Group',
 					name: 'Bypass Layer Group',
 					style: {
 						size: '14',
@@ -427,7 +451,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				soloLayerGroup: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer Group',
 					name: 'Solo Layer Group',
 					style: {
 						size: '14',
@@ -461,7 +485,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				clearLayerGroup: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer Group',
 					name: 'Clear Layer Group',
 					style: {
 						size: '14',
@@ -494,7 +518,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				selectLayerGroup: {
 					type: 'button',
-					category: 'Commands',
+					category: 'Layer Group',
 					name: 'Select Layer Group',
 					style: {
 						size: '14',
@@ -519,6 +543,74 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 						{
 							feedbackId: 'layerGroupSelected',
 							options: {
+								layerGroup: '1',
+							},
+							style: getDefaultStyleGreen(),
+						},
+					],
+				},
+				triggerColumn: {
+					type: 'button',
+					category: 'Column',
+					name: 'Trigger Column',
+					style: {
+						size: '14',
+						text: 'Trigger Column',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'triggerColumn',
+									options: {
+										column: '1',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'columnSelected',
+							options: {
+								column: '1',
+							},
+							style: getDefaultStyleGreen(),
+						},
+					],
+				},
+				triggerLayerGroupColumn: {
+					type: 'button',
+					category: 'Layer Group',
+					name: 'Trigger Layer Group Column',
+					style: {
+						size: '14',
+						text: 'Trigger Layer Group Column',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'triggerLayerGroupColumn',
+									options: {
+										column: '1',
+										layerGroup: '1',
+									},
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'layerGroupColumnsSelected',
+							options: {
+								column: '1',
 								layerGroup: '1',
 							},
 							style: getDefaultStyleGreen(),
@@ -581,6 +673,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					await this.clipUtils.poll();
 					await this.layerUtils.poll();
 					await this.layerGroupUtils.poll();
+					await this.columnUtils.poll();
 					this.updateStatus(InstanceStatus.Ok);
 				} catch (e: any) {
 					this.updateStatus(InstanceStatus.UnknownError, e.message);
@@ -597,7 +690,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	}
 
 	private hasPollingSubscriptions(): boolean {
-		return this.clipUtils.hasPollingSubscriptions() || this.layerUtils.hasPollingSubscriptions();
+		return this.clipUtils.hasPollingSubscriptions() 
+		|| this.layerUtils.hasPollingSubscriptions() 
+		|| this.layerGroupUtils.hasPollingSubscriptions() 
+		|| this.columnUtils.hasPollingSubscriptions();
 	}
 
 	/**
