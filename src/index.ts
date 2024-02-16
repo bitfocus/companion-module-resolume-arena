@@ -74,6 +74,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		
 		this.websocketSubscribers.add(this.layerUtils)
 		this.websocketSubscribers.add(this.layerGroupUtils)
+		this.websocketSubscribers.add(this.columnUtils)
 	}
 
 	/**
@@ -680,7 +681,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					await this.clipUtils.poll();
 					await this.layerUtils.poll();
 					await this.layerGroupUtils.poll();
-					await this.columnUtils.poll();
 					this.updateStatus(InstanceStatus.Ok);
 				} catch (e: any) {
 					this.updateStatus(InstanceStatus.UnknownError, e.message);
@@ -700,8 +700,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		return (
 			this.clipUtils.hasPollingSubscriptions() ||
 			this.layerUtils.hasPollingSubscriptions() ||
-			this.layerGroupUtils.hasPollingSubscriptions() ||
-			this.columnUtils.hasPollingSubscriptions()
+			this.layerGroupUtils.hasPollingSubscriptions()
 		);
 	}
 
