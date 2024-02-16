@@ -18,7 +18,6 @@ export class ColumnUtils {
 			var SelectedSet = false;
 			for (var column of this.columnSelectedSubscriptions) {
 				var status = (await this.resolumeArenaInstance.restApi?.Columns.getSettings(column)) as ColumnOptions;
-				console.log('status', status);
 				if (status.connected?.value) {
 					this.selectedColumn = column;
 					SelectedSet = true;
