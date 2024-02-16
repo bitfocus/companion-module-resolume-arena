@@ -110,7 +110,7 @@ export class WebsocketInstance {
 					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
-					this.resolumeArenaInstance.log('debug',message.type +' | '+ message.value);
+					this.resolumeArenaInstance.log('debug',message.type +' | '+ message.path+' | '+ message.value);
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});

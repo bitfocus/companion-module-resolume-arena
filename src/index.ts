@@ -71,7 +71,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerUtils = new LayerUtils(this);
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
+		
 		this.websocketSubscribers.add(this.layerUtils)
+		this.websocketSubscribers.add(this.layerGroupUtils)
 	}
 
 	/**
