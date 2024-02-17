@@ -7,6 +7,11 @@ export class ClipId {
 		this.column = column;
 	}
 
+	static fromId(stringId: string) {
+		const parts = stringId.split('-');
+		return new ClipId(+parts[0] as number,+parts[1] as number);
+	}
+
 	getIdString(): string {
 		return `${this.layer}-${this.column}`;
 	}

@@ -21,20 +21,22 @@ export class LayerUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.log('debug', 'LayerUtils constructor called');
 	}
 
-	messageUpdates(data: {path: any}) {
-		if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerSelected');
-		}
-		if (!!data.path.match(/\/composition\/layers\/\d+\/solo/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerSolo');
-		}
-		if (!!data.path.match(/\/composition\/layers\/\d+\/bypassed/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerBypassed');
+	messageUpdates(data: {path: any}, _isComposition: boolean) {
+		if(data.path){
+			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerSelected');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/solo/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerSolo');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/bypassed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerBypassed');
+			}
 		}
 	}
 
 	messageFilter() {
-		return (message: any) => !!message.path.match(/\/composition\/layers.?/);
+		return (message: any) => !!(message.path && message.path.match(/\/composition\/layers.?/));
 	}
 
 	hasPollingSubscriptions(): boolean {

@@ -337,6 +337,8 @@ export interface ClipThumbnail {
      * @memberof ClipThumbnail
      */
     lastUpdate?: string;
+    //todo featureRequest
+    path?: string;
     /**
      * Get whether this is a default thumbnail, shared between all clips that don't have any video or audio tracks
      * @type {boolean}

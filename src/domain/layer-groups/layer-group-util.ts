@@ -26,22 +26,24 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	messageUpdates(data: {path: any}) {
-		if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupBypassed');
-		}
-		if (!!data.path.match(/\/composition\/groups\/\d+\/solo/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupSolo');
-		}
-		if (!!data.path.match(/\/composition\/groups\/\d+\/select/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
-		}
-		if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
+		if(data.path){
+			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupBypassed');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/solo/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupSolo');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/select/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
+			}
 		}
 	}
 
 	messageFilter() {
-		return (message: any) => !!message.path.match(/\/composition\/groups.?/);
+		return (message: any) => !!(message.path && message.path.match(/\/composition\/groups.?/));
 	}
 
 	async poll() {

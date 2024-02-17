@@ -13,15 +13,16 @@ export class ColumnUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.log('debug', 'ColumnUtils constructor called');
 	}
 
-
 	messageUpdates(data: {path: any}) {
-		if (!!data.path.match(/\/composition\/columns\/\d+\/connect/)) {
-			this.resolumeArenaInstance.checkFeedbacks('columnSelected');
+		if(data.path){
+			if (!!data.path.match(/\/composition\/columns\/\d+\/connect/)) {
+				this.resolumeArenaInstance.checkFeedbacks('columnSelected');
+			}
 		}
 	}
 
 	messageFilter() {
-		return (message: any) => !!message.path.match(/\/composition\/columns.?/);
+		return (message: any) => !!(message.path && message.path.match(/\/composition\/columns.?/));
 	}
 	
 	/////////////////////////////////////////////////

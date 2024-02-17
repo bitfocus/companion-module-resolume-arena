@@ -75,6 +75,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.websocketSubscribers.add(this.layerUtils)
 		this.websocketSubscribers.add(this.layerGroupUtils)
 		this.websocketSubscribers.add(this.columnUtils)
+		this.websocketSubscribers.add(this.clipUtils)
 	}
 
 	/**
@@ -124,13 +125,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			this.setFeedbackDefinitions({
 				connectedClip: {
-					type: 'boolean',
+					type: 'advanced',
 					name: 'Connected Clip',
-					defaultStyle: getDefaultStyleGreen(),
 					options: [...getLayerOption(), ...getColumnOption()],
-					callback: this.clipUtils.connectedClipsFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.connectedClipsSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.connectedClipsUnsubscribe.bind(this.clipUtils),
+					callback: this.clipUtils.clipConnectedFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipConnectedFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipConnectedFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				clipInfo: {
 					type: 'advanced',
@@ -151,9 +151,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 							default: true,
 						},
 					],
-					callback: this.clipUtils.clipInfoFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.clipInfoSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.clipInfoUnsubscribe.bind(this.clipUtils),
+					callback: this.clipUtils.clipDetailsFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipDetailsFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipDetailsFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				layerBypassed: {
 					type: 'boolean',
@@ -678,7 +678,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					if (!this.hasPollingSubscriptions) {
 						await this.restApi?.productInfo();
 					}
-					await this.clipUtils.poll();
+					// await this.clipUtils.poll();
 					await this.layerUtils.poll();
 					await this.layerGroupUtils.poll();
 					this.updateStatus(InstanceStatus.Ok);
@@ -698,7 +698,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 	private hasPollingSubscriptions(): boolean {
 		return (
-			this.clipUtils.hasPollingSubscriptions() ||
+			// this.clipUtils.hasPollingSubscriptions() ||
 			this.layerUtils.hasPollingSubscriptions() ||
 			this.layerGroupUtils.hasPollingSubscriptions()
 		);

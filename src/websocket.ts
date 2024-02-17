@@ -5,7 +5,7 @@ import {ResolumeArenaModuleInstance} from './index.js';
 import {compositionState, parameterStates} from './state.js';
 
 export interface MessageSubscriber{
-	messageUpdates(data: {path: string; value: string | boolean | number}):void;
+	messageUpdates(data: {path: string; value: string | boolean | number},isComposition: boolean):void;
 	messageFilter():(data: any)=>boolean;
 }
 
@@ -81,11 +81,13 @@ export class WebsocketInstance {
 				const message = JSON.parse(event.data as string);
 				// console.log('receiving message', message);
 				// TODO: properly check the type, right now it's only for param updates
-				if (typeof message.type !== 'string') {
+				if (!message.type) {
 					/* check if message contains a composition, does it have columns and layers */
 					if (message.columns && message.layers) {
+						console.log('state update');
 						// console.log('state update', message);
 						compositionState.set(message);
+						this.updateNeededSubscribers(message, true);
 					} else {
 						console.log('state does not contain a composition', message);
 					}
@@ -114,11 +116,7 @@ export class WebsocketInstance {
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});
-					for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscrivers()) {
-						if (websocketSubscriber.messageFilter().call(this, message)) {
-							websocketSubscriber.messageUpdates(message);
-						}
-					}
+					this.updateNeededSubscribers(message, false);
 				}
 			} catch (error) {
 				console.error('invalid message', error);
@@ -128,6 +126,14 @@ export class WebsocketInstance {
 		this.ws.on('error', (data) => {
 			this.resolumeArenaInstance.log('error', `WebSocket error: ${data}`);
 		});
+	}
+
+	private updateNeededSubscribers(message: { path: string; value: string | number | boolean; }, isComposition: boolean){
+		for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscrivers()) {
+			if (websocketSubscriber.messageFilter().call(this, message) || isComposition) {
+				websocketSubscriber.messageUpdates(message, isComposition);
+			}
+		}
 	}
 
 	async sendMessage(data: any) {
