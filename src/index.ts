@@ -47,12 +47,14 @@ import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
 import {selectLayerGroup} from './actions/select-layer-group';
 import {bypassLayerGroup} from './actions/bypass-layer-group';
 import {clearLayerGroup} from './actions/clear-layer-group';
-import { ColumnUtils } from './domain/columns/column-util';
-import { triggerLayerGroupColumn } from './actions/trigger-layer-group-column';
+import {ColumnUtils} from './domain/columns/column-util';
+import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
+import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
 	public restApi: ArenaRestApi | null = null;
+	private websocketApi: WebsocketApi | null = null;
 	private oscApi: ArenaOscApi | null = null;
 	private isPolling: boolean = false;
 
@@ -60,6 +62,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private layerUtils: LayerUtils;
 	private layerGroupUtils: LayerGroupUtils;
 	private columnUtils: ColumnUtils;
+	private websocketSubscribers: Set<MessageSubscriber> = new Set();
 
 	constructor(internal: unknown) {
 		super(internal);
@@ -68,6 +71,11 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerUtils = new LayerUtils(this);
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
+		
+		this.websocketSubscribers.add(this.layerUtils)
+		this.websocketSubscribers.add(this.layerGroupUtils)
+		this.websocketSubscribers.add(this.columnUtils)
+		this.websocketSubscribers.add(this.clipUtils)
 	}
 
 	/**
@@ -117,13 +125,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			this.setFeedbackDefinitions({
 				connectedClip: {
-					type: 'boolean',
+					type: 'advanced',
 					name: 'Connected Clip',
-					defaultStyle: getDefaultStyleGreen(),
 					options: [...getLayerOption(), ...getColumnOption()],
-					callback: this.clipUtils.connectedClipsFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.connectedClipsSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.connectedClipsUnsubscribe.bind(this.clipUtils),
+					callback: this.clipUtils.clipConnectedFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipConnectedFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipConnectedFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				clipInfo: {
 					type: 'advanced',
@@ -144,9 +151,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 							default: true,
 						},
 					],
-					callback: this.clipUtils.clipInfoFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.clipInfoSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.clipInfoUnsubscribe.bind(this.clipUtils),
+					callback: this.clipUtils.clipDetailsFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipDetailsFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipDetailsFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				layerBypassed: {
 					type: 'boolean',
@@ -238,7 +245,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
-				
 			});
 		} else {
 			this.setFeedbackDefinitions({});
@@ -638,8 +644,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		const config = this.config;
 		if (config.webapiPort && config.useRest) {
 			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
+			this.websocketApi = new WebsocketApi(this, this.config);
 		} else {
 			this.restApi = null;
+			this.websocketApi = null;
 		}
 		if (config.port) {
 			this.oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this));
@@ -670,10 +678,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					if (!this.hasPollingSubscriptions) {
 						await this.restApi?.productInfo();
 					}
-					await this.clipUtils.poll();
+					// await this.clipUtils.poll();
 					await this.layerUtils.poll();
 					await this.layerGroupUtils.poll();
-					await this.columnUtils.poll();
 					this.updateStatus(InstanceStatus.Ok);
 				} catch (e: any) {
 					this.updateStatus(InstanceStatus.UnknownError, e.message);
@@ -690,10 +697,11 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	}
 
 	private hasPollingSubscriptions(): boolean {
-		return this.clipUtils.hasPollingSubscriptions() 
-		|| this.layerUtils.hasPollingSubscriptions() 
-		|| this.layerGroupUtils.hasPollingSubscriptions() 
-		|| this.columnUtils.hasPollingSubscriptions();
+		return (
+			// this.clipUtils.hasPollingSubscriptions() ||
+			this.layerUtils.hasPollingSubscriptions() ||
+			this.layerGroupUtils.hasPollingSubscriptions()
+		);
 	}
 
 	/**
@@ -705,9 +713,21 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	getConfigFields(): SomeCompanionConfigField[] {
 		return configFields();
 	}
-
+	
+	getConfig(): ResolumeArenaConfig {
+		return this.config;
+	}
+	
+	getWebSocketSubscrivers(): Set<MessageSubscriber> {
+		return this.websocketSubscribers;
+	}
+	
 	getRestApi(): ArenaRestApi | null {
 		return this.restApi;
+	}
+	
+	getWebsocketApi(): WebsocketApi | null {
+		return this.websocketApi;
 	}
 
 	getOscApi(): ArenaOscApi | null {

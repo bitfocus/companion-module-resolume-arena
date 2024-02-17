@@ -2,68 +2,55 @@ import {CompanionFeedbackInfo} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {LayerGroupOptions} from '../../arena-api/child-apis/layer-group-options/LayerGroupOptions';
 import {LayerOptions} from '../../arena-api/child-apis/layer-options/LayerOptions';
-import { LayerGroupColumnId } from './layer-group-column-id';
-import { ColumnOptions } from '../../arena-api/child-apis/column-options/ColumnOptions';
+import {LayerGroupColumnId} from './layer-group-column-id';
+import {parameterStates} from '../../state';
+import {MessageSubscriber} from '../../websocket';
 
-export class LayerGroupUtils {
+export class LayerGroupUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
-	private bypassedLayerGroups: Set<number> = new Set<number>();
-	private layerGroupBypassedSubscriptions: Set<number> = new Set<number>();
+	private layerGroupBypassedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	private soloLayerGroup: number | undefined = undefined;
-	private layerGroupSoloSubscriptions: Set<number> = new Set<number>();
+	private layerGroupSoloSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private activeLayerGroups: Set<number> = new Set<number>();
-	private layerGroupActiveSubscriptions: Set<number> = new Set<number>();
+	private layerGroupActiveSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	private selectedLayerGroup: number | undefined = undefined;
-	private layerGroupSelectedSubscriptions: Set<number> = new Set<number>();
+	private layerGroupSelectedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	private selectedLayerGroupColumns: Set<string> = new Set<string>();
-	private layerGroupColumnsSelectedSubscriptions:  Map<string, LayerGroupColumnId> = new Map<string, LayerGroupColumnId>();
+
+	private layerGroupColumnsSelectedSubscriptions:  Map<string,Set<string>> = new Map<string, Set<string>>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
 		this.resolumeArenaInstance.log('debug', 'LayerGroupUtils constructor called');
 	}
 
+	messageUpdates(data: {path: any}) {
+		if(data.path){
+			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupBypassed');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/solo/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupSolo');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/select/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
+			}
+		}
+	}
+
+	messageFilter() {
+		return (message: any) => !!(message.path && message.path.match(/\/composition\/groups.?/));
+	}
+
 	async poll() {
-		if (this.layerGroupBypassedSubscriptions.size > 0) {
-			for (var layerGroup of this.layerGroupBypassedSubscriptions) {
-				var status = (await this.resolumeArenaInstance.restApi?.LayerGroups.getSettings(
-					layerGroup
-				)) as LayerGroupOptions;
-				if (status.bypassed?.value) {
-					this.bypassedLayerGroups.add(layerGroup);
-				} else {
-					this.bypassedLayerGroups.delete(layerGroup);
-				}
-			}
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupBypassed');
-		}
-
-		if (this.layerGroupSoloSubscriptions.size > 0) {
-			var soloSet = false;
-			for (var layerGroup of this.layerGroupSoloSubscriptions) {
-				var status = (await this.resolumeArenaInstance.restApi?.LayerGroups.getSettings(
-					layerGroup
-				)) as LayerGroupOptions;
-				if (status.solo?.value) {
-					this.soloLayerGroup = layerGroup;
-					soloSet = true;
-				}
-			}
-			if (!soloSet) {
-				this.soloLayerGroup = undefined;
-			}
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupSolo');
-		}
-
 		if (this.layerGroupActiveSubscriptions.size > 0) {
-			for (var layerGroup of this.layerGroupActiveSubscriptions) {
-				var status = (await this.resolumeArenaInstance.restApi?.LayerGroups.getSettings(
-					layerGroup
-				)) as LayerGroupOptions;
+			for (var layerGroupActiveSubscription of this.layerGroupActiveSubscriptions) {
+				const layerGroup = layerGroupActiveSubscription[0];
+				var status = (await this.resolumeArenaInstance.restApi?.LayerGroups.getSettings(layerGroup)) as LayerGroupOptions;
 				let activeLayers: Set<number> = new Set<number>();
 				for (const layerOptions of status.layers) {
 					var statusLayer = (await this.resolumeArenaInstance.restApi?.Layers.getSettingsById(
@@ -83,69 +70,20 @@ export class LayerGroupUtils {
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupActive');
 		}
-
-		if (this.layerGroupSelectedSubscriptions.size > 0) {
-			var SelectedSet = false;
-			for (var layerGroup of this.layerGroupSelectedSubscriptions) {
-				var status = (await this.resolumeArenaInstance.restApi?.LayerGroups.getSettings(
-					layerGroup
-				)) as LayerGroupOptions;
-				if (status.selected?.value) {
-					this.selectedLayerGroup = layerGroup;
-					SelectedSet = true;
-				}
-			}
-			if (!SelectedSet) {
-				this.selectedLayerGroup = undefined;
-			}
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
-		}
-
-		let selectedChanged = false;
-		var layerGroupColumnIds: Array<LayerGroupColumnId> = this.getDistinctLayerGroupColumnIds();
-		if (layerGroupColumnIds.length > 0) {
-			for (var layerGroupColumnId of layerGroupColumnIds) {
-				var columnStatus = (await this.resolumeArenaInstance.restApi?.LayerGroups.getColumnSettings(layerGroupColumnId.getLayerGroup(),layerGroupColumnId.getColumn() )) as ColumnOptions;
-				var isConnected = columnStatus?.connected?.value ===true;
-				if (isConnected) {
-					if (!this.selectedLayerGroupColumns.has(layerGroupColumnId.getIdString())) {
-						selectedChanged = true;
-						this.selectedLayerGroupColumns.add(layerGroupColumnId.getIdString());
-					}
-				} else {
-					if (this.selectedLayerGroupColumns.has(layerGroupColumnId.getIdString())) {
-						selectedChanged = true;
-						this.selectedLayerGroupColumns.delete(layerGroupColumnId.getIdString());
-					}
-				}
-			}
-		}
-		if (selectedChanged) {
-			this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
-		}
-	}
-
-	private getDistinctLayerGroupColumnIds(): Array<LayerGroupColumnId> {
-		var layerGroupColumnIdSubscriptions: Map<string, LayerGroupColumnId> = new Map<string, LayerGroupColumnId>();
-
-		this.layerGroupColumnsSelectedSubscriptions.forEach((layerGroupColumnId: LayerGroupColumnId) => layerGroupColumnIdSubscriptions.set(layerGroupColumnId.getIdString(), layerGroupColumnId));
-
-		return Array.from(layerGroupColumnIdSubscriptions, function (entry) {
-			return entry[1];
-		});
 	}
 
 	hasPollingSubscriptions(): boolean {
-		return this.layerGroupBypassedSubscriptions.size > 0
-		 || this.layerGroupSoloSubscriptions.size > 0
-		 || this.layerGroupActiveSubscriptions.size > 0
-		 || this.layerGroupSelectedSubscriptions.size > 0;
+		return this.layerGroupActiveSubscriptions.size > 0;
 	}
 
+	/////////////////////////////////////////////////
+	// BYPASSED
+	/////////////////////////////////////////////////
+	
 	layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup;
+		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			return this.bypassedLayerGroups.has(layerGroup as number);
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/bypassed']?.value;
 		}
 		return false;
 	}
@@ -153,31 +91,34 @@ export class LayerGroupUtils {
 	layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			this.addLayerGroupBypassedSubscription(layerGroup);
+			if (!this.layerGroupBypassedSubscriptions.get(layerGroup)) {
+				this.layerGroupBypassedSubscriptions.set(layerGroup, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/bypassed');
+			}
+			this.layerGroupBypassedSubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
-		if (layerGroup !== undefined) {
-			this.removeLayerGroupBypassedSubscription(layerGroup);
+		const layerByPassedSubscription = this.layerGroupBypassedSubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerByPassedSubscription) {
+			layerByPassedSubscription.delete(feedback.id);
+			if (layerByPassedSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/bypassed');
+				this.layerGroupBypassedSubscriptions.delete(layerGroup);
+			}
 		}
 	}
 
-	private addLayerGroupBypassedSubscription(layerGroup: number) {
-		this.layerGroupBypassedSubscriptions.add(layerGroup);
-		this.resolumeArenaInstance.pollStatus();
-		this.resolumeArenaInstance.checkFeedbacks('layerGroupBypassed');
-	}
-
-	private removeLayerGroupBypassedSubscription(layerGroup: number) {
-		this.layerGroupBypassedSubscriptions.delete(layerGroup);
-	}
-
+	/////////////////////////////////////////////////
+	// SOLO
+	/////////////////////////////////////////////////
+	
 	layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup;
+		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			return this.soloLayerGroup === (layerGroup as number);
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 		}
 		return false;
 	}
@@ -185,31 +126,35 @@ export class LayerGroupUtils {
 	layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			this.addLayerGroupSoloSubscription(layerGroup);
+			if (!this.layerGroupSoloSubscriptions.get(layerGroup)) {
+				this.layerGroupSoloSubscriptions.set(layerGroup, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/solo');
+			}
+			this.layerGroupSoloSubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
-		if (layerGroup !== undefined) {
-			this.removeLayerGroupSoloSubscription(layerGroup);
+		const layerSoloSubscription = this.layerGroupSoloSubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerSoloSubscription) {
+			layerSoloSubscription.delete(feedback.id);
+			if (layerSoloSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/solo');
+				this.layerGroupSoloSubscriptions.delete(layerGroup);
+			}
 		}
 	}
 
-	private addLayerGroupSoloSubscription(layerGroup: number) {
-		this.layerGroupSoloSubscriptions.add(layerGroup);
-		this.resolumeArenaInstance.pollStatus();
-		this.resolumeArenaInstance.checkFeedbacks('layerGroupSolo');
-	}
-
-	private removeLayerGroupSoloSubscription(layerGroup: number) {
-		this.layerGroupSoloSubscriptions.delete(layerGroup);
-	}
+	/////////////////////////////////////////////////
+	// ACTIVE
+	/////////////////////////////////////////////////
 
 	layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup;
+		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			return this.activeLayerGroups.has(layerGroup as number);
+			// TODO request feature return parameterStates.get()['/composition/layergroups/' + layerGroup + '/active']?.value;
 		}
 		return false;
 	}
@@ -217,31 +162,34 @@ export class LayerGroupUtils {
 	layerGroupActiveFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			this.addLayerGroupActiveSubscription(layerGroup);
+			if (!this.layerGroupActiveSubscriptions.get(layerGroup)) {
+				this.layerGroupActiveSubscriptions.set(layerGroup, new Set());
+				// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layerGroup + '/select');
+			}
+			this.layerGroupActiveSubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupActiveFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
-		if (layerGroup !== undefined) {
-			this.removeLayerGroupActiveSubscription(layerGroup);
+		const layerGroupActiveSubscription = this.layerGroupActiveSubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerGroupActiveSubscription) {
+			layerGroupActiveSubscription.delete(feedback.id);
+			if (layerGroupActiveSubscription.size === 0) {
+				// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layerGroup + '/select');
+				this.activeLayerGroups.delete(layerGroup);
+			}
 		}
 	}
 
-	private addLayerGroupActiveSubscription(layerGroup: number) {
-		this.layerGroupActiveSubscriptions.add(layerGroup);
-		this.resolumeArenaInstance.pollStatus();
-		this.resolumeArenaInstance.checkFeedbacks('layerGroupActive');
-	}
-
-	private removeLayerGroupActiveSubscription(layerGroup: number) {
-		this.layerGroupActiveSubscriptions.delete(layerGroup);
-	}
-
+	/////////////////////////////////////////////////
+	// SELECTED
+	/////////////////////////////////////////////////
+	
 	layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup;
+		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			return this.selectedLayerGroup === (layerGroup as number);
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/select']?.value;
 		}
 		return false;
 	}
@@ -249,32 +197,35 @@ export class LayerGroupUtils {
 	layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			this.addLayerGroupSelectedSubscription(layerGroup);
+			if (!this.layerGroupSelectedSubscriptions.get(layerGroup)) {
+				this.layerGroupSelectedSubscriptions.set(layerGroup, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/selected');
+			}
+			this.layerGroupSelectedSubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
-		if (layerGroup !== undefined) {
-			this.removeLayerGroupSelectedSubscription(layerGroup);
+		const layerGroupSelectedSubscriptions = this.layerGroupSelectedSubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerGroupSelectedSubscriptions) {
+			layerGroupSelectedSubscriptions.delete(feedback.id);
+			if (layerGroupSelectedSubscriptions.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/selected');
+				this.layerGroupSelectedSubscriptions.delete(layerGroup);
+			}
 		}
 	}
 
-	private addLayerGroupSelectedSubscription(layerGroup: number) {
-		this.layerGroupSelectedSubscriptions.add(layerGroup);
-		this.resolumeArenaInstance.pollStatus();
-		this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
-	}
-
-	private removeLayerGroupSelectedSubscription(layerGroup: number) {
-		this.layerGroupSelectedSubscriptions.delete(layerGroup);
-	}
+	/////////////////////////////////////////////////
+	// SELECTED COLUMN
+	/////////////////////////////////////////////////
 
 	layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layerGroup = feedback.options.layerGroup as number;
 		var column = feedback.options.column as number;
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
-			return this.selectedLayerGroupColumns.has(new LayerGroupColumnId(layerGroup, column).getIdString());
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/'+column+'/connect']?.value;
 		}
 		return false;
 	}
@@ -283,25 +234,25 @@ export class LayerGroupUtils {
 		var layerGroup = feedback.options.layerGroup as number;
 		var column = feedback.options.column as number;
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
-			this.addlayerGroupColumnsSelectedSubscription(feedback.id, layerGroup, column);
+			const idString = new LayerGroupColumnId(layerGroup, column).getIdString()
+			if (!this.layerGroupColumnsSelectedSubscriptions.get(idString)) {
+				this.layerGroupColumnsSelectedSubscriptions.set(idString, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/'+column+'/connect');
+			}
+			this.layerGroupColumnsSelectedSubscriptions.get(idString)?.add(feedback.id);
 		}
 	}
 
 	layerGroupColumnsSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
 		var layerGroup = feedback.options.layerGroup as number;
 		var column = feedback.options.column as number;
-		if (LayerGroupColumnId.isValid(layerGroup, column)) {
-			this.removelayerGroupColumnsSelectedSubscription(feedback.id);
+				const layerGroupColumnsSelectedSubscriptions = this.layerGroupColumnsSelectedSubscriptions.get(new LayerGroupColumnId(layerGroup, column).getIdString());
+				if (LayerGroupColumnId.isValid(layerGroup, column)&&layerGroupColumnsSelectedSubscriptions) {
+					layerGroupColumnsSelectedSubscriptions.delete(feedback.id);
+			if (layerGroupColumnsSelectedSubscriptions.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/'+column+'/connect');
+				this.layerGroupColumnsSelectedSubscriptions.delete(new LayerGroupColumnId(layerGroup, column).getIdString());
+			}
 		}
-	}
-
-	private addlayerGroupColumnsSelectedSubscription(subscriberId: string, layerGroup: number, column: number) {
-		this.layerGroupColumnsSelectedSubscriptions.set(subscriberId, new LayerGroupColumnId(layerGroup, column));
-		this.resolumeArenaInstance.pollStatus();
-		this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
-	}
-
-	private removelayerGroupColumnsSelectedSubscription(subscriberId: string) {
-		this.layerGroupColumnsSelectedSubscriptions.delete(subscriberId);
 	}
 }
