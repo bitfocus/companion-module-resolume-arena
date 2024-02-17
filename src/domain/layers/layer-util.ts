@@ -76,7 +76,10 @@ export class LayerUtils {
 	}
 
 	hasPollingSubscriptions(): boolean {
-		return this.layerBypassedSubscriptions.size > 0;
+		return this.layerBypassedSubscriptions.size > 0
+			||this.layerSoloSubscriptions.size > 0
+			||this.layerActiveSubscriptions.size > 0
+			||this.layerSelectedSubscriptions.size > 0;
 	}
 
 	layerBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {

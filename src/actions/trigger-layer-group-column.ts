@@ -1,21 +1,21 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
-import {getColumnOption} from '../defaults';
+import {getColumnOption, getLayerGroupOption} from '../defaults';
 
-export function triggerColumn(
+export function triggerLayerGroupColumn(
 	restApi: () => ArenaRestApi | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
-		name: 'Trigger Column',
-		options: [...getColumnOption()],
+		name: 'Trigger Layer Group Column',
+		options: [...getLayerGroupOption(), ...getColumnOption()],
 		callback: async ({options}: {options: any}) => {
 			let rest = restApi();
 			if (rest) {
-				await rest.Columns.connectColumn(options.column);
+				await rest.LayerGroups.connectColumn(options.layerGroup, options.column);
 			} else {
-				oscApi()?.triggerColumn(options.column);
+				oscApi()?.triggerlayerGroupColumn(options.layerGroup, options.column);
 			}
 		},
 	};

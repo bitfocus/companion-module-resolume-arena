@@ -1,4 +1,5 @@
 import {ArenaFetchFunction} from '../rest';
+import { ColumnOptions, ColumnWriteOptions } from './column-options/ColumnOptions';
 import {LayerGroupOptions, LayerGroupWriteOptions} from './layer-group-options/LayerGroupOptions';
 
 export class ArenaLayerGroupsApi {
@@ -8,7 +9,7 @@ export class ArenaLayerGroupsApi {
 		this.arenaFetch = fetchFn;
 	}
 
-  async select(layerGroup: number) {
+	async select(layerGroup: number) {
 		var url = `composition/layergroups/${layerGroup}/select`;
 		await this.arenaFetch('post', url, 'bool');
 	}
@@ -28,4 +29,19 @@ export class ArenaLayerGroupsApi {
 	// 	var url = `composition/layergroups/${layerGroup}/clear`;
 	// 	await this.arenaFetch('post', url, 'bool');
 	// }
+
+	async connectColumn(layerGroup: number, column: number): Promise<ColumnOptions> {
+		var url = `composition/layergroups/${layerGroup}/columns/${column}/connect`;
+		return (await this.arenaFetch('post', url, 'json')) as ColumnOptions;
+	}
+	
+	async getColumnSettings(layerGroup: number, column: number): Promise<ColumnOptions> {
+		var url = `composition/layergroups/${layerGroup}/columns/${column}`;
+		return (await this.arenaFetch('get', url, 'json')) as ColumnOptions;
+	}
+
+	async updateColumnSettings(layerGroup: number, column: number, options: ColumnWriteOptions) {
+		var url = `composition/layergroups/${layerGroup}/columns/${column}`;
+		await this.arenaFetch('put', url, 'bool', options);
+	}
 }

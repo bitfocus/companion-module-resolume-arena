@@ -60,6 +60,10 @@ export default class ArenaOscApi {
 		this.send('/composition/tempocontroller/tempotap', OscArgs.One);
 	}
 
+	public triggerlayerGroupColumn(layerGroup: number, column: number) {
+		this.send(`/composition/groups/${layerGroup}/columns/${column}/connect`, OscArgs.One);
+	}
+	
 	public layerGroupNextCol(layerGroup: number, lastColumn: number) {
 		if (this.groupPos[layerGroup] == undefined) {
 			this.groupPos[layerGroup] = 1;

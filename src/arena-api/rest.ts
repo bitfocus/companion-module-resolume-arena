@@ -3,7 +3,8 @@ import { Agent as httpsAgent } from 'https';
 import fetch, { HeadersInit, Response } from 'node-fetch';
 import { ArenaClipsApi } from './child-apis/ArenaClipsApi';
 import { ArenaLayersApi } from './child-apis/ArenaLayersApi';
-import { ArenaLayerGroupsApi } from './child-apis/ArenaGroupsApi';
+import { ArenaLayerGroupsApi } from './child-apis/ArenaLayerGroupsApi';
+import { ArenaColumnsApi } from './child-apis/ArenaColumnsApi';
 
 class HTTPResponseError extends Error {
   response: any;
@@ -143,4 +144,5 @@ export default class ArenaRestApi {
   public readonly Clips: ArenaClipsApi = new ArenaClipsApi(this.arenaFetch.bind(this));
   public readonly Layers: ArenaLayersApi = new ArenaLayersApi(this.arenaFetch.bind(this));
   public readonly LayerGroups: ArenaLayerGroupsApi = new ArenaLayerGroupsApi(this.arenaFetch.bind(this));
+  public readonly Columns: ArenaColumnsApi = new ArenaColumnsApi(this.arenaFetch.bind(this));
 } 
