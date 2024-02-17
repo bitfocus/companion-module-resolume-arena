@@ -22,7 +22,6 @@ export class ClipUtils implements MessageSubscriber {
 			this.initComposition();
 		}
 		if (data.path) {
-			console.log('test', data.path);
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
 				this.resolumeArenaInstance.checkFeedbacks('connectedClip');
 			}

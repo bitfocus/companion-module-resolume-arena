@@ -189,18 +189,20 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	setPath(path: string) {
+	setPath(path: string, value: any) {
 		const data = {
 			action: 'set',
 			parameter: path,
+			value: value
 		};
 		this.sendMessage(data);
 	}
 
-	setParam(paramId: string) {
+	setParam(paramId: string, value: any) {
 		const data = {
 			action: 'set',
 			parameter: '/parameter/by-id/' + paramId,
+			value: value
 		};
 		this.sendMessage(data);
 	}
