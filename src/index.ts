@@ -273,7 +273,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 				},
 				layerGroupColumnsSelected: {
 					type: 'boolean',
-					name: 'Layer Group Selected',
+					name: 'Layer Group Column Selected',
 					defaultStyle: getDefaultStyleGreen(),
 					options: [...getLayerGroupOption(), ...getColumnOption()],
 					callback: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackCallback.bind(this.layerGroupUtils),
@@ -289,10 +289,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	setupPresets() {
 		if (this.restApi) {
 			this.setPresetDefinitions({
-				playClip: {
+				triggerClip: {
 					type: 'button',
 					category: 'Clip',
-					name: 'Play Clip',
+					name: 'Trigger Clip',
 					style: {
 						size: '18',
 						text: 'Play Clip',

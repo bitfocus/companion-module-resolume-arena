@@ -23,14 +23,17 @@ to using OSC if the Rest API port is not specified.
 The module status will show an error if the Rest API port is not responding (e.g.
 you've misconfigured Resolume). There is no way to tell if the OSC port is connected
 so the module will always show an OK status if you only specify the OSC port.
-
+---
 ### Available Actions
 
+#### Composition
+* Change Composition Opacity
+
 #### Clips
-* Start Clip
+* Trigger Clip
 
 #### Columns
-* Start Column
+* Trigger Column
 * Layer Next Column
 * Layer Previous Column
 * Layer Group Next Column
@@ -44,16 +47,70 @@ so the module will always show an OK status if you only specify the OSC port.
 * Select Layer
 * Clear Layer
 * Clear All Layers
+* Change Layer Opacity
 
 #### Layer Groups
 * Bypass Layer Group
 * Solo Layer Group
 * Select Layer Group
 * Clear Layer Group
+* Trigger Layer Group Column
+* Change Layer Group Opacity
 
 #### Custom
 * Custom OSC Command
+---
 
+### Available Feedbacks
+
+#### Composition
+* Composition Opacity
+
+#### Clips
+* Clip Info (name + thumbnail)
+* Connected Clip
+
+#### Columns
+* Column Selected
+
+#### Layers 
+* Layer Bypassed
+* Layer Solo
+* Layer Active
+* Layer Selected
+* Layer Opacity
+
+#### Layer Groups
+* Layer Group Bypassed
+* Layer Group Solo
+* Layer Group Active
+* Layer Group Selected
+* Layer Group Opacity
+* Layer Group Column Selected
+---
+
+### Available Presets
+
+#### Clips
+* Trigger Clip
+
+#### Columns
+* Trigger Column
+
+#### Layers 
+* Bypass Layer
+* Solo Layer
+* Clear Layer
+* Select Layer
+
+#### Layer Groups
+* Bypass Layer Group
+* Solo Layer Group
+* Clear Layer Group
+* Select Layer Group
+* Trigger Layer Group Column
+
+---
 ### Some Examples
 
 ![image](https://github.com/bitfocus/companion-module-resolume-arena/assets/10220112/a3cbebd2-d4c8-4bcc-a139-ae3c41d7cee0)
