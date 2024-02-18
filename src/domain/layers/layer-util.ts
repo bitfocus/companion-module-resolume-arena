@@ -1,8 +1,9 @@
-import {CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
 import {LayerOptions} from '../../arena-api/child-apis/layer-options/LayerOptions';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
+import {drawPercentage} from '../../defaults';
 
 export class LayerUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -15,6 +16,7 @@ export class LayerUtils implements MessageSubscriber {
 	private layerActiveSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private layerSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -32,6 +34,9 @@ export class LayerUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/bypassed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerBypassed');
 			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/master/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerOpacity');
+			}
 		}
 	}
 
@@ -40,9 +45,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	hasPollingSubscriptions(): boolean {
-		return (
-			this.layerActiveSubscriptions.size > 0
-		);
+		return this.layerActiveSubscriptions.size > 0;
 	}
 
 	async poll() {
@@ -63,7 +66,7 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 	// BYPASSED
 	/////////////////////////////////////////////////
-	
+
 	layerBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layer = feedback.options.layer;
 		if (layer !== undefined) {
@@ -98,7 +101,7 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 	// SOLO
 	/////////////////////////////////////////////////
-	
+
 	layerSoloFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layer = feedback.options.layer;
 		if (layer !== undefined) {
@@ -169,7 +172,7 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 	// SELECTED
 	/////////////////////////////////////////////////
-	
+
 	layerSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layer = feedback.options.layer;
 		if (layer !== undefined) {
@@ -197,6 +200,46 @@ export class LayerUtils implements MessageSubscriber {
 			if (layerSelectedSubscription.size === 0) {
 				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/select');
 				this.layerSelectedSubscriptions.delete(layer);
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////
+	// Opacity
+	/////////////////////////////////////////////////
+
+	layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer;
+		const opacity = parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
+		if (layer !== undefined && opacity!==undefined) {
+			return {
+				text: Math.round(opacity * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(opacity),
+			};
+		}
+		return {text: '?'};
+	}
+
+	layerOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		if (layer !== undefined) {
+			if (!this.layerOpacitySubscriptions.get(layer)) {
+				this.layerOpacitySubscriptions.set(layer, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
+			}
+			this.layerOpacitySubscriptions.get(layer)?.add(feedback.id);
+		}
+	}
+
+	layerOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		const layerOpacitySubscription = this.layerOpacitySubscriptions.get(layer);
+		if (layer !== undefined && layerOpacitySubscription) {
+			layerOpacitySubscription.delete(feedback.id);
+			if (layerOpacitySubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
+				this.layerOpacitySubscriptions.delete(layer);
 			}
 		}
 	}

@@ -38,6 +38,7 @@
 	"dependencies": {
 		"@companion-module/base": "~1.7.0",
 		"@persevie/statemanjs": "^1.6.0",
+		"canvas": "^2.11.2",
 		"node-fetch": "^2.0.0",
 		"ws": "^8.16.0"
 	},

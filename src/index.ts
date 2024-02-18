@@ -50,6 +50,7 @@ import {clearLayerGroup} from './actions/clear-layer-group';
 import {ColumnUtils} from './domain/columns/column-util';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
+import {layerOpacityChange} from './actions/layer-opacity-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -94,6 +95,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 	get actions(): CompanionActionDefinitions {
 		var restApi = this.getRestApi.bind(this);
+		var websocketApi = this.getWebsocketApi.bind(this);
 		var oscApi = this.getOscApi.bind(this);
 		var actions: CompanionActionDefinitions = {
 			bypassLayer: bypassLayer(restApi, oscApi),
@@ -117,6 +119,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			triggerClip: connectClip(restApi, oscApi),
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
+			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
 		};
 		return actions;
 	}
@@ -190,6 +193,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.layerUtils.layerSelectedFeedbackCallback.bind(this.layerUtils),
 					subscribe: this.layerUtils.layerSelectedFeedbackSubscribe.bind(this.layerUtils),
 					unsubscribe: this.layerUtils.layerSelectedFeedbackUnsubscribe.bind(this.layerUtils),
+				},
+				layerOpacity: {
+					type: 'advanced',
+					name: 'Layer Opacity',
+					options: [...getLayerOption()],
+					callback: this.layerUtils.layerOpacityFeedbackCallback.bind(this.layerUtils),
+					subscribe: this.layerUtils.layerOpacityFeedbackSubscribe.bind(this.layerUtils),
+					unsubscribe: this.layerUtils.layerOpacityFeedbackUnsubscribe.bind(this.layerUtils),
 				},
 				layerGroupBypassed: {
 					type: 'boolean',
