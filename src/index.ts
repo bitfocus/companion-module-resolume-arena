@@ -55,6 +55,7 @@ import {CompositionUtils} from './domain/composition/composition-utils';
 import {compositionOpacityChange} from './actions/composition-opacity-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
 import {compositionSpeedChange} from './actions/composition-speed-change';
+import {clipSpeedChange} from './actions/clip-speed-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -78,12 +79,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
 		this.compositionUtils = new CompositionUtils(this);
-		
-		this.websocketSubscribers.add(this.layerUtils)
-		this.websocketSubscribers.add(this.layerGroupUtils)
-		this.websocketSubscribers.add(this.columnUtils)
-		this.websocketSubscribers.add(this.clipUtils)
-		this.websocketSubscribers.add(this.compositionUtils)
+
+		this.websocketSubscribers.add(this.layerUtils);
+		this.websocketSubscribers.add(this.layerGroupUtils);
+		this.websocketSubscribers.add(this.columnUtils);
+		this.websocketSubscribers.add(this.clipUtils);
+		this.websocketSubscribers.add(this.compositionUtils);
 	}
 
 	/**
@@ -104,6 +105,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		var restApi = this.getRestApi.bind(this);
 		var websocketApi = this.getWebsocketApi.bind(this);
 		var oscApi = this.getOscApi.bind(this);
+		var clipUtils = this.getClipUtils.bind(this);
 		var actions: CompanionActionDefinitions = {
 			bypassLayer: bypassLayer(restApi, oscApi),
 			bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
@@ -124,6 +126,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			soloLayerGroup: soloLayerGroup(restApi, oscApi),
 			tempoTap: tempoTap(restApi, oscApi),
 			triggerClip: connectClip(restApi, oscApi),
+			clipSpeedChange: clipSpeedChange(restApi,websocketApi, oscApi, clipUtils, this),
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
@@ -168,6 +171,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.clipUtils.clipDetailsFeedbackCallback.bind(this.clipUtils),
 					subscribe: this.clipUtils.clipDetailsFeedbackSubscribe.bind(this.clipUtils),
 					unsubscribe: this.clipUtils.clipDetailsFeedbackUnsubscribe.bind(this.clipUtils),
+				},
+				clipSpeed: {
+					type: 'advanced',
+					name: 'Clip Speed',
+					options: [...getLayerOption(), ...getColumnOption()],
+					callback: this.clipUtils.clipSpeedFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipSpeedFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipSpeedFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				compositionOpacity: {
 					type: 'advanced',
@@ -755,8 +766,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private hasPollingSubscriptions(): boolean {
 		return (
 			// this.clipUtils.hasPollingSubscriptions() ||
-			this.layerUtils.hasPollingSubscriptions() ||
-			this.layerGroupUtils.hasPollingSubscriptions()
+			this.layerUtils.hasPollingSubscriptions() || this.layerGroupUtils.hasPollingSubscriptions()
 		);
 	}
 
@@ -769,25 +779,29 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	getConfigFields(): SomeCompanionConfigField[] {
 		return configFields();
 	}
-	
+
 	getConfig(): ResolumeArenaConfig {
 		return this.config;
 	}
-	
+
 	getWebSocketSubscrivers(): Set<MessageSubscriber> {
 		return this.websocketSubscribers;
 	}
-	
+
 	getRestApi(): ArenaRestApi | null {
 		return this.restApi;
 	}
-	
+
 	getWebsocketApi(): WebsocketApi | null {
 		return this.websocketApi;
 	}
 
 	getOscApi(): ArenaOscApi | null {
 		return this.oscApi;
+	}
+	
+	getClipUtils(): ClipUtils | null {
+		return this.clipUtils;
 	}
 
 	/**

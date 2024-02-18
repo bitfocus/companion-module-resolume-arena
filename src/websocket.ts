@@ -254,8 +254,11 @@ export class WebsocketInstance {
 	subscribeParam(paramId: number, subPath?: string) {
 		const data = {
 			action: 'subscribe',
-			parameter: '/parameter/by-id/' + paramId + subPath || '',
+			parameter: '/parameter/by-id/' + paramId,
 		};
+		if(subPath){
+			data.parameter += subPath  
+		}
 		this.sendMessage(data);
 	}
 

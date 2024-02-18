@@ -1,8 +1,10 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
-import {parameterStates} from '../../state';
+import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
 import {ClipId} from './clip-id';
+import {drawPercentage} from '../../defaults';
+import {Clip} from '../api';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -11,6 +13,8 @@ export class ClipUtils implements MessageSubscriber {
 
 	private clipDetailsSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipConnectedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private clipSpeedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private clipSpeedIds: Set<number> = new Set<number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -28,11 +32,15 @@ export class ClipUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/name/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position\/behaviour\/speed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
+			}
 		}
 	}
 	initComposition() {
 		this.initConnectedFromComposition();
 		this.initDetailsFromComposition();
+		this.initSpeedFromComposition();
 	}
 
 	initConnectedFromComposition() {
@@ -55,8 +63,32 @@ export class ClipUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 	}
 
+	initSpeedFromComposition() {
+		for (const clipSpeedId of this.clipSpeedIds) {
+			this.clipSpeedWebsocketUnsubscribe(clipSpeedId);
+		}
+		for (const clipSpeedSubscription of this.clipSpeedSubscriptions) {
+			const clipId = ClipId.fromId(clipSpeedSubscription[0]);
+			this.clipSpeedWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+		}
+		this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
+	}
+
 	messageFilter() {
 		return (message: any) => !!(message.path && message.path.match(/\/composition\/layers\/\d+\/clips\/\d+.*/));
+	}
+
+	public getClipFromCompositionState(layer: number, column: number): Clip | undefined {
+		const layersObject = compositionState.get().layers;
+		if (layersObject) {
+			const layerObject = layersObject[layer - 1];
+			const clipsObject = layerObject.clips;
+			if (clipsObject) {
+				const clipObject = clipsObject[column - 1];
+				return clipObject;
+			}
+		}
+		return undefined;
 	}
 
 	/////////////////////////////////////////////////
@@ -100,9 +132,7 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	clipDetailsWebsocketSubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance
-			.getWebsocketApi()
-			?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
+		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
 	}
 
 	clipDetailsFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
@@ -119,9 +149,7 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	clipDetailsWebsocketUnsubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance
-			.getWebsocketApi()
-			?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
 	}
 
 	/////////////////////////////////////////////////
@@ -131,8 +159,8 @@ export class ClipUtils implements MessageSubscriber {
 	clipConnectedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
 		var layer = feedback.options.layer as number;
 		var column = feedback.options.column as number;
-		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value
-		console.log('connectedState', layer, column, connectedState)
+		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
+		this.resolumeArenaInstance.log('debug','connectedState layer:'+ layer + 'col: '+ column +' connectedState:'+ connectedState);
 		switch (connectedState) {
 			case 'Connected':
 				return {bgcolor: combineRgb(0, 255, 0)};
@@ -159,9 +187,7 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	clipConnectedWebsocketSubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance
-			.getWebsocketApi()
-			?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
 	}
 
 	clipConnectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
@@ -178,8 +204,70 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	clipConnectedWebsocketUnsubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance
-			.getWebsocketApi()
-			?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+	}
+
+	/////////////////////////////////////////////////
+	// Speed
+	/////////////////////////////////////////////////
+
+	clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer as number;
+		var column = feedback.options.column as number;
+		const speed = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed']?.value;
+		if (ClipId.isValid(layer, column)) {
+			return {
+				text: Math.round(speed * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(speed),
+			};
+		}
+		return {text: '?'};
+	}
+
+	clipSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		var column = feedback.options.column as number;
+		if (ClipId.isValid(layer, column)) {
+			const idString = new ClipId(layer, column).getIdString();
+			if (!this.clipSpeedSubscriptions.get(idString)) {
+				this.clipSpeedSubscriptions.set(idString, new Set());
+				this.clipSpeedWebsocketSubscribe(layer, column);
+			}
+			this.clipSpeedSubscriptions.get(idString)?.add(feedback.id);
+		}
+	}
+
+	clipSpeedWebsocketSubscribe(layer: number, column: number) {
+		const clip = this.getClipFromCompositionState(layer, column);
+		const clipSpeedId = clip?.transport?.controls?.speed?.id;
+		if (clipSpeedId) {
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(clipSpeedId);
+			this.clipSpeedIds.add(clipSpeedId);
+		}
+		// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/speed');
+	}
+
+	clipSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		var column = feedback.options.column as number;
+		const clipSpeedSubscriptions = this.clipSpeedSubscriptions.get(new ClipId(layer, column).getIdString());
+		if (ClipId.isValid(layer, column) && clipSpeedSubscriptions) {
+			clipSpeedSubscriptions.delete(feedback.id);
+			if (clipSpeedSubscriptions.size === 0) {
+				const clip = this.getClipFromCompositionState(layer, column);
+				const clipSpeedId = clip?.transport?.controls?.speed?.id;
+				this.clipSpeedWebsocketUnsubscribe(clipSpeedId);
+				this.clipSpeedSubscriptions.delete(new ClipId(layer, column).getIdString());
+			}
+		}
+	}
+
+	clipSpeedWebsocketUnsubscribe(clipSpeedId?: number) {
+		if (clipSpeedId) {
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(clipSpeedId);
+			this.clipSpeedIds.delete(clipSpeedId);
+		}
+		// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/speed');
 	}
 }
