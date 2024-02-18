@@ -1,10 +1,11 @@
-import {CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {LayerGroupOptions} from '../../arena-api/child-apis/layer-group-options/LayerGroupOptions';
 import {LayerOptions} from '../../arena-api/child-apis/layer-options/LayerOptions';
 import {LayerGroupColumnId} from './layer-group-column-id';
 import {parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
+import {drawPercentage} from '../../defaults';
 
 export class LayerGroupUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -17,6 +18,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 
 	private layerGroupSelectedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
+	private layerGroupOpacitySubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private layerGroupColumnsSelectedSubscriptions:  Map<string,Set<string>> = new Map<string, Set<string>>();
 
@@ -35,6 +37,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/groups\/\d+\/select/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupSelected');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/master/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupOpacity');
 			}
 			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
@@ -252,6 +257,46 @@ export class LayerGroupUtils implements MessageSubscriber {
 			if (layerGroupColumnsSelectedSubscriptions.size === 0) {
 				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/'+column+'/connect');
 				this.layerGroupColumnsSelectedSubscriptions.delete(new LayerGroupColumnId(layerGroup, column).getIdString());
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////
+	// Opacity
+	/////////////////////////////////////////////////
+
+	layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layerGroup = feedback.options.layerGroup;
+		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
+		if (layerGroup !== undefined && opacity!==undefined) {
+			return {
+				text: Math.round(opacity * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(opacity),
+			};
+		}
+		return {text: '?'};
+	}
+
+	layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layerGroup = feedback.options.layerGroup as number;
+		if (layerGroup !== undefined) {
+			if (!this.layerGroupOpacitySubscriptions.get(layerGroup)) {
+				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/master');
+			}
+			this.layerGroupOpacitySubscriptions.get(layerGroup)?.add(feedback.id);
+		}
+	}
+
+	layerGroupOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroupOpacitySubscription = this.layerGroupOpacitySubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerGroupOpacitySubscription) {
+			layerGroupOpacitySubscription.delete(feedback.id);
+			if (layerGroupOpacitySubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/master');
+				this.layerGroupOpacitySubscriptions.delete(layerGroup);
 			}
 		}
 	}

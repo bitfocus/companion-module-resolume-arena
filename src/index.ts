@@ -51,8 +51,9 @@ import {ColumnUtils} from './domain/columns/column-util';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
 import {layerOpacityChange} from './actions/layer-opacity-change';
-import { CompositionUtils } from './domain/composition/composition-utils';
-import { compositionOpacityChange } from './actions/composition-opacity-change';
+import {CompositionUtils} from './domain/composition/composition-utils';
+import {compositionOpacityChange} from './actions/composition-opacity-change';
+import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -125,6 +126,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
+			layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
 		};
 		return actions;
@@ -251,6 +253,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.layerGroupUtils.layerGroupSelectedFeedbackCallback.bind(this.layerGroupUtils),
 					subscribe: this.layerGroupUtils.layerGroupSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				layerGroupOpacity: {
+					type: 'advanced',
+					name: 'Layer Group Opacity',
+					options: [...getLayerGroupOption()],
+					callback: this.layerGroupUtils.layerGroupOpacityFeedbackCallback.bind(this.layerGroupUtils),
+					subscribe: this.layerGroupUtils.layerGroupOpacityFeedbackSubscribe.bind(this.layerGroupUtils),
+					unsubscribe: this.layerGroupUtils.layerGroupOpacityFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
 				columnSelected: {
 					type: 'boolean',
