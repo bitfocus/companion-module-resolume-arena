@@ -183,6 +183,55 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.clipUtils.clipSpeedFeedbackSubscribe.bind(this.clipUtils),
 					unsubscribe: this.clipUtils.clipSpeedFeedbackUnsubscribe.bind(this.clipUtils),
 				},
+				clipTransportPosition: {
+					type: 'advanced',
+					name: 'Clip Transport Position',
+					options: [...getLayerOption(), ...getColumnOption(), 
+						{
+							id: 'view',
+							type: 'dropdown',
+							choices: [
+								{
+									id: 'timestamp',
+									label: 'hh:mm:ss',
+								},
+								{
+									id: 'timestampFrame',
+									label: 'hh:mm:ss:ff - including frames',
+								},
+								{
+									id: 'fullSeconds',
+									label: '10000s',
+								},
+								{
+									id: 'frames',
+									label: 'ff - frames',
+								},
+								{
+									id: 'seconds',
+									label: 'ss - seconds',
+								},
+								{
+									id: 'minutes',
+									label: 'mm - minutes',
+								},
+								{
+									id: 'hours',
+									label: 'hh - hours',
+								},
+							],
+							default: 'timestamp',
+							label: 'Visualisation',
+						},{
+							id: 'timeRemaining',
+							type: 'checkbox',
+							default: false,
+							label: 'Remaining Time',
+						},],
+					callback: this.clipUtils.clipTransportPositionFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipTransportPositionFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipTransportPositionFeedbackUnsubscribe.bind(this.clipUtils),
+				},
 				compositionOpacity: {
 					type: 'advanced',
 					name: 'Composition Opacity',
