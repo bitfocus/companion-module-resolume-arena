@@ -47,3 +47,9 @@ so the module will always show an OK status if you only specify the OSC port.
 
 #### Custom
 * Custom OSC Command
+
+### Some Examples
+
+![image](https://github.com/bitfocus/companion-module-resolume-arena/assets/10220112/a3cbebd2-d4c8-4bcc-a139-ae3c41d7cee0)
+![image](https://github.com/bitfocus/companion-module-resolume-arena/assets/10220112/7e43e648-1816-43d2-ad3c-3a5ac43f8c57)
+![image](https://github.com/bitfocus/companion-module-resolume-arena/assets/10220112/575fecb8-2d26-4a46-ac35-d26cd272d3dc)
