@@ -1,3 +1,3 @@
 # companion-module-resolume-arena
 
-See HELP.md and LICENSE
+See [HELP](companion/HELP.md) and [LICENSE](LICENSE)
