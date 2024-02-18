@@ -141,7 +141,7 @@ export class LayerUtils implements MessageSubscriber {
 		var layer = feedback.options.layer;
 		if (layer !== undefined) {
 			return this.activeLayers.has(layer as number);
-			// TODO request feature return parameterStates.get()['/composition/layers/' + layer + '/active']?.value;
+			// TODO: #47 request feature return parameterStates.get()['/composition/layers/' + layer + '/active']?.value;
 		}
 		return false;
 	}
@@ -151,7 +151,7 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined) {
 			if (!this.layerActiveSubscriptions.get(layer)) {
 				this.layerActiveSubscriptions.set(layer, new Set());
-				// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/select');
+				// TODO: #47 request feature this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/select');
 			}
 			this.layerActiveSubscriptions.get(layer)?.add(feedback.id);
 		}
@@ -163,7 +163,7 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined && layerActiveSubscription) {
 			layerActiveSubscription.delete(feedback.id);
 			if (layerActiveSubscription.size === 0) {
-				// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/select');
+				// TODO: #47 request feature this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/select');
 				this.layerActiveSubscriptions.delete(layer);
 			}
 		}

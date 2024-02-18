@@ -4,9 +4,9 @@ import {ResolumeArenaConfig} from './config-fields.js';
 import {ResolumeArenaModuleInstance} from './index.js';
 import {compositionState, parameterStates} from './state.js';
 
-export interface MessageSubscriber{
-	messageUpdates(data: {path: string; value: string | boolean | number},isComposition: boolean):void;
-	messageFilter():(data: any)=>boolean;
+export interface MessageSubscriber {
+	messageUpdates(data: {path: string; value: string | boolean | number}, isComposition: boolean): void;
+	messageFilter(): (data: any) => boolean;
 }
 
 export class WebsocketInstance {
@@ -112,7 +112,7 @@ export class WebsocketInstance {
 					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
-					this.resolumeArenaInstance.log('debug',message.type +' | '+ message.path+' | '+ message.value);
+					this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});
@@ -128,7 +128,7 @@ export class WebsocketInstance {
 		});
 	}
 
-	private updateNeededSubscribers(message: { path: string; value: string | number | boolean; }, isComposition: boolean){
+	private updateNeededSubscribers(message: {path: string; value: string | number | boolean}, isComposition: boolean) {
 		for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscrivers()) {
 			if (websocketSubscriber.messageFilter().call(this, message) || isComposition) {
 				websocketSubscriber.messageUpdates(message, isComposition);
@@ -147,6 +147,10 @@ export class WebsocketInstance {
 		} else {
 			this.sendMessageIfOpen(data);
 		}
+	}
+
+	public async waitForWebsocketReady() {
+		await this.waitForOpenConnection(this.ws);
 	}
 
 	waitForOpenConnection(socket?: WebSocket) {
@@ -193,7 +197,7 @@ export class WebsocketInstance {
 		const data = {
 			action: 'set',
 			parameter: path,
-			value: value
+			value: value,
 		};
 		this.sendMessage(data);
 	}
@@ -202,7 +206,7 @@ export class WebsocketInstance {
 		const data = {
 			action: 'set',
 			parameter: '/parameter/by-id/' + paramId,
-			value: value
+			value: value,
 		};
 		this.sendMessage(data);
 	}
@@ -247,10 +251,10 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	subscribeParam(paramId: string) {
+	subscribeParam(paramId: number, subPath?: string) {
 		const data = {
 			action: 'subscribe',
-			parameter: '/parameter/by-id/' + paramId,
+			parameter: '/parameter/by-id/' + paramId + subPath || '',
 		};
 		this.sendMessage(data);
 	}
@@ -263,7 +267,7 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	unsubscribeParam(paramId: string) {
+	unsubscribeParam(paramId: number) {
 		const data = {
 			action: 'unsubscribe',
 			parameter: '/parameter/by-id/' + paramId,

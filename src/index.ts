@@ -54,7 +54,7 @@ import {layerOpacityChange} from './actions/layer-opacity-change';
 import {CompositionUtils} from './domain/composition/composition-utils';
 import {compositionOpacityChange} from './actions/composition-opacity-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
-import { compositionSpeedChange } from './actions/composition-speed-change';
+import {compositionSpeedChange} from './actions/composition-speed-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -93,7 +93,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	 */
 	async init(config: ResolumeArenaConfig, _isFirstInit: boolean): Promise<void> {
 		this.config = config;
-		this.restartApis();
+		await this.restartApis();
 		this.subscribeFeedbacks();
 		this.setupFeedback();
 		this.setActionDefinitions(this.actions);
@@ -128,6 +128,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
 			layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, this),
+			// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
 			compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, this),
 		};
@@ -272,6 +273,15 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerGroupUtils.layerGroupOpacityFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupOpacityFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
+				// TODO #46, resolume feature request
+				// layerGroupSpeed: {
+				// 	type: 'advanced',
+				// 	name: 'Layer Group Speed',
+				// 	options: [...getLayerGroupOption()],
+				// 	callback: this.layerGroupUtils.layerGroupSpeedFeedbackCallback.bind(this.layerGroupUtils),
+				// 	subscribe: this.layerGroupUtils.layerGroupSpeedFeedbackSubscribe.bind(this.layerGroupUtils),
+				// 	unsubscribe: this.layerGroupUtils.layerGroupSpeedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				// },
 				columnSelected: {
 					type: 'boolean',
 					name: 'Column Selected',
@@ -680,16 +690,17 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	 */
 	async configUpdated(config: ResolumeArenaConfig): Promise<void> {
 		this.config = config;
-		this.restartApis();
+		await this.restartApis();
 		this.subscribeFeedbacks();
 		return Promise.resolve();
 	}
 
-	private restartApis() {
+	private async restartApis() {
 		const config = this.config;
 		if (config.webapiPort && config.useRest) {
 			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
 			this.websocketApi = new WebsocketApi(this, this.config);
+			await this.websocketApi.waitForWebsocketReady();
 		} else {
 			this.restApi = null;
 			this.websocketApi = null;
