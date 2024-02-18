@@ -54,6 +54,7 @@ import {layerOpacityChange} from './actions/layer-opacity-change';
 import {CompositionUtils} from './domain/composition/composition-utils';
 import {compositionOpacityChange} from './actions/composition-opacity-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
+import { compositionSpeedChange } from './actions/composition-speed-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -128,6 +129,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
 			layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
+			compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, this),
 		};
 		return actions;
 	}
@@ -173,6 +175,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.compositionUtils.compositionOpacityFeedbackCallback.bind(this.compositionUtils),
 					subscribe: this.compositionUtils.compositionOpacityFeedbackSubscribe.bind(this.compositionUtils),
 					unsubscribe: this.compositionUtils.compositionOpacityFeedbackUnsubscribe.bind(this.compositionUtils),
+				},
+				compositionSpeed: {
+					type: 'advanced',
+					name: 'Composition Speed',
+					options: [],
+					callback: this.compositionUtils.compositionSpeedFeedbackCallback.bind(this.compositionUtils),
+					subscribe: this.compositionUtils.compositionSpeedFeedbackSubscribe.bind(this.compositionUtils),
+					unsubscribe: this.compositionUtils.compositionSpeedFeedbackUnsubscribe.bind(this.compositionUtils),
 				},
 				layerBypassed: {
 					type: 'boolean',

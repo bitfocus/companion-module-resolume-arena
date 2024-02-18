@@ -22,6 +22,7 @@ so the module will always show an OK status if you only specify the OSC port.
 
 #### Composition
 * Change Composition Opacity
+* Change Composition Speed
 
 #### Clips
 * Trigger Clip
@@ -58,7 +59,8 @@ so the module will always show an OK status if you only specify the OSC port.
 ### Available Feedbacks
 
 #### Composition
-* Composition Opacity
+* Composition Opacity (0-100%)
+* Composition Speed (0-1000%)
 
 #### Clips
 * Clip Info (name + thumbnail)
