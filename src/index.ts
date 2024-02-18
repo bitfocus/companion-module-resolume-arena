@@ -54,6 +54,9 @@ import {layerOpacityChange} from './actions/layer-opacity-change';
 import {CompositionUtils} from './domain/composition/composition-utils';
 import {compositionOpacityChange} from './actions/composition-opacity-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
+import {compositionSpeedChange} from './actions/composition-speed-change';
+import {clipSpeedChange} from './actions/clip-speed-change';
+import {layerTransitionDurationChange} from './actions/layer-transition-duration-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -77,12 +80,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
 		this.compositionUtils = new CompositionUtils(this);
-		
-		this.websocketSubscribers.add(this.layerUtils)
-		this.websocketSubscribers.add(this.layerGroupUtils)
-		this.websocketSubscribers.add(this.columnUtils)
-		this.websocketSubscribers.add(this.clipUtils)
-		this.websocketSubscribers.add(this.compositionUtils)
+
+		this.websocketSubscribers.add(this.layerUtils);
+		this.websocketSubscribers.add(this.layerGroupUtils);
+		this.websocketSubscribers.add(this.columnUtils);
+		this.websocketSubscribers.add(this.clipUtils);
+		this.websocketSubscribers.add(this.compositionUtils);
 	}
 
 	/**
@@ -92,7 +95,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	 */
 	async init(config: ResolumeArenaConfig, _isFirstInit: boolean): Promise<void> {
 		this.config = config;
-		this.restartApis();
+		await this.restartApis();
 		this.subscribeFeedbacks();
 		this.setupFeedback();
 		this.setActionDefinitions(this.actions);
@@ -103,6 +106,8 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		var restApi = this.getRestApi.bind(this);
 		var websocketApi = this.getWebsocketApi.bind(this);
 		var oscApi = this.getOscApi.bind(this);
+		var clipUtils = this.getClipUtils.bind(this);
+		var layerUtils = this.getLayerUtils.bind(this);
 		var actions: CompanionActionDefinitions = {
 			bypassLayer: bypassLayer(restApi, oscApi),
 			bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
@@ -123,11 +128,15 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			soloLayerGroup: soloLayerGroup(restApi, oscApi),
 			tempoTap: tempoTap(restApi, oscApi),
 			triggerClip: connectClip(restApi, oscApi),
+			clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, this),
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
+			layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, this),
 			layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, this),
+			// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
+			compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, this),
 		};
 		return actions;
 	}
@@ -166,6 +175,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.clipUtils.clipDetailsFeedbackSubscribe.bind(this.clipUtils),
 					unsubscribe: this.clipUtils.clipDetailsFeedbackUnsubscribe.bind(this.clipUtils),
 				},
+				clipSpeed: {
+					type: 'advanced',
+					name: 'Clip Speed',
+					options: [...getLayerOption(), ...getColumnOption()],
+					callback: this.clipUtils.clipSpeedFeedbackCallback.bind(this.clipUtils),
+					subscribe: this.clipUtils.clipSpeedFeedbackSubscribe.bind(this.clipUtils),
+					unsubscribe: this.clipUtils.clipSpeedFeedbackUnsubscribe.bind(this.clipUtils),
+				},
 				compositionOpacity: {
 					type: 'advanced',
 					name: 'Composition Opacity',
@@ -173,6 +190,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.compositionUtils.compositionOpacityFeedbackCallback.bind(this.compositionUtils),
 					subscribe: this.compositionUtils.compositionOpacityFeedbackSubscribe.bind(this.compositionUtils),
 					unsubscribe: this.compositionUtils.compositionOpacityFeedbackUnsubscribe.bind(this.compositionUtils),
+				},
+				compositionSpeed: {
+					type: 'advanced',
+					name: 'Composition Speed',
+					options: [],
+					callback: this.compositionUtils.compositionSpeedFeedbackCallback.bind(this.compositionUtils),
+					subscribe: this.compositionUtils.compositionSpeedFeedbackSubscribe.bind(this.compositionUtils),
+					unsubscribe: this.compositionUtils.compositionSpeedFeedbackUnsubscribe.bind(this.compositionUtils),
 				},
 				layerBypassed: {
 					type: 'boolean',
@@ -218,6 +243,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerUtils.layerOpacityFeedbackSubscribe.bind(this.layerUtils),
 					unsubscribe: this.layerUtils.layerOpacityFeedbackUnsubscribe.bind(this.layerUtils),
 				},
+				layerTransitionDuration: {
+					type: 'advanced',
+					name: 'Layer Transition Duration',
+					options: [...getLayerOption()],
+					callback: this.layerUtils.layerTransitionDurationFeedbackCallback.bind(this.layerUtils),
+					subscribe: this.layerUtils.layerTransitionDurationFeedbackSubscribe.bind(this.layerUtils),
+					unsubscribe: this.layerUtils.layerTransitionDurationFeedbackUnsubscribe.bind(this.layerUtils),
+				},
 				layerGroupBypassed: {
 					type: 'boolean',
 					name: 'Layer Group Bypassed',
@@ -262,6 +295,15 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerGroupUtils.layerGroupOpacityFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupOpacityFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
+				// TODO #46, resolume feature request
+				// layerGroupSpeed: {
+				// 	type: 'advanced',
+				// 	name: 'Layer Group Speed',
+				// 	options: [...getLayerGroupOption()],
+				// 	callback: this.layerGroupUtils.layerGroupSpeedFeedbackCallback.bind(this.layerGroupUtils),
+				// 	subscribe: this.layerGroupUtils.layerGroupSpeedFeedbackSubscribe.bind(this.layerGroupUtils),
+				// 	unsubscribe: this.layerGroupUtils.layerGroupSpeedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				// },
 				columnSelected: {
 					type: 'boolean',
 					name: 'Column Selected',
@@ -670,16 +712,17 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	 */
 	async configUpdated(config: ResolumeArenaConfig): Promise<void> {
 		this.config = config;
-		this.restartApis();
+		await this.restartApis();
 		this.subscribeFeedbacks();
 		return Promise.resolve();
 	}
 
-	private restartApis() {
+	private async restartApis() {
 		const config = this.config;
 		if (config.webapiPort && config.useRest) {
 			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
 			this.websocketApi = new WebsocketApi(this, this.config);
+			await this.websocketApi.waitForWebsocketReady();
 		} else {
 			this.restApi = null;
 			this.websocketApi = null;
@@ -734,8 +777,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private hasPollingSubscriptions(): boolean {
 		return (
 			// this.clipUtils.hasPollingSubscriptions() ||
-			this.layerUtils.hasPollingSubscriptions() ||
-			this.layerGroupUtils.hasPollingSubscriptions()
+			this.layerUtils.hasPollingSubscriptions() || this.layerGroupUtils.hasPollingSubscriptions()
 		);
 	}
 
@@ -748,25 +790,32 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	getConfigFields(): SomeCompanionConfigField[] {
 		return configFields();
 	}
-	
+
 	getConfig(): ResolumeArenaConfig {
 		return this.config;
 	}
-	
+
 	getWebSocketSubscrivers(): Set<MessageSubscriber> {
 		return this.websocketSubscribers;
 	}
-	
+
 	getRestApi(): ArenaRestApi | null {
 		return this.restApi;
 	}
-	
+
 	getWebsocketApi(): WebsocketApi | null {
 		return this.websocketApi;
 	}
 
 	getOscApi(): ArenaOscApi | null {
 		return this.oscApi;
+	}
+
+	getClipUtils(): ClipUtils | null {
+		return this.clipUtils;
+	}
+	getLayerUtils(): LayerUtils | null {
+		return this.layerUtils;
 	}
 
 	/**

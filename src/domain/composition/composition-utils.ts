@@ -8,6 +8,7 @@ export class CompositionUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
 	private compositionOpacitySubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private compositionSpeedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -18,6 +19,9 @@ export class CompositionUtils implements MessageSubscriber {
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/master/)) {
 				this.resolumeArenaInstance.checkFeedbacks('compositionOpacity');
+			}
+			if (!!data.path.match(/\/composition\/speed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('compositionSpeed');
 			}
 		}
 	}
@@ -59,6 +63,40 @@ export class CompositionUtils implements MessageSubscriber {
 			if (compositionOpacitySubscription.size === 0) {
 				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/master');
 				this.compositionOpacitySubscriptions.delete('composition');
+			}
+		}
+	}	
+	/////////////////////////////////////////////////
+	// Speed
+	/////////////////////////////////////////////////
+
+	compositionSpeedFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		const speed = parameterStates.get()['/composition/speed']?.value;
+		if (speed!==undefined) {
+			return {
+				text: Math.round(speed * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(speed),
+			};
+		}
+		return {text: '?'};
+	}
+
+	compositionSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+			if (!this.compositionSpeedSubscriptions.get('composition')) {
+				this.compositionSpeedSubscriptions.set('composition', new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/speed');
+			}
+			this.compositionSpeedSubscriptions.get('composition')?.add(feedback.id);
+	}
+
+	compositionSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const compositionSpeedSubscription = this.compositionSpeedSubscriptions.get('composition');
+		if (compositionSpeedSubscription) {
+			compositionSpeedSubscription.delete(feedback.id);
+			if (compositionSpeedSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/speed');
+				this.compositionSpeedSubscriptions.delete('composition');
 			}
 		}
 	}

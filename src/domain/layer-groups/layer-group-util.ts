@@ -19,6 +19,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	private layerGroupSelectedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private layerGroupOpacitySubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
+	
+	// private layerGroupSpeedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private layerGroupColumnsSelectedSubscriptions:  Map<string,Set<string>> = new Map<string, Set<string>>();
 
@@ -41,6 +43,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/master/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupOpacity');
 			}
+			// if (!!data.path.match(/\/composition\/groups\/\d+\/speed/)) {
+			// 	this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
+			// }
 			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
 			}
@@ -300,4 +305,44 @@ export class LayerGroupUtils implements MessageSubscriber {
 			}
 		}
 	}
+
+	/////////////////////////////////////////////////
+	// Speed ----> TODO: #46, resolume feature request
+	/////////////////////////////////////////////////
+
+	// layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
+	// 	if (layerGroup !== undefined && opacity!==undefined) {
+	// 		return {
+	// 			text: Math.round(opacity * 100) + '%',
+	// 			show_topbar: false,
+	// 			png64: drawPercentage(opacity),
+	// 		};
+	// 	}
+	// 	return {text: '?'};
+	// }
+
+	// layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	if (layerGroup !== undefined) {
+	// 		if (!this.layerGroupSpeedSubscriptions.get(layerGroup)) {
+	// 			this.layerGroupSpeedSubscriptions.set(layerGroup, new Set());
+	// 			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/speed');
+	// 		}
+	// 		this.layerGroupSpeedSubscriptions.get(layerGroup)?.add(feedback.id);
+	// 	}
+	// }
+
+	// layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	const layerGroupSpeedSubscription = this.layerGroupSpeedSubscriptions.get(layerGroup);
+	// 	if (layerGroup !== undefined && layerGroupSpeedSubscription) {
+	// 		layerGroupSpeedSubscription.delete(feedback.id);
+	// 		if (layerGroupSpeedSubscription.size === 0) {
+	// 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/speed');
+	// 			this.layerGroupSpeedSubscriptions.delete(layerGroup);
+	// 		}
+	// 	}
+	// }
 }
