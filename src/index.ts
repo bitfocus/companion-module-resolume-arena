@@ -51,6 +51,8 @@ import {ColumnUtils} from './domain/columns/column-util';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
 import {layerOpacityChange} from './actions/layer-opacity-change';
+import { CompositionUtils } from './domain/composition/composition-utils';
+import { compositionOpacityChange } from './actions/composition-opacity-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -63,6 +65,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private layerUtils: LayerUtils;
 	private layerGroupUtils: LayerGroupUtils;
 	private columnUtils: ColumnUtils;
+	private compositionUtils: CompositionUtils;
 	private websocketSubscribers: Set<MessageSubscriber> = new Set();
 
 	constructor(internal: unknown) {
@@ -72,11 +75,13 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerUtils = new LayerUtils(this);
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
+		this.compositionUtils = new CompositionUtils(this);
 		
 		this.websocketSubscribers.add(this.layerUtils)
 		this.websocketSubscribers.add(this.layerGroupUtils)
 		this.websocketSubscribers.add(this.columnUtils)
 		this.websocketSubscribers.add(this.clipUtils)
+		this.websocketSubscribers.add(this.compositionUtils)
 	}
 
 	/**
@@ -120,6 +125,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
+			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
 		};
 		return actions;
 	}
@@ -157,6 +163,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.clipUtils.clipDetailsFeedbackCallback.bind(this.clipUtils),
 					subscribe: this.clipUtils.clipDetailsFeedbackSubscribe.bind(this.clipUtils),
 					unsubscribe: this.clipUtils.clipDetailsFeedbackUnsubscribe.bind(this.clipUtils),
+				},
+				compositionOpacity: {
+					type: 'advanced',
+					name: 'Composition Opacity',
+					options: [],
+					callback: this.compositionUtils.compositionOpacityFeedbackCallback.bind(this.compositionUtils),
+					subscribe: this.compositionUtils.compositionOpacityFeedbackSubscribe.bind(this.compositionUtils),
+					unsubscribe: this.compositionUtils.compositionOpacityFeedbackUnsubscribe.bind(this.compositionUtils),
 				},
 				layerBypassed: {
 					type: 'boolean',
