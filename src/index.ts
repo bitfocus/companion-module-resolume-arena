@@ -56,6 +56,7 @@ import {compositionOpacityChange} from './actions/composition-opacity-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
 import {compositionSpeedChange} from './actions/composition-speed-change';
 import {clipSpeedChange} from './actions/clip-speed-change';
+import {layerTransitionDurationChange} from './actions/layer-transition-duration-change';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -106,6 +107,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		var websocketApi = this.getWebsocketApi.bind(this);
 		var oscApi = this.getOscApi.bind(this);
 		var clipUtils = this.getClipUtils.bind(this);
+		var layerUtils = this.getLayerUtils.bind(this);
 		var actions: CompanionActionDefinitions = {
 			bypassLayer: bypassLayer(restApi, oscApi),
 			bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
@@ -126,10 +128,11 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			soloLayerGroup: soloLayerGroup(restApi, oscApi),
 			tempoTap: tempoTap(restApi, oscApi),
 			triggerClip: connectClip(restApi, oscApi),
-			clipSpeedChange: clipSpeedChange(restApi,websocketApi, oscApi, clipUtils, this),
+			clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, this),
 			triggerColumn: triggerColumn(restApi, oscApi),
 			triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
 			layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, this),
+			layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, this),
 			layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, this),
 			// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
@@ -239,6 +242,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.layerUtils.layerOpacityFeedbackCallback.bind(this.layerUtils),
 					subscribe: this.layerUtils.layerOpacityFeedbackSubscribe.bind(this.layerUtils),
 					unsubscribe: this.layerUtils.layerOpacityFeedbackUnsubscribe.bind(this.layerUtils),
+				},
+				layerTransitionDuration: {
+					type: 'advanced',
+					name: 'Layer Transition Duration',
+					options: [...getLayerOption()],
+					callback: this.layerUtils.layerTransitionDurationFeedbackCallback.bind(this.layerUtils),
+					subscribe: this.layerUtils.layerTransitionDurationFeedbackSubscribe.bind(this.layerUtils),
+					unsubscribe: this.layerUtils.layerTransitionDurationFeedbackUnsubscribe.bind(this.layerUtils),
 				},
 				layerGroupBypassed: {
 					type: 'boolean',
@@ -799,9 +810,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	getOscApi(): ArenaOscApi | null {
 		return this.oscApi;
 	}
-	
+
 	getClipUtils(): ClipUtils | null {
 		return this.clipUtils;
+	}
+	getLayerUtils(): LayerUtils | null {
+		return this.layerUtils;
 	}
 
 	/**

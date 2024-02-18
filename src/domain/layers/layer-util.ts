@@ -1,9 +1,10 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
 import {LayerOptions} from '../../arena-api/child-apis/layer-options/LayerOptions';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
 import {drawPercentage} from '../../defaults';
+import {ResolumeArenaModuleInstance} from '../../index';
+import {compositionState, parameterStates} from '../../state';
+import {MessageSubscriber} from '../../websocket';
+import {Layer} from '../api';
 
 export class LayerUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -17,6 +18,7 @@ export class LayerUtils implements MessageSubscriber {
 
 	private layerSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerTransitionDurationSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -24,7 +26,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	messageUpdates(data: {path: any}, _isComposition: boolean) {
-		if(data.path){
+		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerSelected');
 			}
@@ -37,6 +39,9 @@ export class LayerUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/master/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerOpacity');
 			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/transition\/duration/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerTransitionDuration');
+			}
 		}
 	}
 
@@ -48,6 +53,13 @@ export class LayerUtils implements MessageSubscriber {
 		return this.layerActiveSubscriptions.size > 0;
 	}
 
+	public getLayerFromCompositionState(layer: any): Layer | undefined {
+		const layersObject = compositionState.get().layers;
+		if (layersObject) {
+			return layersObject[layer - 1];
+		}
+		return undefined;
+	}
 	async poll() {
 		if (this.layerActiveSubscriptions.size > 0) {
 			for (var layerSubscription of this.layerActiveSubscriptions) {
@@ -211,7 +223,7 @@ export class LayerUtils implements MessageSubscriber {
 	layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
 		var layer = feedback.options.layer;
 		const opacity = parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
-		if (layer !== undefined && opacity!==undefined) {
+		if (layer !== undefined && opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
@@ -240,6 +252,52 @@ export class LayerUtils implements MessageSubscriber {
 			if (layerOpacitySubscription.size === 0) {
 				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
 				this.layerOpacitySubscriptions.delete(layer);
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////
+	// Transition Duration
+	/////////////////////////////////////////////////
+
+	layerTransitionDurationFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer;
+		const duration = parameterStates.get()['/composition/layers/' + layer + '/transition/duration']?.value;
+		if (layer !== undefined && duration !== undefined) {
+			return {
+				text: Math.round(duration * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(duration),
+			};
+		}
+		return {text: '?'};
+	}
+
+	layerTransitionDurationFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		if (layer !== undefined) {
+			if (!this.layerTransitionDurationSubscriptions.get(layer)) {
+				this.layerTransitionDurationSubscriptions.set(layer, new Set());
+				const layerObject = this.getLayerFromCompositionState(layer);
+                const layerTransitionDurationId = layerObject?.transition?.duration?.id;
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(layerTransitionDurationId!);
+				// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
+			}
+			this.layerTransitionDurationSubscriptions.get(layer)?.add(feedback.id);
+		}
+	}
+
+	layerTransitionDurationFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		const layerTransitionDurationSubscription = this.layerTransitionDurationSubscriptions.get(layer);
+		if (layer !== undefined && layerTransitionDurationSubscription) {
+			layerTransitionDurationSubscription.delete(feedback.id);
+			if (layerTransitionDurationSubscription.size === 0) {
+				const layerObject = this.getLayerFromCompositionState(layer);
+                const layerTransitionDurationId = layerObject?.transition?.duration?.id;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(layerTransitionDurationId!);
+				// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
+				this.layerTransitionDurationSubscriptions.delete(layer);
 			}
 		}
 	}
