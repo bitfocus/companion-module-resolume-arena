@@ -20,10 +20,6 @@ export class ColumnUtils implements MessageSubscriber {
 			}
 		}
 	}
-
-	messageFilter() {
-		return (message: any) => !!(message.path && message.path.match(/\/composition\/columns.?/));
-	}
 	
 	/////////////////////////////////////////////////
 	// SELECTED

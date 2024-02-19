@@ -1,7 +1,6 @@
 import ArenaOscApi from './arena-api/osc';
 import ArenaRestApi from './arena-api/rest';
 import {configFields, ResolumeArenaConfig} from './config-fields';
-import sleep from './sleep';
 
 import {
 	combineRgb,
@@ -11,59 +10,57 @@ import {
 	CompanionStaticUpgradeScript,
 	CompanionUpgradeContext,
 	InstanceBase,
-	InstanceStatus,
 	runEntrypoint,
-	SomeCompanionConfigField,
+	SomeCompanionConfigField
 } from '@companion-module/base';
 import {bypassLayer} from './actions/bypass-layer';
+import {bypassLayerGroup} from './actions/bypass-layer-group';
 import {clearAllLayers} from './actions/clear-all-layers';
 import {clearLayer} from './actions/clear-layer';
+import {clearLayerGroup} from './actions/clear-layer-group';
+import {clipSpeedChange} from './actions/clip-speed-change';
 import {compNextCol} from './actions/comp-next-col';
 import {compPrevCol} from './actions/comp-prev-col';
+import {compositionOpacityChange} from './actions/composition-opacity-change';
+import {compositionSpeedChange} from './actions/composition-speed-change';
 import {connectClip} from './actions/connect-clip';
 import {customOscCommand} from './actions/custom-osc';
 import {layerGroupNextCol} from './actions/layer-group-next-col';
+import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
 import {layerGroupPrevCol} from './actions/layer-group-prev-col';
 import {layerNextCol} from './actions/layer-next-col';
+import {layerOpacityChange} from './actions/layer-opacity-change';
 import {layerPrevCol} from './actions/layer-prev-col';
+import {layerTransitionDurationChange} from './actions/layer-transition-duration-change';
 import {selectClip} from './actions/select-clip';
+import {selectLayer} from './actions/select-layer';
+import {selectLayerGroup} from './actions/select-layer-group';
 import {soloLayer} from './actions/solo-layer';
+import {soloLayerGroup} from './actions/solo-layer-group';
 import {tempoTap} from './actions/tempo-tap';
 import {triggerColumn} from './actions/trigger-column';
+import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {
 	getColumnOption,
 	getDefaultLayerColumnOptions,
-	getDefaultStyleRed,
-	getDefaultStyleGreen,
-	getLayerOption,
 	getDefaultStyleBlue,
+	getDefaultStyleGreen,
+	getDefaultStyleRed,
 	getLayerGroupOption,
+	getLayerOption,
 } from './defaults';
 import {ClipUtils} from './domain/clip/clip-utils';
-import {LayerUtils} from './domain/layers/layer-util';
-import {selectLayer} from './actions/select-layer';
-import {soloLayerGroup} from './actions/solo-layer-group';
-import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
-import {selectLayerGroup} from './actions/select-layer-group';
-import {bypassLayerGroup} from './actions/bypass-layer-group';
-import {clearLayerGroup} from './actions/clear-layer-group';
 import {ColumnUtils} from './domain/columns/column-util';
-import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
-import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
-import {layerOpacityChange} from './actions/layer-opacity-change';
 import {CompositionUtils} from './domain/composition/composition-utils';
-import {compositionOpacityChange} from './actions/composition-opacity-change';
-import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
-import {compositionSpeedChange} from './actions/composition-speed-change';
-import {clipSpeedChange} from './actions/clip-speed-change';
-import {layerTransitionDurationChange} from './actions/layer-transition-duration-change';
+import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
+import {LayerUtils} from './domain/layers/layer-util';
+import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
 	public restApi: ArenaRestApi | null = null;
 	private websocketApi: WebsocketApi | null = null;
 	private oscApi: ArenaOscApi | null = null;
-	private isPolling: boolean = false;
 
 	private clipUtils: ClipUtils;
 	private layerUtils: LayerUtils;
@@ -80,12 +77,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
 		this.compositionUtils = new CompositionUtils(this);
-
-		this.websocketSubscribers.add(this.layerUtils);
-		this.websocketSubscribers.add(this.layerGroupUtils);
-		this.websocketSubscribers.add(this.columnUtils);
-		this.websocketSubscribers.add(this.clipUtils);
-		this.websocketSubscribers.add(this.compositionUtils);
 	}
 
 	/**
@@ -100,6 +91,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.setupFeedback();
 		this.setActionDefinitions(this.actions);
 		this.setupPresets();
+
+		this.websocketSubscribers.add(this.layerUtils);
+		this.websocketSubscribers.add(this.layerGroupUtils);
+		this.websocketSubscribers.add(this.columnUtils);
+		this.websocketSubscribers.add(this.clipUtils);
+		this.websocketSubscribers.add(this.compositionUtils);
 	}
 
 	get actions(): CompanionActionDefinitions {
@@ -149,8 +146,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					name: 'Connected Clip',
 					options: [...getLayerOption(), ...getColumnOption()],
 					callback: this.clipUtils.clipConnectedFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.clipConnectedFeedbackSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.clipConnectedFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				clipInfo: {
 					type: 'advanced',
@@ -219,6 +214,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 									id: 'hours',
 									label: 'hh - hours',
 								},
+								{
+									id: 'direction',
+									label: '-/+ - timeRemaining or clipTime',
+								},
 							],
 							default: 'timestamp',
 							label: 'Visualisation',
@@ -229,8 +228,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 							label: 'Remaining Time',
 						},],
 					callback: this.clipUtils.clipTransportPositionFeedbackCallback.bind(this.clipUtils),
-					subscribe: this.clipUtils.clipTransportPositionFeedbackSubscribe.bind(this.clipUtils),
-					unsubscribe: this.clipUtils.clipTransportPositionFeedbackUnsubscribe.bind(this.clipUtils),
 				},
 				compositionOpacity: {
 					type: 'advanced',
@@ -272,8 +269,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					defaultStyle: getDefaultStyleBlue(),
 					options: [...getLayerOption()],
 					callback: this.layerUtils.layerActiveFeedbackCallback.bind(this.layerUtils),
-					subscribe: this.layerUtils.layerActiveFeedbackSubscribe.bind(this.layerUtils),
-					unsubscribe: this.layerUtils.layerActiveFeedbackUnsubscribe.bind(this.layerUtils),
 				},
 				layerSelected: {
 					type: 'boolean',
@@ -300,6 +295,57 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					subscribe: this.layerUtils.layerTransitionDurationFeedbackSubscribe.bind(this.layerUtils),
 					unsubscribe: this.layerUtils.layerTransitionDurationFeedbackUnsubscribe.bind(this.layerUtils),
 				},
+				layerTransportPosition: {
+					type: 'advanced',
+					name: 'Layer Active Clip Transport Position',
+					options: [...getLayerOption(), 
+						{
+							id: 'view',
+							type: 'dropdown',
+							choices: [
+								{
+									id: 'timestamp',
+									label: 'hh:mm:ss',
+								},
+								{
+									id: 'timestampFrame',
+									label: 'hh:mm:ss:ff - including frames',
+								},
+								{
+									id: 'fullSeconds',
+									label: '10000s',
+								},
+								{
+									id: 'frames',
+									label: 'ff - frames',
+								},
+								{
+									id: 'seconds',
+									label: 'ss - seconds',
+								},
+								{
+									id: 'minutes',
+									label: 'mm - minutes',
+								},
+								{
+									id: 'hours',
+									label: 'hh - hours',
+								},
+								{
+									id: 'direction',
+									label: '-/+ - timeRemaining or clipTime',
+								},
+							],
+							default: 'timestamp',
+							label: 'Visualisation',
+						},{
+							id: 'timeRemaining',
+							type: 'checkbox',
+							default: false,
+							label: 'Remaining Time',
+						},],
+					callback: this.layerUtils.layerTransportPositionFeedbackCallback.bind(this.layerUtils),
+				},
 				layerGroupBypassed: {
 					type: 'boolean',
 					name: 'Layer Group Bypassed',
@@ -324,8 +370,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					defaultStyle: getDefaultStyleBlue(),
 					options: [...getLayerGroupOption()],
 					callback: this.layerGroupUtils.layerGroupActiveFeedbackCallback.bind(this.layerGroupUtils),
-					subscribe: this.layerGroupUtils.layerGroupActiveFeedbackSubscribe.bind(this.layerGroupUtils),
-					unsubscribe: this.layerGroupUtils.layerGroupActiveFeedbackUnsubscribe.bind(this.layerGroupUtils),
 				},
 				layerGroupSelected: {
 					type: 'boolean',
@@ -783,51 +827,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		}
 		this.setupFeedback();
 		this.setActionDefinitions(this.actions);
-		this.pollStatus();
-	}
-
-	/**
-	 * Poll for in use status continuously until there are
-	 * no more subscriptions or until the module is destroyed
-	 * @return {void}
-	 */
-	public async pollStatus(): Promise<void> {
-		if (this.isPolling) {
-			return;
-		}
-		this.isPolling = true;
-		try {
-			// loop until we don't need to poll any more
-			while (this.restApi) {
-				// check the status via the api
-				try {
-					// only poll status if there are no other subscriptions
-					if (!this.hasPollingSubscriptions) {
-						await this.restApi?.productInfo();
-					}
-					// await this.clipUtils.poll();
-					await this.layerUtils.poll();
-					await this.layerGroupUtils.poll();
-					this.updateStatus(InstanceStatus.Ok);
-				} catch (e: any) {
-					this.updateStatus(InstanceStatus.UnknownError, e.message);
-				}
-				await sleep(500);
-			}
-			if (!this.restApi) {
-				// no way to tell if OSC is connected
-				this.updateStatus(InstanceStatus.Ok);
-			}
-		} finally {
-			this.isPolling = false;
-		}
-	}
-
-	private hasPollingSubscriptions(): boolean {
-		return (
-			// this.clipUtils.hasPollingSubscriptions() ||
-			this.layerUtils.hasPollingSubscriptions() || this.layerGroupUtils.hasPollingSubscriptions()
-		);
 	}
 
 	/**
