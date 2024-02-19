@@ -110,7 +110,7 @@ export class ClipUtils implements MessageSubscriber {
 	// ClipDetails
 	/////////////////////////////////////////////////
 
-	clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo): {text: string | undefined; png64?: string | undefined} {
+	clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
 		var layer = feedback.options.layer as number;
 		var column = feedback.options.column as number;
 		if (ClipId.isValid(layer, column)) {

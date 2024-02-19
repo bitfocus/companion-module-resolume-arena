@@ -42,6 +42,8 @@ import {triggerColumn} from './actions/trigger-column';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {
 	getColumnOption,
+	getDeckOption,
+	getDefaultDeckOptions,
 	getDefaultLayerColumnOptions,
 	getDefaultStyleBlue,
 	getDefaultStyleGreen,
@@ -55,6 +57,8 @@ import {CompositionUtils} from './domain/composition/composition-utils';
 import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
 import {LayerUtils} from './domain/layers/layer-util';
 import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
+import {DeckUtils} from './domain/deck/deck-util';
+import {selectDeck} from './actions/select-deck';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -67,6 +71,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private layerGroupUtils: LayerGroupUtils;
 	private columnUtils: ColumnUtils;
 	private compositionUtils: CompositionUtils;
+	private deckUtils: DeckUtils;
 	private websocketSubscribers: Set<MessageSubscriber> = new Set();
 
 	constructor(internal: unknown) {
@@ -77,6 +82,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.layerGroupUtils = new LayerGroupUtils(this);
 		this.columnUtils = new ColumnUtils(this);
 		this.compositionUtils = new CompositionUtils(this);
+		this.deckUtils = new DeckUtils(this);
 	}
 
 	/**
@@ -97,6 +103,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.websocketSubscribers.add(this.columnUtils);
 		this.websocketSubscribers.add(this.clipUtils);
 		this.websocketSubscribers.add(this.compositionUtils);
+		this.websocketSubscribers.add(this.deckUtils);
 	}
 
 	get actions(): CompanionActionDefinitions {
@@ -134,6 +141,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, this),
 			compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, this),
 			compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, this),
+			selectDeck: selectDeck(restApi,websocketApi,oscApi)
 		};
 		return actions;
 	}
@@ -414,6 +422,23 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 					callback: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackCallback.bind(this.layerGroupUtils),
 					subscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackSubscribe.bind(this.layerGroupUtils),
 					unsubscribe: this.layerGroupUtils.layerGroupColumnsSelectedFeedbackUnsubscribe.bind(this.layerGroupUtils),
+				},
+				deckSelected: {
+					type: 'boolean',
+					name: 'Deck Selected',
+					defaultStyle: getDefaultStyleGreen(),
+					options: [...getDeckOption()],
+					callback: this.deckUtils.deckSelectedFeedbackCallback.bind(this.deckUtils),
+					subscribe: this.deckUtils.deckSelectedFeedbackSubscribe.bind(this.deckUtils),
+					unsubscribe: this.deckUtils.deckSelectedFeedbackUnsubscribe.bind(this.deckUtils),
+				},
+				deckName: {
+					type: 'advanced',
+					name: 'Deck Name',
+					options: [...getDeckOption()],
+					callback: this.deckUtils.deckNameFeedbackCallback.bind(this.deckUtils),
+					subscribe: this.deckUtils.deckNameFeedbackSubscribe.bind(this.deckUtils),
+					unsubscribe: this.deckUtils.deckNameFeedbackUnsubscribe.bind(this.deckUtils),
 				},
 			});
 		} else {
@@ -789,6 +814,39 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 								column: '1',
 								layerGroup: '1',
 							},
+							style: getDefaultStyleGreen(),
+						},
+					],
+				},
+				selectDeck: {
+					type: 'button',
+					category: 'Deck',
+					name: 'Select Deck',
+					style: {
+						size: '18',
+						text: 'Select Deck',
+						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(0, 0, 0),
+					},
+					steps: [
+						{
+							down: [
+								{
+									actionId: 'selectDeck',
+									options: getDefaultDeckOptions(),
+								},
+							],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'deckName',
+							options: getDefaultDeckOptions(),
+						},
+						{
+							feedbackId: 'deckSelected',
+							options: {...getDefaultDeckOptions()},
 							style: getDefaultStyleGreen(),
 						},
 					],
