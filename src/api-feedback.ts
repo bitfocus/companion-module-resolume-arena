@@ -28,6 +28,12 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
                     label: 'Show Name',
                     default: true,
                 },
+                {
+                    id: 'show_topbar',
+                    type: 'checkbox',
+                    label: 'Show Companion Topbar',
+                    default: true,
+                },
             ],
             callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
             subscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackSubscribe.bind(resolumeArenaInstance.getClipUtils()!),

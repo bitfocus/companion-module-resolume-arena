@@ -55,8 +55,8 @@ export function getLayerGroupOption(): SomeCompanionFeedbackInputField[] {
 
 export function getDefaultLayerColumnOptions() {
 	return {
-		layer: '-1',
-		column: '-1',
+		layer: '1',
+		column: '1',
 	};
 }
 

@@ -111,14 +111,11 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
 		if (ClipId.isValid(layer, column)) {
 			var key = new ClipId(layer, column);
-			var result: {
-				text: string | undefined;
-				png64: string | undefined;
-			} = {
+			var result: CompanionAdvancedFeedbackResult = {
 				text: '',
 				png64: undefined,
 			};
@@ -128,9 +125,15 @@ export class ClipUtils implements MessageSubscriber {
 			if (feedback.options.showThumb) {
 				result.png64 = this.clipThumbs.get(key.getIdString());
 			}
+			if (feedback.options.show_topbar) {
+				result.show_topbar = true;
+			}else{
+				result.show_topbar = false;
+				result.pngalignment = 'center:bottom'
+			}
 			return result;
 		}
-		return {text: undefined, png64: undefined};
+		return {};
 	}
 
 	clipDetailsFeedbackSubscribe(feedback: CompanionFeedbackInfo) {

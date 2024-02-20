@@ -32,7 +32,7 @@ export function getApiPresets(): CompanionPresetDefinitions {
 				},
 				{
 					feedbackId: 'clipInfo',
-					options: {...getDefaultLayerColumnOptions(), showThumb: true, showName: true},
+					options: {...getDefaultLayerColumnOptions(), showThumb: true, showName: true, show_topbar:false},
 				},
 			],
 		},
