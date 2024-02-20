@@ -41,7 +41,7 @@ export function getActions(ResolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
 		clearAll: clearAllLayers(restApi, oscApi),
 		clearLayer: clearLayer(restApi, oscApi),
-		clearLayerGroup: clearLayerGroup(oscApi),
+		clearLayerGroup: clearLayerGroup(restApi, websocketApi, oscApi),
 		compNextCol: compNextCol(restApi, oscApi),
 		compPrevCol: compPrevCol(restApi, oscApi),
 		custom: customOscCommand(oscApi, ResolumeArenaModuleInstance),

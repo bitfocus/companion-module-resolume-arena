@@ -63,15 +63,27 @@ export class LayerGroupUtils implements MessageSubscriber {
 	updateActiveLayerGroups() {
 		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
 		if (layerGroupsObject) {
-			for (const [layerGroup, layerGroupObject] of layerGroupsObject.entries()) {
+			for (const [layerGroupIndex, layerGroupObject] of layerGroupsObject.entries()) {
+				const layerGroup = layerGroupIndex + 1;
 				this.activeLayerGroups.delete(+layerGroup);
 				const layersObject = layerGroupObject.layers;
 				if (layersObject) {
-					for (const [layer, layerObject] of layersObject.entries()) {
+					let layerInComposition;
+					for (const [_layerIndex, layerObject] of layersObject.entries()) {
+						const compositionLayersObject = compositionState.get()?.layers;
+						if (compositionLayersObject) {
+							for (const [compositionLayerIndex, compositionLayerObject] of compositionLayersObject.entries()) {
+								const compositionLayer = compositionLayerIndex + 1;
+								if (compositionLayerObject.id === layerObject.id) {
+									layerInComposition = compositionLayer;
+								}
+							}
+						}
 						const clipsObject = layerObject.clips;
-						if (clipsObject) {
-							for (const [column, _clipObject] of clipsObject.entries()) {
-								const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
+						if (clipsObject && layerInComposition) {
+							for (const [columnIndex, _clipObject] of clipsObject.entries()) {
+								const column = columnIndex + 1;
+								const connectedState = parameterStates.get()['/composition/layers/' + layerInComposition + '/clips/' + column + '/connect']?.value;
 								if (connectedState === 'Connected' || connectedState === 'Connected & previewing') {
 									this.activeLayerGroups.add(+layerGroup);
 								}
@@ -161,7 +173,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
-			return this.activeLayerGroups.has(layerGroup as number);
+			return this.activeLayerGroups.has(+layerGroup as number);
 		}
 		return false;
 	}
