@@ -1,34 +1,70 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
-import {parameterStates} from '../../state';
+import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
 
 export class DeckUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
-	private deckSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
-	private deckNameSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private initalLoadDone = false;
+	private selectedDeck?: number;
+	private selectedDeckName?: string;
+	private lastDeck?: number;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
 		this.resolumeArenaInstance.log('debug', 'DeckUtils constructor called');
 	}
 
-	messageUpdates(data: {path: any}) {
-		if(data.path){
+	messageUpdates(data: {path: any}, isComposition: boolean) {
+		if (isComposition || !this.initalLoadDone) {
+			if (compositionState.get() !== undefined) {
+				this.initConnectedFromComposition();
+				this.initalLoadDone = true;
+			}
+		}
+		if (data.path) {
 			if (!!data.path.match(/\/composition\/decks\/\d+\/name/)) {
 				this.resolumeArenaInstance.checkFeedbacks('deckName');
 			}
 			if (!!data.path.match(/\/composition\/decks\/\d+\/select/)) {
 				this.resolumeArenaInstance.checkFeedbacks('deckSelected');
+				this.resolumeArenaInstance.checkFeedbacks('selectedDeckName');
+				this.resolumeArenaInstance.checkFeedbacks('nextDeckName');
+				this.resolumeArenaInstance.checkFeedbacks('previousDeckName');
 			}
 		}
 	}
-	
+
+	initConnectedFromComposition() {
+		const decks = compositionState.get()?.decks;
+		if (decks) {
+			this.selectedDeck = undefined;
+			for (const [deckIndex, deckObject] of decks.entries()) {
+				const deck = deckIndex + 1;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/decks/' + deck + '/selected');
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/decks/' + deck + '/name');
+
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/decks/' + deck + '/selected');
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/decks/' + deck + '/name');
+				if (deckObject.selected?.value) {
+					this.selectedDeck = deck;
+					this.selectedDeckName = deckObject.name?.value;
+				}
+				this.lastDeck = deck;
+			}
+		}
+		this.resolumeArenaInstance.checkFeedbacks('deckSelected');
+		this.resolumeArenaInstance.checkFeedbacks('deckName');
+		this.resolumeArenaInstance.checkFeedbacks('selectedDeckName');
+		this.resolumeArenaInstance.checkFeedbacks('nextDeckName');
+		this.resolumeArenaInstance.checkFeedbacks('previousDeckName');
+	}
+
 	/////////////////////////////////////////////////
 	// SELECTED
 	/////////////////////////////////////////////////
-	
+
 	deckSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var deck = feedback.options.deck;
 		if (deck !== undefined) {
@@ -37,61 +73,76 @@ export class DeckUtils implements MessageSubscriber {
 		return false;
 	}
 
-	deckSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var deck = feedback.options.deck as number;
-		if (deck !== undefined) {
-			if (!this.deckSelectedSubscriptions.get(deck)) {
-				this.deckSelectedSubscriptions.set(deck, new Set());
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/decks/' + deck + '/selected');
-			}
-			this.deckSelectedSubscriptions.get(deck)?.add(feedback.id);
-		}
-	}
-
-	deckSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var deck = feedback.options.deck as number;
-		const deckSelectedSubscription = this.deckSelectedSubscriptions.get(deck);
-		if (deck !== undefined && deckSelectedSubscription) {
-			deckSelectedSubscription.delete(feedback.id);
-			if (deckSelectedSubscription.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/decks/' + deck + '/selected');
-				this.deckSelectedSubscriptions.delete(deck);
-			}
-		}
-	}
-
 	/////////////////////////////////////////////////
 	// NAME
 	/////////////////////////////////////////////////
-	
+
 	deckNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
 		var deck = feedback.options.deck;
 		if (deck !== undefined) {
-			return {text:parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
+			return {text: parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
 		}
 		return {};
 	}
 
-	deckNameFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var deck = feedback.options.deck as number;
-		if (deck !== undefined) {
-			if (!this.deckNameSubscriptions.get(deck)) {
-				this.deckNameSubscriptions.set(deck, new Set());
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/decks/' + deck + '/name');
-			}
-			this.deckNameSubscriptions.get(deck)?.add(feedback.id);
+	/////////////////////////////////////////////////
+	// SELECTED NAME
+	/////////////////////////////////////////////////
+
+	deckSelectedNameFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		if (this.selectedDeck !== undefined) {
+			return {
+				text: parameterStates.get()['/composition/decks/' + this.selectedDeck + '/name']?.value || this.selectedDeckName,
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(0, 0, 0),
+			};
 		}
+		return {};
 	}
 
-	deckNameFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var deck = feedback.options.deck as number;
-		const deckNameSubscription = this.deckNameSubscriptions.get(deck);
-		if (deck !== undefined && deckNameSubscription) {
-			deckNameSubscription.delete(feedback.id);
-			if (deckNameSubscription.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/decks/' + deck + '/name');
-				this.deckNameSubscriptions.delete(deck);
-			}
+	/////////////////////////////////////////////////
+	// NEXT NAME
+	/////////////////////////////////////////////////
+
+	deckNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var add = feedback.options.next as number;
+		if (this.selectedDeck !== undefined && this.lastDeck != undefined) {
+			let deck = this.calculateNextDeck(add);
+			return {text: parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
 		}
+		return {};
+	}
+
+	calculateNextDeck(add: number): number {
+		let deck = this.selectedDeck!;
+		if (deck + add > this.lastDeck!) {
+			deck = deck + add - this.lastDeck!;
+		} else {
+			deck += add;
+		}
+		return deck;
+	}
+
+	/////////////////////////////////////////////////
+	// PREVIOUS NAME
+	/////////////////////////////////////////////////
+
+	deckPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var subtract = feedback.options.previous as number;
+		if (this.selectedDeck !== undefined && this.lastDeck !== undefined) {
+			let deck = this.calculatePreviousDeck(subtract);
+			return {text: parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
+		}
+		return {};
+	}
+
+	calculatePreviousDeck(subtract: number): number {
+		let deck = this.selectedDeck!;
+		if (deck - subtract < 1) {
+			deck = this.lastDeck! + deck - subtract;
+		} else {
+			deck = deck - subtract;
+		}
+		return deck;
 	}
 }

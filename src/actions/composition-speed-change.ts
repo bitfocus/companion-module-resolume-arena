@@ -46,8 +46,6 @@ export function compositionSpeedChange(
 			if (theApi) {
 				const inputValue: number = +await resolumeArenaInstance.parseVariablesInString(options.value);
 				const currentValue: number = +parameterStates.get()['/composition/speed']?.value;
-				console.log('currentValue',currentValue)
-
 				let value: number | undefined;
 				switch (options.action) {
 					case 'set':

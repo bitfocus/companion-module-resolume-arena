@@ -69,7 +69,6 @@ export class WebsocketInstance {
 		});
 		this.ws.on('close', (code) => {
 			this.resolumeArenaInstance.log('debug', `Connection closed with code ${code}`);
-			// this.resolumeArenaInstance.updateStatus(InstanceStatus.Disconnected, `Connection closed with code ${code}`);
 			this.maybeReconnect();
 		});
 
@@ -81,12 +80,12 @@ export class WebsocketInstance {
 				if (!message.type) {
 					/* check if message contains a composition, does it have columns and layers */
 					if (message.columns && message.layers) {
-						console.log('state update');
+						// console.log('state update');
 						// console.log('state update', message);
 						compositionState.set(message);
 						this.updateNeededSubscribers(message, true);
 					} else {
-						console.log('state does not contain a composition', message);
+						this.resolumeArenaInstance.log('warn', 'state does not contain a composition: ' + JSON.stringify(message, null, 4));
 					}
 				} else if (message.type === 'sources_update') {
 					// console.log('sources update', message.value);
@@ -109,7 +108,7 @@ export class WebsocketInstance {
 					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
-					this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
+					// this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});
@@ -168,7 +167,7 @@ export class WebsocketInstance {
 	}
 
 	sendMessageIfOpen(data: any) {
-		this.resolumeArenaInstance.log('debug','websocket: send '+ JSON.stringify(data));
+		this.resolumeArenaInstance.log('debug', 'websocket: send ' + JSON.stringify(data));
 		this.ws?.send(JSON.stringify(data));
 	}
 
@@ -247,6 +246,9 @@ export class WebsocketInstance {
 	}
 
 	subscribeParam(paramId: number, subPath?: string) {
+		if (!paramId) {
+			throw(new Error('paramId should not be undefined').stack)
+		}
 		const data = {
 			action: 'subscribe',
 			parameter: '/parameter/by-id/' + paramId,

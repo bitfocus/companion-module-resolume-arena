@@ -17,7 +17,7 @@ export class LayerUtils implements MessageSubscriber {
 
 	private layerSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
-	private layerTransitionDurationSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerTransitionDurationIds: Set<number> = new Set<number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -27,6 +27,7 @@ export class LayerUtils implements MessageSubscriber {
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
 			this.updateActiveLayers();
+			this.updateLayerTransitionDurations();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
@@ -69,12 +70,12 @@ export class LayerUtils implements MessageSubscriber {
 		const layersObject = this.getLayersFromCompositionState();
 		if (layersObject) {
 			for (const [layerIndex, layerObject] of layersObject.entries()) {
-				const layer = layerIndex+1
+				const layer = layerIndex + 1;
 				this.activeLayers.delete(+layer);
 				const clipsObject = layerObject.clips;
 				if (clipsObject) {
 					for (const [columnIndex, _clipObject] of clipsObject.entries()) {
-						const column = columnIndex+1;
+						const column = columnIndex + 1;
 						const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 						if (connectedState === 'Connected' || connectedState === 'Connected & previewing') {
 							this.activeLayers.set(layer, column);
@@ -84,6 +85,20 @@ export class LayerUtils implements MessageSubscriber {
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerActive');
 			this.resolumeArenaInstance.checkFeedbacks('layerTransportPosition');
+		}
+	}
+
+	updateLayerTransitionDurations() {
+		const layersObject = this.getLayersFromCompositionState();
+		if (layersObject) {
+			for (const layerTransitionDurationId of this.layerTransitionDurationIds) {
+				this.layerTransitionDurationFeedbackUnsubscribe(layerTransitionDurationId);
+			}
+			for (const [layerIndex, _layerObject] of layersObject.entries()) {
+				const layer = layerIndex + 1;
+				this.layerTransitionDurationFeedbackSubscribe(layer)
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerTransitionDuration');
 		}
 	}
 
@@ -262,33 +277,17 @@ export class LayerUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	layerTransitionDurationFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		if (layer !== undefined) {
-			if (!this.layerTransitionDurationSubscriptions.get(layer)) {
-				this.layerTransitionDurationSubscriptions.set(layer, new Set());
-				const layerObject = this.getLayerFromCompositionState(layer);
-				const layerTransitionDurationId = layerObject?.transition?.duration?.id;
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(layerTransitionDurationId!);
-				// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
-			}
-			this.layerTransitionDurationSubscriptions.get(layer)?.add(feedback.id);
+	layerTransitionDurationFeedbackSubscribe(layer: number) {
+		const layerObject = this.getLayerFromCompositionState(layer);
+		const layerTransitionDurationId = layerObject?.transition?.duration?.id;
+		if (layerTransitionDurationId) {
+			this.layerTransitionDurationIds.add(layerTransitionDurationId);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(layerTransitionDurationId!);
 		}
 	}
 
-	layerTransitionDurationFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		const layerTransitionDurationSubscription = this.layerTransitionDurationSubscriptions.get(layer);
-		if (layer !== undefined && layerTransitionDurationSubscription) {
-			layerTransitionDurationSubscription.delete(feedback.id);
-			if (layerTransitionDurationSubscription.size === 0) {
-				const layerObject = this.getLayerFromCompositionState(layer);
-				const layerTransitionDurationId = layerObject?.transition?.duration?.id;
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(layerTransitionDurationId!);
-				// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
-				this.layerTransitionDurationSubscriptions.delete(layer);
-			}
-		}
+	layerTransitionDurationFeedbackUnsubscribe(layerTransitionDurationId: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(layerTransitionDurationId!);
 	}
 
 	/////////////////////////////////////////////////
@@ -297,7 +296,6 @@ export class LayerUtils implements MessageSubscriber {
 
 	layerTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
 		var layer = feedback.options.layer as number;
-		console.log('layer',layer, this.activeLayers)
 		var column = this.activeLayers.get(+layer)!;
 		var view = feedback.options.view;
 		var timeRemaining = feedback.options.timeRemaining;

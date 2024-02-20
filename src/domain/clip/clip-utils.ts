@@ -24,7 +24,7 @@ export class ClipUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition || !this.initalLoadDone) {
-			if (compositionState.get()!==undefined) {
+			if (compositionState.get() !== undefined) {
 				this.initComposition();
 			}
 		}
