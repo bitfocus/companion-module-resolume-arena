@@ -155,8 +155,6 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
             name: 'Layer Transition Duration',
             options: [...getLayerOption()],
             callback: resolumeArenaInstance.getLayerUtils()!.layerTransitionDurationFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),
-            subscribe: resolumeArenaInstance.getLayerUtils()!.layerTransitionDurationFeedbackSubscribe.bind(resolumeArenaInstance.getLayerUtils()!),
-            unsubscribe: resolumeArenaInstance.getLayerUtils()!.layerTransitionDurationFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerUtils()!),
         },
         layerTransportPosition: {
             type: 'advanced',
@@ -284,16 +282,44 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
             defaultStyle: getDefaultStyleGreen(),
             options: [...getDeckOption()],
             callback: resolumeArenaInstance.getDeckUtils()!.deckSelectedFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!),
-            subscribe: resolumeArenaInstance.getDeckUtils()!.deckSelectedFeedbackSubscribe.bind(resolumeArenaInstance.getDeckUtils()!),
-            unsubscribe: resolumeArenaInstance.getDeckUtils()!.deckSelectedFeedbackUnsubscribe.bind(resolumeArenaInstance.getDeckUtils()!),
         },
         deckName: {
             type: 'advanced',
             name: 'Deck Name',
             options: [...getDeckOption()],
             callback: resolumeArenaInstance.getDeckUtils()!.deckNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!),
-            subscribe: resolumeArenaInstance.getDeckUtils()!.deckNameFeedbackSubscribe.bind(resolumeArenaInstance.getDeckUtils()!),
-            unsubscribe: resolumeArenaInstance.getDeckUtils()!.deckNameFeedbackUnsubscribe.bind(resolumeArenaInstance.getDeckUtils()!),
+        },
+        selectedDeckName: {
+            type: 'advanced',
+            name: 'Selected Deck Name',
+            options: [],
+            callback: resolumeArenaInstance.getDeckUtils()!.deckSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!),
+        },
+        nextDeckName: {
+            type: 'advanced',
+            name: 'Next Deck Name',
+            options: [{
+                id: 'next',
+                type: 'number',
+                label: 'Next',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getDeckUtils()!.deckNextNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!),
+        },
+        previousDeckName: {
+            type: 'advanced',
+            name: 'Previous Deck Name',
+            options: [{
+                id: 'previous',
+                type: 'number',
+                label: 'Previous',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getDeckUtils()!.deckPreviousNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!),
         },
     };
 }
