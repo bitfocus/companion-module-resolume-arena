@@ -1,6 +1,19 @@
 import {SomeCompanionFeedbackInputField, combineRgb} from '@companion-module/base';
 import {createCanvas} from 'canvas';
 
+export function getDeckOption(): SomeCompanionFeedbackInputField[] {
+	return [
+		{
+			id: 'deck',
+			type: 'number',
+			label: 'Deck',
+			default: 1,
+			min: 1,
+			max: 65535,
+		},
+	];
+}
+
 export function getColumnOption(): SomeCompanionFeedbackInputField[] {
 	return [
 		{
@@ -44,6 +57,12 @@ export function getDefaultLayerColumnOptions() {
 	return {
 		layer: '-1',
 		column: '-1',
+	};
+}
+
+export function getDefaultDeckOptions() {
+	return {
+		deck: '1',
 	};
 }
 
