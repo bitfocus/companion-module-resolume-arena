@@ -6,7 +6,6 @@ import {compositionState, parameterStates} from './state.js';
 
 export interface MessageSubscriber {
 	messageUpdates(data: {path: string; value: string | boolean | number}, isComposition: boolean): void;
-	messageFilter(): (data: any) => boolean;
 }
 
 export class WebsocketInstance {
@@ -16,10 +15,7 @@ export class WebsocketInstance {
 	private reconnect_timer: any;
 	private ws?: WebSocket;
 
-	constructor(
-		private readonly resolumeArenaInstance: ResolumeArenaModuleInstance,
-		private readonly config: ResolumeArenaConfig
-	) {
+	constructor(private readonly resolumeArenaInstance: ResolumeArenaModuleInstance, private readonly config: ResolumeArenaConfig) {
 		console.log('constructed websocket');
 		this.initWebSocket();
 	}
@@ -130,9 +126,7 @@ export class WebsocketInstance {
 
 	private updateNeededSubscribers(message: {path: string; value: string | number | boolean}, isComposition: boolean) {
 		for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscrivers()) {
-			if (websocketSubscriber.messageFilter().call(this, message) || isComposition) {
-				websocketSubscriber.messageUpdates(message, isComposition);
-			}
+			websocketSubscriber.messageUpdates(message, isComposition);
 		}
 	}
 
@@ -173,7 +167,7 @@ export class WebsocketInstance {
 	}
 
 	sendMessageIfOpen(data: any) {
-		console.log('send', JSON.stringify(data));
+		this.resolumeArenaInstance.log('debug','websocket: send '+ JSON.stringify(data));
 		this.ws?.send(JSON.stringify(data));
 	}
 
@@ -256,8 +250,8 @@ export class WebsocketInstance {
 			action: 'subscribe',
 			parameter: '/parameter/by-id/' + paramId,
 		};
-		if(subPath){
-			data.parameter += subPath  
+		if (subPath) {
+			data.parameter += subPath;
 		}
 		this.sendMessage(data);
 	}

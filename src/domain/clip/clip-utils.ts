@@ -4,17 +4,18 @@ import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
 import {ClipId} from './clip-id';
 import {drawPercentage} from '../../defaults';
-import {Clip} from '../api';
+import {Clip, RangeParameter} from '../api';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
 	private clipThumbs: Map<string, string> = new Map<string, string>();
+	private initalLoadDone = false;
 
 	private clipDetailsSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
-	private clipConnectedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipSpeedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipSpeedIds: Set<number> = new Set<number>();
+	private clipTransportPositionIds: Set<number> = new Set<number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -22,8 +23,10 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
-		if (isComposition) {
-			this.initComposition();
+		if (isComposition || !this.initalLoadDone) {
+			if (compositionState.get()!==undefined) {
+				this.initComposition();
+			}
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
@@ -35,19 +38,35 @@ export class ClipUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position\/behaviour\/speed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
 			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position/)) {
+				this.resolumeArenaInstance.checkFeedbacks('clipTransportPosition');
+			}
 		}
 	}
+
 	initComposition() {
-		this.initConnectedFromComposition();
 		this.initDetailsFromComposition();
+		this.initConnectedFromComposition();
 		this.initSpeedFromComposition();
+		this.initalLoadDone = true;
 	}
 
 	initConnectedFromComposition() {
-		for (const clipConnectedSubscription of this.clipConnectedSubscriptions) {
-			const clipId = ClipId.fromId(clipConnectedSubscription[0]);
-			this.clipConnectedWebsocketUnsubscribe(clipId.getLayer(), clipId.getColumn());
-			this.clipConnectedWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layer, layerObject] of layers.entries()) {
+				const clips = layerObject.clips;
+				if (clips) {
+					for (const [clip, clipObject] of clips.entries()) {
+						const clipId = new ClipId(layer + 1, clip + 1);
+						this.clipConnectedWebsocketUnsubscribe(clipId.getLayer(), clipId.getColumn());
+						this.clipTransportPositionWebsocketUnsubscribe(clipObject.transport?.position?.id);
+
+						this.clipConnectedWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+						this.clipTransportPositionWebsocketSubscribe(clipObject.transport?.position?.id);
+					}
+				}
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('connectedClip');
 	}
@@ -74,12 +93,8 @@ export class ClipUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
 	}
 
-	messageFilter() {
-		return (message: any) => !!(message.path && message.path.match(/\/composition\/layers\/\d+\/clips\/\d+.*/));
-	}
-
 	public getClipFromCompositionState(layer: number, column: number): Clip | undefined {
-		const layersObject = compositionState.get().layers;
+		const layersObject = compositionState.get()?.layers;
 		if (layersObject) {
 			const layerObject = layersObject[layer - 1];
 			const clipsObject = layerObject.clips;
@@ -160,7 +175,7 @@ export class ClipUtils implements MessageSubscriber {
 		var layer = feedback.options.layer as number;
 		var column = feedback.options.column as number;
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
-		this.resolumeArenaInstance.log('debug','connectedState layer:'+ layer + 'col: '+ column +' connectedState:'+ connectedState);
+		this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
 		switch (connectedState) {
 			case 'Connected':
 				return {bgcolor: combineRgb(0, 255, 0)};
@@ -173,34 +188,8 @@ export class ClipUtils implements MessageSubscriber {
 		}
 	}
 
-	clipConnectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
-		if (ClipId.isValid(layer, column)) {
-			const idString = new ClipId(layer, column).getIdString();
-			if (!this.clipConnectedSubscriptions.get(idString)) {
-				this.clipConnectedSubscriptions.set(idString, new Set());
-				this.clipConnectedWebsocketSubscribe(layer, column);
-			}
-			this.clipConnectedSubscriptions.get(idString)?.add(feedback.id);
-		}
-	}
-
 	clipConnectedWebsocketSubscribe(layer: number, column: number) {
 		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
-	}
-
-	clipConnectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
-		const clipConnectedSubscriptions = this.clipConnectedSubscriptions.get(new ClipId(layer, column).getIdString());
-		if (ClipId.isValid(layer, column) && clipConnectedSubscriptions) {
-			clipConnectedSubscriptions.delete(feedback.id);
-			if (clipConnectedSubscriptions.size === 0) {
-				this.clipConnectedWebsocketUnsubscribe(layer, column);
-				this.clipConnectedSubscriptions.delete(new ClipId(layer, column).getIdString());
-			}
-		}
 	}
 
 	clipConnectedWebsocketUnsubscribe(layer: number, column: number) {
@@ -269,5 +258,97 @@ export class ClipUtils implements MessageSubscriber {
 			this.clipSpeedIds.delete(clipSpeedId);
 		}
 		// this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/speed');
+	}
+	/////////////////////////////////////////////////
+	// Transport Position
+	/////////////////////////////////////////////////
+
+	clipTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer as number;
+		var column = feedback.options.column as number;
+		var view = feedback.options.view;
+		var timeRemaining = feedback.options.timeRemaining;
+		const param = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position'] as RangeParameter;
+
+		if (ClipId.isValid(layer, column) && view && param && param.max !== undefined && param.value !== undefined) {
+			const max = param.max;
+			const value = param.value;
+
+			const subSecondsInSecond = 60;
+			const secondsInMinute = 60;
+			const minutesInHour = 60;
+			const framesInMinute = subSecondsInSecond * secondsInMinute;
+			const framesInHour = framesInMinute * minutesInHour;
+
+			let time: number;
+
+			if (timeRemaining) {
+				time = ((max - value) / 100) * 6 + 0.6;
+			} else {
+				time = (value / 100) * 6;
+			}
+
+			var hours = Math.floor(Math.abs(time / framesInHour));
+			var minutesOnly = Math.floor(Math.abs((time - hours * framesInHour) / framesInMinute));
+			var secondsOnly = Math.floor(Math.abs((time - hours * framesInHour - minutesOnly * framesInMinute) / subSecondsInSecond));
+			var subSecondsOnly = Math.floor(Math.abs(time - hours * framesInHour - minutesOnly * framesInMinute - secondsOnly * subSecondsInSecond));
+			var framesOnly = Math.floor(subSecondsOnly / 2);
+
+			switch (view) {
+				case 'fullSeconds':
+					return {text: (Math.round(value / 100) / 10).toFixed(1) + 's', size: 14};
+				case 'frames':
+					return {text: framesOnly.toString().padStart(2, '0')};
+				case 'seconds':
+					return {text: secondsOnly.toString().padStart(2, '0')};
+				case 'minutes':
+					return {text: minutesOnly.toString().padStart(2, '0')};
+				case 'hours':
+					return {text: hours.toString().padStart(2, '0')};
+				case 'direction':
+					return {text: timeRemaining ? '-' : '+'};
+				case 'timestampFrame':
+					return {
+						text:
+							(timeRemaining ? '-' : '') +
+							hours.toString().padStart(2, '0') +
+							':' +
+							minutesOnly.toString().padStart(2, '0') +
+							':' +
+							secondsOnly.toString().padStart(2, '0') +
+							': ' +
+							framesOnly.toString().padStart(2, '0'),
+						size: 14,
+					};
+				case 'timestamp':
+					return {
+						text:
+							(timeRemaining ? '-' : '') +
+							hours.toString().padStart(2, '0') +
+							':' +
+							minutesOnly.toString().padStart(2, '0') +
+							':' +
+							secondsOnly.toString().padStart(2, '0'),
+						size: 14,
+					};
+				default:
+					break;
+			}
+		}
+		return {text: '?'};
+	}
+
+	clipTransportPositionWebsocketSubscribe(clipTransportPositionId?: number) {
+		if (clipTransportPositionId) {
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(clipTransportPositionId);
+			this.clipTransportPositionIds.delete(clipTransportPositionId);
+		}
+	}
+
+	clipTransportPositionWebsocketUnsubscribe(clipTransportPositionId?: number) {
+		if (clipTransportPositionId) {
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(clipTransportPositionId);
+			this.clipTransportPositionIds.delete(clipTransportPositionId);
+		}
 	}
 }

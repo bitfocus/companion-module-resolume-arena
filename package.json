@@ -48,7 +48,7 @@
 		"@types/node-fetch": "^2.6.1",
 		"@types/qunit": "^2.11.3",
 		"@types/ws": "^8.5.10",
-"husky": "^9.0.11",
+        "husky": "^9.0.11",
 		"nock": "^13.2.2",
 		"qunit": "^2.17.2",
 		"ts-node": "^10.4.0",
