@@ -61,6 +61,7 @@ export class WebsocketInstance {
 			delete this.ws;
 		}
 		this.ws = new WebSocket(url);
+		this.isInitialized = true;
 
 		this.ws.on('open', () => {
 			this.resolumeArenaInstance.updateStatus(InstanceStatus.Ok);
@@ -68,7 +69,7 @@ export class WebsocketInstance {
 		});
 		this.ws.on('close', (code) => {
 			this.resolumeArenaInstance.log('debug', `Connection closed with code ${code}`);
-			this.resolumeArenaInstance.updateStatus(InstanceStatus.Disconnected, `Connection closed with code ${code}`);
+			// this.resolumeArenaInstance.updateStatus(InstanceStatus.Disconnected, `Connection closed with code ${code}`);
 			this.maybeReconnect();
 		});
 
