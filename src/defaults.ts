@@ -1,5 +1,4 @@
 import {SomeCompanionFeedbackInputField, combineRgb} from '@companion-module/base';
-import {createCanvas} from 'canvas';
 
 export function getDeckOption(): SomeCompanionFeedbackInputField[] {
 	return [
@@ -85,29 +84,4 @@ export function getDefaultStyleBlue() {
 		color: combineRgb(0, 0, 0),
 		bgcolor: combineRgb(0, 0, 255),
 	};
-}
-
-export function drawPercentage(percentage: number): string | undefined {
-	// Dimensions for the image
-	const width = 72;
-	const height = 72;
-
-	// Instantiate the canvas object
-	const canvas = createCanvas(width, height);
-	const context = canvas.getContext('2d');
-
-	if (percentage <= 1.01) {
-		// Fill the rectangle with purple
-		context.fillStyle = '#0000ff';
-		context.fillRect(0, 72 - height * percentage, width, height);
-	} else {
-		context.fillStyle = '#0000ff';
-		context.fillRect(0, 0, width, height);
-		context.fillStyle = '#ff0000';
-		context.fillRect(0, 72 - (height * percentage) / 10, width, height);
-	}
-
-	// Write the image to file
-	const buffer = canvas.toBuffer('image/png');
-	return buffer.toString('base64');
 }
