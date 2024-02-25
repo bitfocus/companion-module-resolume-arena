@@ -39,7 +39,7 @@ export function layerGroupOpacityChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value',
+				label: 'Value in percentage (e.g. 100 or 10)',
 				useVariables: true,
 			},
 		],
@@ -47,7 +47,7 @@ export function layerGroupOpacityChange(
 			let theApi = restApi();
 			if (theApi) {
 				const layerGroup = options.layerGroup;
-				const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value));
+                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 
 				let value: number | undefined;

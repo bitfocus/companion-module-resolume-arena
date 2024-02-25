@@ -37,14 +37,14 @@ export function compositionSpeedChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value',
+				label: 'Value in percentage (e.g. 100 or 10)',
 				useVariables: true,
 			},
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const inputValue: number = +await resolumeArenaInstance.parseVariablesInString(options.value);
+                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
 				const currentValue: number = +parameterStates.get()['/composition/speed']?.value;
 				let value: number | undefined;
 				switch (options.action) {
