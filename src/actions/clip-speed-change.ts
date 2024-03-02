@@ -42,7 +42,7 @@ export function clipSpeedChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value',
+				label: 'Value in percentage (e.g. 100 or 10)',
 				useVariables: true,
 			},
 		],
@@ -53,7 +53,7 @@ export function clipSpeedChange(
                 const clip = theClipUtils.getClipFromCompositionState(options.layer, options.column);
                 const clipSpeedId = clip?.transport?.controls?.speed?.id +''
                 
-                const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value));
+                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
                 const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed']?.value;
 
 				let value: number | undefined;

@@ -39,7 +39,7 @@ export function layerOpacityChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value',
+				label: 'Value in percentage (e.g. 100 or 10)',
 				useVariables: true,
 			},
 		],
@@ -47,7 +47,7 @@ export function layerOpacityChange(
 			let theApi = restApi();
 			if (theApi) {
 				const layer = options.layer;
-				const inputValue: number = +await resolumeArenaInstance.parseVariablesInString(options.value);
+                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
 				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
 
 				let value: number | undefined;
