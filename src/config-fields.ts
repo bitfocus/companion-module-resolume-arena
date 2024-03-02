@@ -51,12 +51,12 @@ export function configFields(): SomeCompanionConfigField[] {
       width: 6,
       default: false
     },
-    {
-      type: 'checkbox',
-      id: 'useCroppedThumbs',
-      label: 'Hide black banners on thumbnails (might be slower)',
-      width: 6,
-      default: false
-    },
+    // {
+    //   type: 'checkbox',
+    //   id: 'useCroppedThumbs',
+    //   label: 'Hide black banners on thumbnails (might be slower)',
+    //   width: 6,
+    //   default: false
+    // },
   ]
 };

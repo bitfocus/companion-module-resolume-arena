@@ -1,7 +1,7 @@
 {
 	"name": "resolume-arena",
 	"main": "dist/index.js",
-	"version": "3.4.0",
+	"version": "3.4.1",
 	"description": "Resolume Arena 6 & 7 module for companion",
 	"api_version": "1.0.0",
 	"keywords": [
@@ -38,7 +38,7 @@
 	"dependencies": {
 		"@companion-module/base": "~1.7.0",
 		"@persevie/statemanjs": "^1.6.0",
-		"canvas": "^2.11.2",
+		"companion-module-utils": "^0.4.0",
 		"node-fetch": "^2.0.0",
 		"ws": "^8.16.0"
 	},
@@ -48,7 +48,7 @@
 		"@types/node-fetch": "^2.6.1",
 		"@types/qunit": "^2.11.3",
 		"@types/ws": "^8.5.10",
-        "husky": "^9.0.11",
+		"husky": "^9.0.11",
 		"nock": "^13.2.2",
 		"qunit": "^2.17.2",
 		"ts-node": "^10.4.0",

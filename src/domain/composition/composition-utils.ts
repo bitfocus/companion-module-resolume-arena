@@ -111,7 +111,7 @@ export class CompositionUtils implements MessageSubscriber {
 		const tempo = parameterStates.get()['/composition/tempocontroller/tempo']?.value;
 		if (tempo !== undefined) {
 			return {
-				text: Math.round(tempo * 100)/100+'',
+				text: Math.round(tempo * 100) / 100 + '',
 				show_topbar: false,
 			};
 		}
