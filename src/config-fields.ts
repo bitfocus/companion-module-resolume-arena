@@ -6,6 +6,7 @@ export interface ResolumeArenaConfig {
   webapiPort: number;
   useSSL: boolean;
   useRest: boolean;
+  useCroppedThumbs: boolean;
 }
 
 export function configFields(): SomeCompanionConfigField[] {
@@ -47,6 +48,13 @@ export function configFields(): SomeCompanionConfigField[] {
       type: 'checkbox',
       id: 'useSSL',
       label: 'Use SSL for web api calls',
+      width: 6,
+      default: false
+    },
+    {
+      type: 'checkbox',
+      id: 'useCroppedThumbs',
+      label: 'Hide black banners on thumbnails (might be slower)',
       width: 6,
       default: false
     },

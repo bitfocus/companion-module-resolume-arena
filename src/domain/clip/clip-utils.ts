@@ -3,13 +3,13 @@ import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
 import {ClipId} from './clip-id';
-import {drawPercentage} from '../../defaults';
+import {drawPercentage, drawThumb} from '../../image-utils';
 import {Clip, RangeParameter} from '../api';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
-	private clipThumbs: Map<string, string> = new Map<string, string>();
+	private clipThumbs: Map<string, string | undefined> = new Map<string, string | undefined>();
 	private initalLoadDone = false;
 
 	private clipDetailsSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
@@ -77,7 +77,15 @@ export class ClipUtils implements MessageSubscriber {
 			this.clipDetailsWebsocketUnsubscribe(clipId.getLayer(), clipId.getColumn());
 			this.clipDetailsWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
 			var thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
-			this.clipThumbs.set(clipId.getIdString(), thumb ?? '');
+			try {
+					if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+						this.clipThumbs.set(clipId.getIdString(), await drawThumb(thumb));
+					}else{
+						this.clipThumbs.set(clipId.getIdString(), thumb);
+					}
+			} catch (error) {
+				this.clipThumbs.set(clipId.getIdString(), undefined);
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 	}
@@ -115,10 +123,7 @@ export class ClipUtils implements MessageSubscriber {
 		var column = feedback.options.column as number;
 		if (ClipId.isValid(layer, column)) {
 			var key = new ClipId(layer, column);
-			var result: {
-				text: string | undefined;
-				png64: string | undefined;
-			} = {
+			var result: CompanionAdvancedFeedbackResult = {
 				text: '',
 				png64: undefined,
 			};
@@ -127,6 +132,7 @@ export class ClipUtils implements MessageSubscriber {
 			}
 			if (feedback.options.showThumb) {
 				result.png64 = this.clipThumbs.get(key.getIdString());
+				result.show_topbar = false;
 			}
 			return result;
 		}

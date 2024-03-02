@@ -1,5 +1,5 @@
 import { CompanionAdvancedFeedbackResult, CompanionFeedbackInfo } from '@companion-module/base';
-import { drawPercentage } from '../../defaults';
+import { drawPercentage } from '../../image-utils';
 import { ResolumeArenaModuleInstance } from '../../index';
 import { parameterStates } from '../../state';
 import { MessageSubscriber } from '../../websocket';
