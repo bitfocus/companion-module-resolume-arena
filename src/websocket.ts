@@ -108,7 +108,7 @@ export class WebsocketInstance {
 					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
-					// this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
+					this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});
@@ -221,18 +221,20 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	triggerPath(path: string) {
+	triggerPath(path: string, value?: boolean) {
 		const data = {
 			action: 'trigger',
 			parameter: path,
+			value
 		};
 		this.sendMessage(data);
 	}
 
-	triggerParam(paramId: string) {
+	triggerParam(paramId: string, value?: boolean) {
 		const data = {
 			action: 'trigger',
 			parameter: '/parameter/by-id/' + paramId,
+			value
 		};
 		this.sendMessage(data);
 	}

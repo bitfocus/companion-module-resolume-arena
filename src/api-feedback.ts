@@ -4,11 +4,24 @@ import {getColumnOption, getDeckOption, getDefaultStyleBlue, getDefaultStyleGree
 
 export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
     return {
+        tempo: {
+            type: 'advanced',
+            name: 'Tempo',
+            options: [],
+            callback: resolumeArenaInstance.getCompositionUtils()!.compositionTempoFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
+        },
         connectedClip: {
             type: 'advanced',
             name: 'Connected Clip',
             options: [...getLayerOption(), ...getColumnOption()],
             callback: resolumeArenaInstance.getClipUtils()!.clipConnectedFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
+        },
+        selectedClip: {
+            type: 'boolean',
+            name: 'Selected Clip',
+            options: [...getLayerOption(), ...getColumnOption()],
+            defaultStyle: getDefaultStyleBlue(),
+            callback: resolumeArenaInstance.getClipUtils()!.clipSelectedFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
         },
         clipInfo: {
             type: 'advanced',
@@ -264,8 +277,44 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
             defaultStyle: getDefaultStyleGreen(),
             options: [...getColumnOption()],
             callback: resolumeArenaInstance.getColumnUtils()!.columnSelectedFeedbackCallback.bind(resolumeArenaInstance.getColumnUtils()!),
-            subscribe: resolumeArenaInstance.getColumnUtils()!.columnSelectedFeedbackSubscribe.bind(resolumeArenaInstance.getColumnUtils()!),
-            unsubscribe: resolumeArenaInstance.getColumnUtils()!.columnSelectedFeedbackUnsubscribe.bind(resolumeArenaInstance.getColumnUtils()!),
+        },
+        columnName: {
+            type: 'advanced',
+            name: 'Column Name',
+            options: [...getColumnOption()],
+            callback: resolumeArenaInstance.getColumnUtils()!.columnNameFeedbackCallback.bind(resolumeArenaInstance.getColumnUtils()!),
+        },
+        selectedColumnName: {
+            type: 'advanced',
+            name: 'Selected Column Name',
+            options: [],
+            callback: resolumeArenaInstance.getColumnUtils()!.columnSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getColumnUtils()!),
+        },
+        nextColumnName: {
+            type: 'advanced',
+            name: 'Next Column Name',
+            options: [{
+                id: 'next',
+                type: 'number',
+                label: 'Next',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getColumnUtils()!.columnNextNameFeedbackCallback.bind(resolumeArenaInstance.getColumnUtils()!),
+        },
+        previousColumnName: {
+            type: 'advanced',
+            name: 'Previous Column Name',
+            options: [{
+                id: 'previous',
+                type: 'number',
+                label: 'Previous',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getColumnUtils()!.columnPreviousNameFeedbackCallback.bind(resolumeArenaInstance.getColumnUtils()!),
         },
         layerGroupColumnsSelected: {
             type: 'boolean',
@@ -273,8 +322,44 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
             defaultStyle: getDefaultStyleGreen(),
             options: [...getLayerGroupOption(), ...getColumnOption()],
             callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnsSelectedFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-            subscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnsSelectedFeedbackSubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-            unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnsSelectedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+        },
+        layerGroupColumnName: {
+            type: 'advanced',
+            name: 'Layer Group Column Name',
+            options: [...getLayerGroupOption(), ...getColumnOption()],
+            callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+        },
+        selectedLayerGroupColumnName: {
+            type: 'advanced',
+            name: 'Selected Layer Group Column Name',
+            options: [...getLayerGroupOption()],
+            callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+        },
+        nextLayerGroupColumnName: {
+            type: 'advanced',
+            name: 'Next Layer Group Column Name',
+            options: [...getLayerGroupOption(),{
+                id: 'next',
+                type: 'number',
+                label: 'Next',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnNextNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+        },
+        previousLayerGroupColumnName: {
+            type: 'advanced',
+            name: 'Previous Layer Group Column Name',
+            options: [...getLayerGroupOption(),{
+                id: 'previous',
+                type: 'number',
+                label: 'Previous',
+                default: 1,
+                min: 1,
+                max: 65535,
+            },],
+            callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnPreviousNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
         },
         deckSelected: {
             type: 'boolean',

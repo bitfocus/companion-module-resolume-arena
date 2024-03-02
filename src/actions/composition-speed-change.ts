@@ -1,14 +1,14 @@
-import { CompanionActionDefinition } from '@companion-module/base';
-import { ResolumeArenaModuleInstance } from '..';
+import {CompanionActionDefinition} from '@companion-module/base';
+import {ResolumeArenaModuleInstance} from '..';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
-import { parameterStates } from '../state';
-import { WebsocketInstance } from '../websocket';
+import {parameterStates} from '../state';
+import {WebsocketInstance} from '../websocket';
 
 export function compositionSpeedChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
-	_oscApi: () => ArenaOscApi | null,
+	oscApi: () => ArenaOscApi | null,
 	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
@@ -43,8 +43,9 @@ export function compositionSpeedChange(
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
+			let theOscApi = oscApi();
+			const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value)) / 100;
 			if (theApi) {
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
 				const currentValue: number = +parameterStates.get()['/composition/speed']?.value;
 				let value: number | undefined;
 				switch (options.action) {
@@ -60,8 +61,24 @@ export function compositionSpeedChange(
 					default:
 						break;
 				}
-				if (value!=undefined) {
+				if (value != undefined) {
 					websocketApi()?.setPath('/composition/speed', value);
+				}
+			} else {
+				switch (options.action) {
+					case 'set':
+						theOscApi?.customOsc('/composition/speed', 'f', inputValue + '', 'n');
+						break;
+					case 'add':
+						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
+						theOscApi?.customOsc('/composition/speed', 'f', inputValue + '', '+');
+						break;
+					case 'subtract':
+						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
+						theOscApi?.customOsc('/composition/speed', 'f', inputValue + '', '-');
+						break;
+					default:
+						break;
 				}
 			}
 		},

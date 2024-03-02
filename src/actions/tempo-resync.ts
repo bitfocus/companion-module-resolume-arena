@@ -1,31 +1,27 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
-import {compositionState} from '../state';
 import {WebsocketInstance} from '../websocket';
+import {compositionState} from '../state';
 
-export function clearAllLayers(
+export function tempoResync(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
-		name: 'Clear All Layers',
+		name: 'Resync Tempo',
 		options: [],
 		callback: async ({}: {options: any}) => {
 			let theApi = restApi();
-			let theOscApi = oscApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				const layers = compositionState.get()?.layers;
-				if (layers) {
-					for (const [layerIndex, _layerObject] of layers.entries()) {
-						const layer = layerIndex + 1;
-						thewebsocketApi?.triggerPath(`/composition/layers/${layer}/clear`);
-					}
-				}
+				console.log(compositionState.get()?.tempocontroller)
+				let tapTempoId = compositionState.get()!.tempocontroller?.resync?.id!
+				thewebsocketApi?.triggerParam(tapTempoId+'', true)
+				thewebsocketApi?.triggerParam(tapTempoId+'', false)
 			} else {
-				theOscApi?.clearAllLayers();
+				oscApi()?.tempoTap();
 			}
 		},
 	};

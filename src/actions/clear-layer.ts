@@ -2,9 +2,11 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {getLayerOption} from '../defaults';
+import {WebsocketInstance} from '../websocket';
 
 export function clearLayer(
 	restApi: () => ArenaRestApi | null,
+	websocketApi: () => WebsocketInstance | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
@@ -13,7 +15,7 @@ export function clearLayer(
 		callback: async ({options}: {options: any}) => {
 			let rest = restApi();
 			if (rest) {
-				await rest.Layers.clear(options.layer);
+				websocketApi()?.triggerPath('/composition/layers/' + options.layer + '/clear');
 			} else {
 				oscApi()?.clearLayer(options.layer);
 			}

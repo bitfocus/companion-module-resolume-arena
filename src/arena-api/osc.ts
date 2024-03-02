@@ -32,6 +32,10 @@ export default class ArenaOscApi {
 		this._oscSend(this._host, this._port, path, args);
 	}
 
+	public selectClip(layer: number, column: number) {
+		this.send(`/composition/layers/${layer}/clips/${column}/select`, OscArgs.One);
+	}
+	
 	public connectClip(layer: number, column: number) {
 		this.send(`/composition/layers/${layer}/clips/${column}/connect`, OscArgs.One);
 	}
@@ -51,6 +55,16 @@ export default class ArenaOscApi {
 		this.send(path, OscArgs.One);
 		this.send(path, OscArgs.Zero);
 	}
+	
+	public bypassLayer(layer: number, bypassed: OSCSomeArguments) {
+		let path = `/composition/layers/${layer}/bypassed`;
+		this.send(path, bypassed);
+	}
+  
+	public bypassLayerGroup(layerGroup: number, bypassed: OSCSomeArguments) {
+		let path = `/composition/groups/${layerGroup}/bypassed`;
+		this.send(path, bypassed);
+	}
 
 	public clearAllLayers() {
 		this.send('/composition/disconnectall', OscArgs.One);
@@ -58,6 +72,10 @@ export default class ArenaOscApi {
 
 	public tempoTap() {
 		this.send('/composition/tempocontroller/tempotap', OscArgs.One);
+	}
+	
+	public tempoResync() {
+		this.send('/composition/tempocontroller/resync', OscArgs.One);
 	}
 
 	public triggerlayerGroupColumn(layerGroup: number, column: number) {

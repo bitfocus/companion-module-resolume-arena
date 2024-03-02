@@ -2,10 +2,12 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {getLayerGroupOption} from '../defaults';
-import {LayerGroupOptions} from '../arena-api/child-apis/layer-group-options/LayerGroupOptions';
+import {parameterStates} from '../state';
+import {WebsocketInstance} from '../websocket';
 
 export function soloLayerGroup(
 	restApi: () => ArenaRestApi | null,
+	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
@@ -35,15 +37,15 @@ export function soloLayerGroup(
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
-			if (options.solo == 'toggle') {
-				var settings = (await theApi?.LayerGroups.getSettings(options.layerGroup)) as LayerGroupOptions;
-				await theApi?.LayerGroups.updateSettings(options.layerGroup, {
-					solo: !settings.solo?.value,
-				});
-			} else {
-				await theApi?.LayerGroups.updateSettings(options.layerGroup, {
-					solo: options.solo == 'on',
-				});
+			let thewebsocketApi = websocketApi();
+			if (theApi) {
+				let solo;
+				if (options.solo == 'toggle') {
+					solo = !parameterStates.get()['/composition/groups/' + options.layerGroup + '/solo']?.value;
+				} else {
+					solo = options.solo == 'on';
+				}
+				thewebsocketApi?.setPath('/composition/layergroups/' + options.layerGroup + '/solo', solo);
 			}
 		},
 	};

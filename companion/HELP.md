@@ -17,15 +17,19 @@ to using OSC if the Rest API port is not specified.
 The module status will show an error if the Rest API port is not responding (e.g.
 you've misconfigured Resolume). There is no way to tell if the OSC port is connected
 so the module will always show an OK status if you only specify the OSC port.
+
 ---
 ### Available Actions
 
 #### Composition
 * Change Composition Opacity
 * Change Composition Speed
+* Tap Tempo
+* Resync Tempo
 
 #### Clips
 * Trigger Clip
+* Select Clip
 
 #### Columns
 * Trigger Column
@@ -54,6 +58,7 @@ so the module will always show an OK status if you only specify the OSC port.
 
 #### Custom
 * Custom OSC Command
+
 ---
 
 ### Available Feedbacks
@@ -61,13 +66,18 @@ so the module will always show an OK status if you only specify the OSC port.
 #### Composition
 * Composition Opacity (0-100%)
 * Composition Speed (0-1000%)
+* Tempo (BPM)
 
 #### Clips
 * Clip Info (name + thumbnail)
 * Connected Clip
+* Selected Clip
 
 #### Columns
 * Column Selected
+* Selected Column Name
+* Next Column Name
+* Previous Column Name
 
 #### Layers 
 * Layer Bypassed
@@ -75,6 +85,9 @@ so the module will always show an OK status if you only specify the OSC port.
 * Layer Active
 * Layer Selected
 * Layer Opacity
+* Layer Selected Column Name
+* Layer Next Column Name
+* Layer Previous Column Name
 
 #### Layer Groups
 * Layer Group Bypassed
@@ -83,15 +96,23 @@ so the module will always show an OK status if you only specify the OSC port.
 * Layer Group Selected
 * Layer Group Opacity
 * Layer Group Column Selected
+* Layer Group Selected Column Name
+* Layer Group Next Column Name
+* Layer Group Previous Column Name
+
 ---
 
 ### Available Presets
 
 #### Clips
 * Trigger Clip
+* Selected Clip
 
 #### Columns
 * Trigger Column
+* Selected Column Name
+* Trigger Next Column
+* Trigger Previous Column
 
 #### Layers 
 * Bypass Layer
@@ -105,6 +126,13 @@ so the module will always show an OK status if you only specify the OSC port.
 * Clear Layer Group
 * Select Layer Group
 * Trigger Layer Group Column
+* Layer Group Selected Column
+* Layer Group Next Column
+* Layer Group Previous Column
+
+#### Tempo
+* Tap
+* Resync
 
 ---
 ### Some Examples

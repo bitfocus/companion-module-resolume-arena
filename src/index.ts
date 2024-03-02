@@ -112,6 +112,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		}
 		if (config.port) {
 			this.oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this));
+			if(!this.restApi){
+				this.updateStatus(InstanceStatus.Ok);
+			}
 		} else {
 			this.oscApi = null;
 		}
