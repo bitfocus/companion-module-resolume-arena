@@ -1,10 +1,10 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
+import {drawPercentage} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
-import {ClipId} from './clip-id';
-import {drawPercentage, drawThumb} from '../../image-utils';
 import {Clip, RangeParameter} from '../api';
+import {ClipId} from './clip-id';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -75,7 +75,7 @@ export class ClipUtils implements MessageSubscriber {
 		}
 		this.resolumeArenaInstance.checkFeedbacks('connectedClip');
 	}
-	
+
 	initSelectedFromComposition() {
 		const layers = compositionState.get()?.layers;
 		if (layers) {
@@ -101,11 +101,11 @@ export class ClipUtils implements MessageSubscriber {
 			this.clipDetailsWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
 			var thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
 			try {
-				if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
-					this.clipThumbs.set(clipId.getIdString(), await drawThumb(thumb));
-				} else {
-					this.clipThumbs.set(clipId.getIdString(), thumb);
-				}
+				// if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+				// this.clipThumbs.set(clipId.getIdString(), await drawThumb(thumb));
+				// } else {
+				this.clipThumbs.set(clipId.getIdString(), thumb);
+				// }
 			} catch (error) {
 				this.clipThumbs.set(clipId.getIdString(), undefined);
 			}
@@ -208,7 +208,7 @@ export class ClipUtils implements MessageSubscriber {
 		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
 		switch (connectedState) {
 			case 'Connected':
-				if(selectedState){
+				if (selectedState) {
 					return {bgcolor: combineRgb(100, 255, 255)};
 				}
 				return {bgcolor: combineRgb(0, 255, 0)};
