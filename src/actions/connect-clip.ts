@@ -2,10 +2,11 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {getColumnOption, getLayerOption} from '../defaults';
-import {ClipId} from '../domain/clip/clip-id';
+import {WebsocketInstance} from '../websocket';
 
 export function connectClip(
 	restApi: () => ArenaRestApi | null,
+	websocketApi: () => WebsocketInstance | null,
 	oscApi: () => ArenaOscApi | null
 ): CompanionActionDefinition {
 	return {
@@ -13,8 +14,10 @@ export function connectClip(
 		options: [...getLayerOption(), ...getColumnOption()],
 		callback: async ({options}: {options: any}): Promise<void> => {
 			let rest = restApi();
+			let websocket = websocketApi();
 			if (rest) {
-				await rest.Clips.connect(new ClipId(options.layer, options.column));
+				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, false)
+				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, true)
 			} else {
 				oscApi()?.connectClip(options.layer, options.column);
 			}

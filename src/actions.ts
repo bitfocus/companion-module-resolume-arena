@@ -28,43 +28,47 @@ import {soloLayerGroup} from './actions/solo-layer-group';
 import {tempoTap} from './actions/tempo-tap';
 import {triggerColumn} from './actions/trigger-column';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
+import {tempoResync} from './actions/tempo-resync';
 
-export function getActions(ResolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
-	var restApi = ResolumeArenaModuleInstance.getRestApi.bind(ResolumeArenaModuleInstance);
-	var websocketApi = ResolumeArenaModuleInstance.getWebsocketApi.bind(ResolumeArenaModuleInstance);
-	var oscApi = ResolumeArenaModuleInstance.getOscApi.bind(ResolumeArenaModuleInstance);
-	var clipUtils = ResolumeArenaModuleInstance.getClipUtils.bind(ResolumeArenaModuleInstance);
-	var layerUtils = ResolumeArenaModuleInstance.getLayerUtils.bind(ResolumeArenaModuleInstance);
-	var deckUtils = ResolumeArenaModuleInstance.getDeckUtils.bind(ResolumeArenaModuleInstance);
+export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
+	var restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
+	var websocketApi = resolumeArenaModuleInstance.getWebsocketApi.bind(resolumeArenaModuleInstance);
+	var oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
+	var clipUtils = resolumeArenaModuleInstance.getClipUtils.bind(resolumeArenaModuleInstance);
+	var layerUtils = resolumeArenaModuleInstance.getLayerUtils.bind(resolumeArenaModuleInstance);
+	var layerGroupUtils = resolumeArenaModuleInstance.getLayerGroupUtils.bind(resolumeArenaModuleInstance);
+	var deckUtils = resolumeArenaModuleInstance.getDeckUtils.bind(resolumeArenaModuleInstance);
+	var columnUtils = resolumeArenaModuleInstance.getColumnUtils.bind(resolumeArenaModuleInstance);
 	var actions: CompanionActionDefinitions = {
-		bypassLayer: bypassLayer(restApi, oscApi),
-		bypassLayerGroup: bypassLayerGroup(restApi, oscApi),
-		clearAll: clearAllLayers(restApi, oscApi),
-		clearLayer: clearLayer(restApi, oscApi),
+		bypassLayerGroup: bypassLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		bypassLayer: bypassLayer(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		clearAll: clearAllLayers(restApi, websocketApi, oscApi),
+		clearLayer: clearLayer(restApi, websocketApi, oscApi),
 		clearLayerGroup: clearLayerGroup(restApi, websocketApi, oscApi),
 		compNextCol: compNextCol(restApi, oscApi),
 		compPrevCol: compPrevCol(restApi, oscApi),
-		custom: customOscCommand(oscApi, ResolumeArenaModuleInstance),
+		custom: customOscCommand(oscApi, resolumeArenaModuleInstance),
 		grpNextCol: layerGroupNextCol(restApi, oscApi),
 		grpPrevCol: layerGroupPrevCol(restApi, oscApi),
 		layNextCol: layerNextCol(restApi, oscApi),
 		layPrevCol: layerPrevCol(restApi, oscApi),
-		selectClip: selectClip(restApi, oscApi),
-		selectLayer: selectLayer(restApi, oscApi),
-		selectLayerGroup: selectLayerGroup(restApi, oscApi),
-		soloLayer: soloLayer(restApi, oscApi),
-		soloLayerGroup: soloLayerGroup(restApi, oscApi),
-		tempoTap: tempoTap(restApi, oscApi),
-		triggerClip: connectClip(restApi, oscApi),
-		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, ResolumeArenaModuleInstance),
-		triggerColumn: triggerColumn(restApi, oscApi),
-		triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, oscApi),
-		layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
-		layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, ResolumeArenaModuleInstance),
-		layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
+		selectClip: selectClip(restApi, websocketApi, oscApi),
+		selectLayer: selectLayer(restApi, websocketApi, oscApi),
+		selectLayerGroup: selectLayerGroup(restApi, websocketApi, oscApi),
+		soloLayer: soloLayer(restApi, websocketApi, oscApi),
+		soloLayerGroup: soloLayerGroup(restApi, websocketApi, oscApi),
+		tempoTap: tempoTap(restApi, websocketApi, oscApi),
+		resyncTap: tempoResync(restApi, websocketApi, oscApi),
+		triggerClip: connectClip(restApi, websocketApi, oscApi),
+		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
+		triggerColumn: triggerColumn(restApi, websocketApi, oscApi, columnUtils),
+		triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, websocketApi, oscApi, layerGroupUtils),
+		layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
+		layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
-		compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
-		compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
+		compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		selectDeck: selectDeck(restApi, websocketApi, oscApi, deckUtils),
 	};
 	return actions;

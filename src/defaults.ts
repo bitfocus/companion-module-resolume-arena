@@ -65,6 +65,12 @@ export function getDefaultDeckOptions() {
 	};
 }
 
+export function getDefaultColumnOptions() {
+	return {
+		column: 1,
+	};
+}
+
 export function getDefaultStyleRed() {
 	return {
 		color: combineRgb(0, 0, 0),

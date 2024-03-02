@@ -1,12 +1,16 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../arena-api/osc';
+import ArenaOscApi, {OscArgs} from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {getLayerGroupOption} from '../defaults';
-import {LayerGroupOptions} from '../arena-api/child-apis/layer-group-options/LayerGroupOptions';
+import {parameterStates} from '../state';
+import {WebsocketInstance} from '../websocket';
+import {ResolumeArenaModuleInstance} from '..';
 
 export function bypassLayerGroup(
 	restApi: () => ArenaRestApi | null,
-	_oscApi: () => ArenaOscApi | null
+	websocketApi: () => WebsocketInstance | null,
+	oscApi: () => ArenaOscApi | null,
+	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Bypass Layer Group',
@@ -35,15 +39,35 @@ export function bypassLayerGroup(
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
-			if (options.bypass == 'toggle') {
-				var settings = (await theApi?.LayerGroups.getSettings(options.layerGroup)) as LayerGroupOptions;
-				await theApi?.LayerGroups.updateSettings(options.layerGroup, {
-					bypassed: !settings.bypassed?.value,
-				});
+			let theOscApi = oscApi();
+			let thewebsocketApi = websocketApi();
+			const layerGroup = options.layerGroup as number;
+			if (theApi) {
+				let bypassed;
+				if (options.bypass == 'toggle') {
+					bypassed = !parameterStates.get()['/composition/groups/' + layerGroup + '/bypassed']?.value;
+				} else {
+					bypassed = options.bypass == 'on';
+				}
+				thewebsocketApi?.setPath(`/composition/layergroups/${layerGroup}/bypassed`, bypassed);
 			} else {
-				await theApi?.LayerGroups.updateSettings(options.layerGroup, {
-					bypassed: options.bypass == 'on',
-				});
+				let bypassed;
+				switch (options.bypass) {
+					case 'on':
+						bypassed = true;
+						break;
+					case 'off':
+						bypassed = false;
+						break;
+					case 'toggle':
+						resolumeArenaInstance.log('warn','bypassLayerGroup - toggle not supported in OSC')
+						break;
+					default:
+						break;
+				}
+				if (bypassed !== undefined) {
+					theOscApi?.bypassLayerGroup(layerGroup, bypassed ? OscArgs.One : OscArgs.Zero);
+				}
 			}
 		},
 	};

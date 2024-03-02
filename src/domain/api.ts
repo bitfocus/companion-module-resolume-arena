@@ -520,6 +520,7 @@ export interface Composition {
      * @memberof Composition
      */
     tempoController?: TempoController;
+    tempocontroller?: Tempocontroller;
 }
 /**
  * Cross fade between two clips
@@ -1188,6 +1189,44 @@ export interface TempoController {
      * @memberof TempoController
      */
     tempoTap?: EventParameter;
+    tempo_tap?: EventParameter;
+    /**
+     * 
+     * @type {EventParameter}
+     * @memberof TempoController
+     */
+    resync?: EventParameter;
+}
+/**
+ * The controller for various tempo-related aspects of the composition
+ * @export
+ * @interface Tempocontroller
+ */
+export interface Tempocontroller {
+    /**
+     * 
+     * @type {RangeParameter}
+     * @memberof TempoController
+     */
+    tempo?: RangeParameter;
+    /**
+     * 
+     * @type {EventParameter}
+     * @memberof TempoController
+     */
+    tempo_pull?: EventParameter;
+    /**
+     * 
+     * @type {EventParameter}
+     * @memberof TempoController
+     */
+    tempo_push?: EventParameter;
+    /**
+     * 
+     * @type {EventParameter}
+     * @memberof TempoController
+     */
+    tempo_tap?: EventParameter;
     /**
      * 
      * @type {EventParameter}

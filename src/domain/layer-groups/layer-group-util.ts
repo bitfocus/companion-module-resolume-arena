@@ -1,4 +1,4 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
 import {drawPercentage} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
@@ -20,16 +20,18 @@ export class LayerGroupUtils implements MessageSubscriber {
 
 	// TODO: #46, resolume feature request private layerGroupSpeedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	private layerGroupColumnsSelectedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private selectedLayerGroupColumns: Map<number, number> = new Map<number, number>();
+	private lastLayerGroupColumns: Map<number, number> = new Map<number, number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
 		this.resolumeArenaInstance.log('debug', 'LayerGroupUtils constructor called');
 	}
 
-	messageUpdates(data: {path: any}, isComposition: boolean) {
+	messageUpdates(data: {path: any; value: boolean}, isComposition: boolean) {
 		if (isComposition) {
 			this.updateActiveLayerGroups();
+			this.initConnectedFromComposition();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
@@ -48,7 +50,15 @@ export class LayerGroupUtils implements MessageSubscriber {
 			// 	this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
 			// }
 			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
+				if (data.value) {
+					const matches = data.path.match(/\/composition\/groups\/(\d+)\/columns\/(\d+)\/connect/);
+					this.selectedLayerGroupColumns.set(+matches[1], +matches[2]);
+				}
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('selectedLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('nextLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('previousLayerGroupColumnName');
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
 				this.updateActiveLayerGroups();
@@ -58,6 +68,38 @@ export class LayerGroupUtils implements MessageSubscriber {
 
 	public getLayerGroupsFromCompositionState(): LayerGroup[] | undefined {
 		return compositionState.get()?.layergroups;
+	}
+
+	initConnectedFromComposition() {
+		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
+		if (layerGroupsObject) {
+			for (const [layerGroupIndex, _layerGroupObject] of layerGroupsObject.entries()) {
+				const layerGroup = layerGroupIndex + 1;
+				const columns = compositionState.get()?.columns;
+				if (columns) {
+					this.selectedLayerGroupColumns.delete(layerGroup);
+					for (const [columnIndex, columnObject] of columns.entries()) {
+						const column = columnIndex + 1;
+						this.resolumeArenaInstance
+							.getWebsocketApi()
+							?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
+						this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/name');
+
+						this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
+						this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/name');
+						if (columnObject.connected?.value) {
+							this.selectedLayerGroupColumns.set(layerGroup, column);
+						}
+						this.lastLayerGroupColumns.set(layerGroup, column);
+					}
+				}
+			}
+		}
+		this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
+		this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnName');
+		this.resolumeArenaInstance.checkFeedbacks('selectedLayerGroupColumnName');
+		this.resolumeArenaInstance.checkFeedbacks('nextLayerGroupColumnName');
+		this.resolumeArenaInstance.checkFeedbacks('previousLayerGroupColumnName');
 	}
 
 	updateActiveLayerGroups() {
@@ -226,32 +268,84 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return false;
 	}
 
-	layerGroupColumnsSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+	/////////////////////////////////////////////////
+	// COLUMN NAME
+	/////////////////////////////////////////////////
+
+	layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var column = feedback.options.column;
 		var layerGroup = feedback.options.layerGroup as number;
-		var column = feedback.options.column as number;
-		if (LayerGroupColumnId.isValid(layerGroup, column)) {
-			const idString = new LayerGroupColumnId(layerGroup, column).getIdString();
-			if (!this.layerGroupColumnsSelectedSubscriptions.get(idString)) {
-				this.layerGroupColumnsSelectedSubscriptions.set(idString, new Set());
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
-			}
-			this.layerGroupColumnsSelectedSubscriptions.get(idString)?.add(feedback.id);
+		if (column !== undefined) {
+			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
+		return {};
 	}
 
-	layerGroupColumnsSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
-		var column = feedback.options.column as number;
-		const layerGroupColumnsSelectedSubscriptions = this.layerGroupColumnsSelectedSubscriptions.get(
-			new LayerGroupColumnId(layerGroup, column).getIdString()
-		);
-		if (LayerGroupColumnId.isValid(layerGroup, column) && layerGroupColumnsSelectedSubscriptions) {
-			layerGroupColumnsSelectedSubscriptions.delete(feedback.id);
-			if (layerGroupColumnsSelectedSubscriptions.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
-				this.layerGroupColumnsSelectedSubscriptions.delete(new LayerGroupColumnId(layerGroup, column).getIdString());
+	/////////////////////////////////////////////////
+	// SELECTED COLUMN NAME
+	/////////////////////////////////////////////////
+
+	layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layerGroup = +feedback.options.layerGroup! as number;
+			if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
+				return {
+					text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
+						?.value,
+					bgcolor: combineRgb(0, 255, 0),
+					color: combineRgb(0, 0, 0),
+				};
 			}
+		return {};
+	}
+
+	/////////////////////////////////////////////////
+	// NEXT COLUMN NAME
+	/////////////////////////////////////////////////
+
+	layerGroupColumnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var add = feedback.options.next as number;
+		var layerGroup = +feedback.options.layerGroup! as number;
+		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
+			let column = this.calculateNextLayerGroupColumn(layerGroup, add);
+			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
+		return {};
+	}
+
+	calculateNextLayerGroupColumn(layerGroup: number, add: number): number {
+		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
+		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+		if (column + add > lastColumn) {
+			column = +column + add - lastColumn;
+		} else {
+			column += add;
+		}
+		return column;
+	}
+
+	/////////////////////////////////////////////////
+	// PREVIOUS COLUMN NAME
+	/////////////////////////////////////////////////
+
+	layerGroupColumnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var subtract = feedback.options.previous as number;
+		var layerGroup = +feedback.options.layerGroup! as number;
+		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
+			let column = this.calculatePreviousLayerGroupColumn(layerGroup, subtract);
+			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
+		}
+		return {};
+	}
+
+	calculatePreviousLayerGroupColumn(layerGroup: number, subtract: number): number {
+		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
+		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+		if (column - subtract < 1) {
+			column = +lastColumn + column - subtract;
+		} else {
+			column = column - subtract;
+		}
+		return column;
 	}
 
 	/////////////////////////////////////////////////

@@ -1,26 +1,68 @@
-import {CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
-import {parameterStates} from '../../state';
+import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
 
 export class ColumnUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
-	private columnSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private initalLoadDone = false;
+	private selectedColumn?: number;
+	private lastColumn?: number;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
 		this.resolumeArenaInstance.log('debug', 'ColumnUtils constructor called');
 	}
 
-	messageUpdates(data: {path: any}) {
-		if(data.path){
+	messageUpdates(data: {path: any, value: boolean}, isComposition: boolean) {
+		if (isComposition || !this.initalLoadDone) {
+			if (compositionState.get() !== undefined) {
+				this.initConnectedFromComposition();
+				this.initalLoadDone = true;
+			}
+		}
+		if (data.path) {
+			if (!!data.path.match(/\/composition\/columns\/\d+\/name/)) {
+				this.resolumeArenaInstance.checkFeedbacks('columnName');
+			}
 			if (!!data.path.match(/\/composition\/columns\/\d+\/connect/)) {
+				if(data.value){
+					this.selectedColumn = data.path.match(/\/composition\/columns\/(\d+)\/connect/)[1]
+				}
+
 				this.resolumeArenaInstance.checkFeedbacks('columnSelected');
+				this.resolumeArenaInstance.checkFeedbacks('selectedColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('nextColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('previousColumnName');
 			}
 		}
 	}
-	
+
+	initConnectedFromComposition() {
+		const columns = compositionState.get()?.columns;
+		if (columns) {
+			this.selectedColumn = undefined;
+			for (const [columnIndex, columnObject] of columns.entries()) {
+				const column = columnIndex + 1;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/columns/' + column + '/connect');
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/columns/' + column + '/name');
+
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/columns/' + column + '/connect');
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/columns/' + column + '/name');
+				if (columnObject.connected?.value) {
+					this.selectedColumn = column;
+				}
+				this.lastColumn = column;
+			}
+		}
+		this.resolumeArenaInstance.checkFeedbacks('columnSelected');
+		this.resolumeArenaInstance.checkFeedbacks('columnName');
+		this.resolumeArenaInstance.checkFeedbacks('selectedColumnName');
+		this.resolumeArenaInstance.checkFeedbacks('nextColumnName');
+		this.resolumeArenaInstance.checkFeedbacks('previousColumnName');
+	}
+
 	/////////////////////////////////////////////////
 	// SELECTED
 	/////////////////////////////////////////////////
@@ -33,26 +75,76 @@ export class ColumnUtils implements MessageSubscriber {
 		return false;
 	}
 
-	columnSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var column = feedback.options.column as number;
+	/////////////////////////////////////////////////
+	// NAME
+	/////////////////////////////////////////////////
+
+	columnNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var column = feedback.options.column;
 		if (column !== undefined) {
-			if (!this.columnSelectedSubscriptions.get(column)) {
-				this.columnSelectedSubscriptions.set(column, new Set());
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/columns/' + column + '/connect');
-			}
-			this.columnSelectedSubscriptions.get(column)?.add(feedback.id);
+			return {text: parameterStates.get()['/composition/columns/' + column + '/name']?.value};
 		}
+		return {};
 	}
 
-	columnSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var column = feedback.options.column as number;
-		const columnSelectedSubscription = this.columnSelectedSubscriptions.get(column);
-		if (column !== undefined && columnSelectedSubscription) {
-			columnSelectedSubscription.delete(feedback.id);
-			if (columnSelectedSubscription.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/columns/' + column + '/connect');
-				this.columnSelectedSubscriptions.delete(column);
-			}
+	/////////////////////////////////////////////////
+	// SELECTED NAME
+	/////////////////////////////////////////////////
+
+	columnSelectedNameFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		if (this.selectedColumn !== undefined) {
+			return {
+				text: parameterStates.get()['/composition/columns/' + this.selectedColumn + '/name']?.value,
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(0, 0, 0),
+			};
 		}
+		return {};
+	}
+
+	/////////////////////////////////////////////////
+	// NEXT NAME
+	/////////////////////////////////////////////////
+
+	columnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var add = feedback.options.next as number;
+		if (this.selectedColumn !== undefined && this.lastColumn != undefined) {
+			let column = this.calculateNextColumn(add);
+			return {text: parameterStates.get()['/composition/columns/' + column + '/name']?.value};
+		}
+		return {};
+	}
+
+	calculateNextColumn(add: number): number {
+		let column = +this.selectedColumn!;
+		if (column + add > +this.lastColumn!) {
+			column = column + add - +this.lastColumn!;
+		} else {
+			column += add;
+		}
+		return column;
+	}
+
+	/////////////////////////////////////////////////
+	// PREVIOUS NAME
+	/////////////////////////////////////////////////
+
+	columnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var subtract = feedback.options.previous as number;
+		if (this.selectedColumn !== undefined && this.lastColumn !== undefined) {
+			let column = this.calculatePreviousColumn(subtract);
+			return {text: parameterStates.get()['/composition/columns/' + column + '/name']?.value};
+		}
+		return {};
+	}
+
+	calculatePreviousColumn(subtract: number): number {
+		let column = +this.selectedColumn!;
+		if (column - subtract < 1) {
+			column = +this.lastColumn! + column - subtract;
+		} else {
+			column = column - subtract;
+		}
+		return column;
 	}
 }

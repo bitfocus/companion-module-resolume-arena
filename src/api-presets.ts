@@ -1,8 +1,66 @@
 import {CompanionPresetDefinitions, combineRgb} from '@companion-module/base';
-import {getDefaultLayerColumnOptions, getDefaultStyleGreen, getDefaultStyleRed, getDefaultStyleBlue, getDefaultDeckOptions} from './defaults';
+import {
+	getDefaultLayerColumnOptions,
+	getDefaultStyleGreen,
+	getDefaultStyleRed,
+	getDefaultStyleBlue,
+	getDefaultDeckOptions,
+	getDefaultColumnOptions,
+} from './defaults';
 
 export function getApiPresets(): CompanionPresetDefinitions {
 	return {
+		tapTempo: {
+			type: 'button',
+			category: 'Tempo',
+			name: 'Tap Tempo',
+			style: {
+				size: '18',
+				text: 'Tap Tempo',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'tempoTap',
+							options: {},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'tempo',
+					options: {},
+				},
+			],
+		},
+		resyncTempo: {
+			type: 'button',
+			category: 'Tempo',
+			name: 'Resync Tempo',
+			style: {
+				size: '18',
+				text: 'Resync Tempo',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'tempoResync',
+							options: {},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
 		triggerClip: {
 			type: 'button',
 			category: 'Clip',
@@ -29,6 +87,39 @@ export function getApiPresets(): CompanionPresetDefinitions {
 					feedbackId: 'connectedClip',
 					options: getDefaultLayerColumnOptions(),
 					style: getDefaultStyleGreen(),
+				},
+				{
+					feedbackId: 'clipInfo',
+					options: {...getDefaultLayerColumnOptions(), showThumb: true, showName: true},
+				},
+			],
+		},
+		selectClip: {
+			type: 'button',
+			category: 'Clip',
+			name: 'Select Clip',
+			style: {
+				size: '18',
+				text: 'Select Clip',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'selectClip',
+							options: getDefaultLayerColumnOptions(),
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'selectedClip',
+					options: getDefaultLayerColumnOptions(),
+					style: getDefaultStyleBlue(),
 				},
 				{
 					feedbackId: 'clipInfo',
@@ -307,7 +398,7 @@ export function getApiPresets(): CompanionPresetDefinitions {
 		triggerColumn: {
 			type: 'button',
 			category: 'Column',
-			name: 'Trigger Column',
+			name: 'Trigger Column By Index',
 			style: {
 				size: '14',
 				text: 'Trigger Column',
@@ -319,8 +410,42 @@ export function getApiPresets(): CompanionPresetDefinitions {
 					down: [
 						{
 							actionId: 'triggerColumn',
+							options: {action: 'set', value: 1},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'columnName',
+					options: {...getDefaultColumnOptions()},
+				},
+				{
+					feedbackId: 'columnSelected',
+					options: {...getDefaultColumnOptions()},
+					style: getDefaultStyleGreen(),
+				},
+			],
+		},
+		triggerNextColumn: {
+			type: 'button',
+			category: 'Column',
+			name: 'Trigger Next Column',
+			style: {
+				size: '14',
+				text: 'Trigger Next Column',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'triggerColumn',
 							options: {
-								column: '1',
+								action: 'add',
+								value: 1,
 							},
 						},
 					],
@@ -329,11 +454,61 @@ export function getApiPresets(): CompanionPresetDefinitions {
 			],
 			feedbacks: [
 				{
-					feedbackId: 'columnSelected',
+					feedbackId: 'nextColumnName',
 					options: {
-						column: '1',
+						next: 1,
 					},
-					style: getDefaultStyleGreen(),
+				},
+			],
+		},
+		triggerPreviousColumn: {
+			type: 'button',
+			category: 'Column',
+			name: 'Trigger Previous Column',
+			style: {
+				size: '14',
+				text: 'Trigger Previous Column',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'triggerColumn',
+							options: {
+								action: 'subtract',
+								value: 1,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'previousColumnName',
+					options: {
+						previous: 1,
+					},
+				},
+			],
+		},
+		selectedColumnName: {
+			type: 'button',
+			category: 'Column',
+			name: 'Selected Column Name',
+			style: {
+				size: '14',
+				text: 'Selected Column Name',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [],
+			feedbacks: [
+				{
+					feedbackId: 'selectedColumnName',
+					options: {},
 				},
 			],
 		},
@@ -353,8 +528,9 @@ export function getApiPresets(): CompanionPresetDefinitions {
 						{
 							actionId: 'triggerLayerGroupColumn',
 							options: {
-								column: '1',
 								layerGroup: '1',
+								action: 'set',
+								value: 1,
 							},
 						},
 					],
@@ -369,6 +545,104 @@ export function getApiPresets(): CompanionPresetDefinitions {
 						layerGroup: '1',
 					},
 					style: getDefaultStyleGreen(),
+				},
+				{
+					feedbackId: 'layerGroupColumnName',
+					options: {
+						layerGroup: '1',
+						column: '1',
+					},
+				},
+				
+			],
+		},
+		triggerNextLayerGroupColumn: {
+			type: 'button',
+			category: 'Layer Group',
+			name: 'Trigger Next Layer Group Column',
+			style: {
+				size: '14',
+				text: 'Trigger Next Layer Group Column',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'triggerLayerGroupColumn',
+							options: {
+								layerGroup: '1',
+								action: 'add',
+								value: 1,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'nextLayerGroupColumnName',
+					options: {
+						layerGroup: '1',
+						next: 1,
+					},
+				},
+			],
+		},
+		triggerPreviousLayerGroupColumn: {
+			type: 'button',
+			category: 'Layer Group',
+			name: 'Trigger Previous Layer Group Column',
+			style: {
+				size: '14',
+				text: 'Trigger Previous Layer Group Column',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'triggerLayerGroupColumn',
+							options: {
+								layerGroup: '1',
+								action: 'subtract',
+								value: 1,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'previousLayerGroupColumnName',
+					options: {
+						layerGroup: '1',
+						previous: 1,
+					},
+				},
+			],
+		},
+		selectedLayerGroupColumnName: {
+			type: 'button',
+			category: 'Layer Group',
+			name: 'Selected Layer Group Column Name',
+			style: {
+				size: '14',
+				text: 'Selected Layer Group Column Name',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [],
+			feedbacks: [
+				{
+					feedbackId: 'selectedLayerGroupColumnName',
+					options: {
+						layerGroup: '1'
+					},
 				},
 			],
 		},
@@ -481,13 +755,11 @@ export function getApiPresets(): CompanionPresetDefinitions {
 				color: combineRgb(255, 255, 255),
 				bgcolor: combineRgb(0, 0, 0),
 			},
-			steps: [
-			],
+			steps: [],
 			feedbacks: [
 				{
 					feedbackId: 'selectedDeckName',
-					options: {
-					},
+					options: {},
 				},
 			],
 		},

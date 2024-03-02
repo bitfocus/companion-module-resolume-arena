@@ -32,6 +32,10 @@ export class ClipUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
 				this.resolumeArenaInstance.checkFeedbacks('connectedClip');
 			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/select/)) {
+				this.resolumeArenaInstance.checkFeedbacks('selectedClip');
+				this.resolumeArenaInstance.checkFeedbacks('connectedClip');
+			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/name/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 			}
@@ -47,6 +51,7 @@ export class ClipUtils implements MessageSubscriber {
 	initComposition() {
 		this.initDetailsFromComposition();
 		this.initConnectedFromComposition();
+		this.initSelectedFromComposition();
 		this.initSpeedFromComposition();
 		this.initalLoadDone = true;
 	}
@@ -70,6 +75,24 @@ export class ClipUtils implements MessageSubscriber {
 		}
 		this.resolumeArenaInstance.checkFeedbacks('connectedClip');
 	}
+	
+	initSelectedFromComposition() {
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layer, layerObject] of layers.entries()) {
+				const clips = layerObject.clips;
+				if (clips) {
+					for (const [clip, _clipObject] of clips.entries()) {
+						const clipId = new ClipId(layer + 1, clip + 1);
+						this.clipSelectedWebsocketUnsubscribe(clipId.getLayer(), clipId.getColumn());
+
+						this.clipSelectedWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+					}
+				}
+			}
+		}
+		this.resolumeArenaInstance.checkFeedbacks('selectedClip');
+	}
 
 	async initDetailsFromComposition() {
 		for (const clipDetailsSubscription of this.clipDetailsSubscriptions) {
@@ -78,11 +101,11 @@ export class ClipUtils implements MessageSubscriber {
 			this.clipDetailsWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
 			var thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
 			try {
-					if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
-						this.clipThumbs.set(clipId.getIdString(), await drawThumb(thumb));
-					}else{
-						this.clipThumbs.set(clipId.getIdString(), thumb);
-					}
+				if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+					this.clipThumbs.set(clipId.getIdString(), await drawThumb(thumb));
+				} else {
+					this.clipThumbs.set(clipId.getIdString(), thumb);
+				}
 			} catch (error) {
 				this.clipThumbs.set(clipId.getIdString(), undefined);
 			}
@@ -181,9 +204,13 @@ export class ClipUtils implements MessageSubscriber {
 		var layer = feedback.options.layer as number;
 		var column = feedback.options.column as number;
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
-		this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
+		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
+		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
 		switch (connectedState) {
 			case 'Connected':
+				if(selectedState){
+					return {bgcolor: combineRgb(100, 255, 255)};
+				}
 				return {bgcolor: combineRgb(0, 255, 0)};
 			case 'Connected & previewing':
 				return {bgcolor: combineRgb(0, 255, 255)};
@@ -200,6 +227,24 @@ export class ClipUtils implements MessageSubscriber {
 
 	clipConnectedWebsocketUnsubscribe(layer: number, column: number) {
 		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+	}
+
+	/////////////////////////////////////////////////
+	// Selected
+	/////////////////////////////////////////////////
+
+	clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
+		var layer = feedback.options.layer as number;
+		var column = feedback.options.column as number;
+		return parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
+	}
+
+	clipSelectedWebsocketSubscribe(layer: number, column: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/select');
+	}
+
+	clipSelectedWebsocketUnsubscribe(layer: number, column: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/select');
 	}
 
 	/////////////////////////////////////////////////
