@@ -164,6 +164,11 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@julusian/image-rs@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@julusian/image-rs/-/image-rs-0.2.1.tgz#d7ee7ad8ec8b9e5bdfb2cdef8a2647210a0ace7d"
+  integrity sha512-hNToyAoFniHN9AHde93MfA01CGC06bui980/6NWJMky8Zk1kgu4ISEmOYtWOAq5kwmMfdB8mxg2/S3SlKQ9fAA==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"
