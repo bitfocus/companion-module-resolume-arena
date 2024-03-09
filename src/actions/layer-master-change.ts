@@ -4,18 +4,16 @@ import ArenaRestApi from '../arena-api/rest';
 import {getLayerOption} from '../defaults';
 import {WebsocketInstance} from '../websocket';
 import {parameterStates} from '../state';
-import {ResolumeArenaModuleInstance} from '..';
-import {LayerUtils} from '../domain/layers/layer-util';
+import { ResolumeArenaModuleInstance } from '..';
 
-export function layerOpacityChange(
+export function layerMasterChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
-	layerUtils: () => LayerUtils | null,
 	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
-		name: 'Layer Opacity Change',
+		name: 'Layer Master Change',
 		options: [
 			...getLayerOption(),
 			{
@@ -24,34 +22,33 @@ export function layerOpacityChange(
 				choices: [
 					{
 						id: 'add',
-						label: '+'
+						label: '+',
 					},
 					{
 						id: 'subtract',
-						label: '-'
+						label: '-',
 					},
 					{
 						id: 'set',
-						label: '='
-					}
+						label: '=',
+					},
 				],
 				default: 'add',
-				label: 'Action'
+				label: 'Action',
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value in percentage (e.g. 100 or 10)',
-				useVariables: true
-			}
+				useVariables: true,
+			},
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
-			let theLayerUtils = layerUtils();
-			if (theApi && theLayerUtils) {
+			if (theApi) {
 				const layer = options.layer;
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;
+                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -67,12 +64,10 @@ export function layerOpacityChange(
 					default:
 						break;
 				}
-				if (value != undefined) {
-					const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
-					let paramId = layer?.video!.opacity!.id! + '';
-					websocketApi()?.setParam(paramId, value);
+				if (value!=undefined) {
+					websocketApi()?.setPath('/composition/layers/' + options.layer + '/master', value);
 				}
 			}
-		}
+		},
 	};
 }

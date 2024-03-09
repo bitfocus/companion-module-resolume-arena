@@ -31,6 +31,8 @@ import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {tempoResync} from './actions/tempo-resync';
 import {compositionMasterChange} from './actions/composition-master-change';
 import {compositionVolumeChange} from './actions/composition-volume-change';
+import {layerMasterChange} from './actions/layer-master-change';
+import {layerVolumeChange} from './actions/layer-volume-change';
 
 export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	var restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
@@ -65,7 +67,9 @@ export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 		triggerColumn: triggerColumn(restApi, websocketApi, oscApi, columnUtils),
 		triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, websocketApi, oscApi, layerGroupUtils),
-		layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		layerMasterChange: layerMasterChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
+		layerVolumeChange: layerVolumeChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
 		layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
 		layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
@@ -73,7 +77,7 @@ export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		compositionVolumeChange: compositionVolumeChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
-		selectDeck: selectDeck(restApi, websocketApi, oscApi, deckUtils),
+		selectDeck: selectDeck(restApi, websocketApi, oscApi, deckUtils)
 	};
 	return actions;
 }

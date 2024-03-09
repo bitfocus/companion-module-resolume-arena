@@ -7,7 +7,7 @@ import {parameterStates} from '../state';
 import {ResolumeArenaModuleInstance} from '..';
 import {LayerUtils} from '../domain/layers/layer-util';
 
-export function layerOpacityChange(
+export function layerVolumeChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
@@ -15,7 +15,7 @@ export function layerOpacityChange(
 	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
-		name: 'Layer Opacity Change',
+		name: 'Layer Volume Change',
 		options: [
 			...getLayerOption(),
 			{
@@ -50,8 +50,8 @@ export function layerOpacityChange(
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
 				const layer = options.layer;
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;
+				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/audio/volume']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -69,7 +69,7 @@ export function layerOpacityChange(
 				}
 				if (value != undefined) {
 					const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
-					let paramId = layer?.video!.opacity!.id! + '';
+					let paramId = layer?.audio!.volume!.id! + '';
 					websocketApi()?.setParam(paramId, value);
 				}
 			}

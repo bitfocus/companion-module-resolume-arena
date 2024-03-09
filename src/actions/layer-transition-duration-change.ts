@@ -4,7 +4,7 @@ import ArenaRestApi from '../arena-api/rest';
 import {getLayerOption} from '../defaults';
 import {WebsocketInstance} from '../websocket';
 import {parameterStates} from '../state';
-import { ResolumeArenaModuleInstance } from '..';
+import {ResolumeArenaModuleInstance} from '..';
 import {LayerUtils} from '../domain/layers/layer-util';
 
 export function layerTransitionDurationChange(
@@ -24,36 +24,36 @@ export function layerTransitionDurationChange(
 				choices: [
 					{
 						id: 'add',
-						label: '+',
+						label: '+'
 					},
 					{
 						id: 'subtract',
-						label: '-',
+						label: '-'
 					},
 					{
 						id: 'set',
-						label: '=',
-					},
+						label: '='
+					}
 				],
 				default: 'add',
-				label: 'Action',
+				label: 'Action'
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value in percentage (e.g. 100 or 10)',
-				useVariables: true,
-			},
+				useVariables: true
+			}
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-                const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
-                const layerTransitionDurationId = layer?.transition?.duration?.id +'';
-                
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
-                const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/transition/duration']?.value;
+				const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
+				const layerTransitionDurationId = layer?.transition?.duration?.id + '';
+
+				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/transition/duration']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -73,6 +73,6 @@ export function layerTransitionDurationChange(
 					websocketApi()?.setParam(layerTransitionDurationId, value);
 				}
 			}
-		},
+		}
 	};
 }
