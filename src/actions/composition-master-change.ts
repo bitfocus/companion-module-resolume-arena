@@ -2,17 +2,17 @@ import { CompanionActionDefinition } from '@companion-module/base';
 import { ResolumeArenaModuleInstance } from '..';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
-import {compositionState, parameterStates} from '../state';
+import { parameterStates } from '../state';
 import { WebsocketInstance } from '../websocket';
 
-export function compositionOpacityChange(
+export function compositionMasterChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
 	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
-		name: 'Composition Opacity Change',
+		name: 'Composition Master Change',
 		options: [
 			{
 				id: 'action',
@@ -45,7 +45,7 @@ export function compositionOpacityChange(
 			let theApi = restApi();
 			if (theApi) {
                 const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
-				const currentValue: number = +parameterStates.get()['/composition/video/opacity']?.value;
+				const currentValue: number = +parameterStates.get()['/composition/master']?.value;
 				let value: number | undefined;
 				switch (options.action) {
 					case 'set':
@@ -61,8 +61,8 @@ export function compositionOpacityChange(
 						break;
 				}
 				if (value!=undefined) {
-					let paramId = compositionState.get()!.video!.opacity!.id!+''
-					websocketApi()?.setParam(paramId, value);				}
+					websocketApi()?.setPath('/composition/master', value);
+				}
 			}
 		},
 	};

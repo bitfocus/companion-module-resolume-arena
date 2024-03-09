@@ -110,8 +110,20 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
             name: 'Composition Opacity',
             options: [],
             callback: resolumeArenaInstance.getCompositionUtils()!.compositionOpacityFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
-            subscribe: resolumeArenaInstance.getCompositionUtils()!.compositionOpacityFeedbackSubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
-            unsubscribe: resolumeArenaInstance.getCompositionUtils()!.compositionOpacityFeedbackUnsubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
+        },
+        compositionVolume: {
+            type: 'advanced',
+            name: 'Composition Volume',
+            options: [],
+            callback: resolumeArenaInstance.getCompositionUtils()!.compositionVolumeFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
+        },
+        compositionMaster: {
+            type: 'advanced',
+            name: 'Composition Master',
+            options: [],
+            callback: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
+            subscribe: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackSubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
+            unsubscribe: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackUnsubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
         },
         compositionSpeed: {
             type: 'advanced',

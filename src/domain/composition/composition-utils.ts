@@ -1,5 +1,5 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage} from '../../image-utils';
+import {drawPercentage, drawVolume} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
@@ -7,7 +7,7 @@ import {MessageSubscriber} from '../../websocket';
 export class CompositionUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
-	private compositionOpacitySubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private compositionMasterSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private compositionSpeedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
@@ -19,11 +19,22 @@ export class CompositionUtils implements MessageSubscriber {
 		if (isComposition) {
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempocontroller?.tempo?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempocontroller?.tempo?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.audio?.volume?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.audio?.volume?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.video?.opacity?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.video?.opacity?.id!);
+
 		}
 
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/master/)) {
+				this.resolumeArenaInstance.checkFeedbacks('compositionMaster');
+			}
+			if (!!data.path.match(/\/composition\/video\/opacity/)) {
 				this.resolumeArenaInstance.checkFeedbacks('compositionOpacity');
+			}
+			if (!!data.path.match(/\/composition\/audio\/volume/)) {
+				this.resolumeArenaInstance.checkFeedbacks('compositionVolume');
 			}
 			if (!!data.path.match(/\/composition\/speed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('compositionSpeed');
@@ -35,11 +46,63 @@ export class CompositionUtils implements MessageSubscriber {
 	}
 
 	/////////////////////////////////////////////////
+	// Master
+	/////////////////////////////////////////////////
+
+	compositionMasterFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		const master = parameterStates.get()['/composition/master']?.value;
+		if (master !== undefined) {
+			return {
+				text: Math.round(master * 100) + '%',
+				show_topbar: false,
+				png64: drawPercentage(master)
+			};
+		}
+		return {text: '?'};
+	}
+
+	compositionMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		if (!this.compositionMasterSubscriptions.get('composition')) {
+			this.compositionMasterSubscriptions.set('composition', new Set());
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/master');
+		}
+		this.compositionMasterSubscriptions.get('composition')?.add(feedback.id);
+	}
+
+	compositionMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const compositionMasterSubscription = this.compositionMasterSubscriptions.get('composition');
+		if (compositionMasterSubscription) {
+			compositionMasterSubscription.delete(feedback.id);
+			if (compositionMasterSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/master');
+				this.compositionMasterSubscriptions.delete('composition');
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////
+	// Volume
+	/////////////////////////////////////////////////
+
+	compositionVolumeFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		const volume = parameterStates.get()['/composition/audio/volume']?.value;
+		if (volume !== undefined) {
+			return {
+				text: Math.round(volume * 100)/100+ 'db',
+				show_topbar: false,
+				png64: drawVolume(volume)
+			};
+		}
+		return {text: '?'};
+	}
+
+
+	/////////////////////////////////////////////////
 	// Opacity
 	/////////////////////////////////////////////////
 
 	compositionOpacityFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const opacity = parameterStates.get()['/composition/master']?.value;
+		const opacity = parameterStates.get()['/composition/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
@@ -50,24 +113,6 @@ export class CompositionUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	compositionOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		if (!this.compositionOpacitySubscriptions.get('composition')) {
-			this.compositionOpacitySubscriptions.set('composition', new Set());
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/master');
-		}
-		this.compositionOpacitySubscriptions.get('composition')?.add(feedback.id);
-	}
-
-	compositionOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const compositionOpacitySubscription = this.compositionOpacitySubscriptions.get('composition');
-		if (compositionOpacitySubscription) {
-			compositionOpacitySubscription.delete(feedback.id);
-			if (compositionOpacitySubscription.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/master');
-				this.compositionOpacitySubscriptions.delete('composition');
-			}
-		}
-	}
 	/////////////////////////////////////////////////
 	// Speed
 	/////////////////////////////////////////////////
@@ -78,7 +123,7 @@ export class CompositionUtils implements MessageSubscriber {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(speed),
+				png64: drawPercentage(speed)
 			};
 		}
 		return {text: '?'};
@@ -112,7 +157,7 @@ export class CompositionUtils implements MessageSubscriber {
 		if (tempo !== undefined) {
 			return {
 				text: Math.round(tempo * 100) / 100 + '',
-				show_topbar: false,
+				show_topbar: false
 			};
 		}
 		return {text: '?'};

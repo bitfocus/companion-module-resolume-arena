@@ -230,7 +230,7 @@ export function getApiPresets(): CompanionPresetDefinitions {
 		},
 		selectLayer: {
 			type: 'button',
-			category: 'Commands',
+			category: 'Layer',
 			name: 'Select Layer',
 			style: {
 				size: '14',

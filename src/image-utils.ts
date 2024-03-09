@@ -4,6 +4,11 @@ import {PNG} from 'pngjs';
 import {ImageTransformer, PixelFormat, ResizeMode} from '@julusian/image-rs';
 import {compositionState} from './state';
 
+
+
+export function drawVolume(volume: number): string | undefined {
+	return drawPercentage(Math.pow(10,(volume/40)))
+}
 export function drawPercentage(percentage: number): string | undefined {
 	const optionsBlue = {
 		width: 128,

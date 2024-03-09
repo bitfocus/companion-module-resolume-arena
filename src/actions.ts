@@ -29,6 +29,8 @@ import {tempoTap} from './actions/tempo-tap';
 import {triggerColumn} from './actions/trigger-column';
 import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {tempoResync} from './actions/tempo-resync';
+import {compositionMasterChange} from './actions/composition-master-change';
+import {compositionVolumeChange} from './actions/composition-volume-change';
 
 export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	var restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
@@ -67,7 +69,9 @@ export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		layerTransitionDurationChange: layerTransitionDurationChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
 		layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
+		compositionMasterChange: compositionMasterChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		compositionOpacityChange: compositionOpacityChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		compositionVolumeChange: compositionVolumeChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		compositionSpeedChange: compositionSpeedChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		selectDeck: selectDeck(restApi, websocketApi, oscApi, deckUtils),
 	};
