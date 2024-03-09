@@ -4,6 +4,7 @@ import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
 import {parameterStates} from '../state';
 import {WebsocketInstance} from '../websocket';
+import {getSpeedValue} from '../defaults';
 
 export function compositionSpeedChange(
 	restApi: () => ArenaRestApi | null,
@@ -67,7 +68,7 @@ export function compositionSpeedChange(
 			} else {
 				switch (options.action) {
 					case 'set':
-						theOscApi?.customOsc('/composition/speed', 'f', inputValue + '', 'n');
+						theOscApi?.customOsc('/composition/speed', 'f', getSpeedValue(inputValue) + '', 'n');
 						break;
 					case 'add':
 						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');

@@ -2,7 +2,7 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '..';
 import ArenaOscApi from '../arena-api/osc';
 import ArenaRestApi from '../arena-api/rest';
-import {getColumnOption, getLayerOption} from '../defaults';
+import {getColumnOption, getLayerOption, getSpeedValue} from '../defaults';
 import {parameterStates} from '../state';
 import {WebsocketInstance} from '../websocket';
 import {ClipUtils} from '../domain/clip/clip-utils';
@@ -25,36 +25,36 @@ export function clipSpeedChange(
 				choices: [
 					{
 						id: 'add',
-						label: '+ (not in OSC)',
+						label: '+ (not in OSC)'
 					},
 					{
 						id: 'subtract',
-						label: '- (not in OSC)',
+						label: '- (not in OSC)'
 					},
 					{
 						id: 'set',
-						label: '=',
-					},
+						label: '='
+					}
 				],
 				default: 'add',
-				label: 'Action',
+				label: 'Action'
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value in percentage (e.g. 100 or 10)',
-				useVariables: true,
-			},
+				useVariables: true
+			}
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			let theOscApi = oscApi();
 			let theClipUtils = clipUtils();
-			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
 			if (theApi && theClipUtils) {
-                const clip = theClipUtils.getClipFromCompositionState(options.layer, options.column);
-                const clipSpeedId = clip?.transport?.controls?.speed?.id +''
-                const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed']?.value;
+				const clip = theClipUtils.getClipFromCompositionState(options.layer, options.column);
+				const clipSpeedId = clip?.transport?.controls?.speed?.id + '';
+				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -62,8 +62,8 @@ export function clipSpeedChange(
 						value = inputValue;
 						break;
 					case 'add':
-						console.log('currentValue', currentValue)
-						console.log('inputValue', inputValue)
+						console.log('currentValue', currentValue);
+						console.log('inputValue', inputValue);
 
 						value = currentValue + inputValue;
 						break;
@@ -74,26 +74,41 @@ export function clipSpeedChange(
 						break;
 				}
 				if (value != undefined) {
-					console.log('setSpeed',value, currentValue)
+					console.log('setSpeed', value, currentValue);
 					websocketApi()?.setParam(clipSpeedId, value);
 				}
-			}else{
+			} else {
 				switch (options.action) {
 					case 'set':
-						theOscApi?.customOsc('/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed','f',inputValue+'','n')
+						theOscApi?.customOsc(
+							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'f',
+							getSpeedValue(inputValue)+'',
+							'n'
+						);
 						break;
 					case 'add':
-						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume')
-						theOscApi?.customOsc('/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed','f',inputValue+'','+')
+						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
+						theOscApi?.customOsc(
+							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'f',
+							inputValue + '',
+							'+'
+						);
 						break;
 					case 'subtract':
-						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume')
-						theOscApi?.customOsc('/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed','f',inputValue+'','-')
+						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
+						theOscApi?.customOsc(
+							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'f',
+							inputValue + '',
+							'-'
+						);
 						break;
 					default:
 						break;
 				}
 			}
-		},
+		}
 	};
 }
