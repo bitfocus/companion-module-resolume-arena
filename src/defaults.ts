@@ -91,3 +91,7 @@ export function getDefaultStyleBlue() {
 		bgcolor: combineRgb(0, 0, 255),
 	};
 }
+
+export function getSpeedValue(inputValue: number): number{
+	return Math.pow(inputValue/10, Math.log(4) / Math.log(10))
+}

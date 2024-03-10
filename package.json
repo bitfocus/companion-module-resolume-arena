@@ -37,9 +37,11 @@
 	},
 	"dependencies": {
 		"@companion-module/base": "~1.7.0",
+		"@julusian/image-rs": "^0.2.1",
 		"@persevie/statemanjs": "^1.6.0",
 		"companion-module-utils": "^0.4.0",
 		"node-fetch": "^2.0.0",
+		"pngjs": "^7.0.0",
 		"ws": "^8.16.0"
 	},
 	"devDependencies": {
