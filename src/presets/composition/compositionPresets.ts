@@ -10,6 +10,10 @@ export function getCompositionApiPresets(category: string): CompanionPresetDefin
 	return {
 		tapTempo: tapTempoPreset(category),
 		resyncTempo: resyncTempoPreset(category),
+		changeCompositionSpeedSet100: changeTemplateSet100(category,'composition','Speed'),
+		changeCompositionSpeedAdd10: changeTemplateAdd10(category,'composition','Speed'),
+		changeCompositionSpeedSubtract10: changeTemplateSubtract10(category,'composition','Speed'),
+		changeCompositionSpeedSet0: changeTemplateSet0(category,'composition','Speed'),
 		changeCompositionMasterSet100: changeTemplateSet100(category,'composition','Master'),
 		changeCompositionMasterAdd10: changeTemplateAdd10(category,'composition','Master'),
 		changeCompositionMasterSubtract10: changeTemplateSubtract10(category,'composition','Master'),

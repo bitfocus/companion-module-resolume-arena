@@ -206,7 +206,7 @@ export class ClipUtils implements MessageSubscriber {
 			return {
 				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
-				png64: drawVolume(volume)
+				imageBuffer: drawVolume(volume)
 			};
 		}
 		return {text: '?'};
@@ -265,7 +265,7 @@ export class ClipUtils implements MessageSubscriber {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(opacity)
+				imageBuffer: drawPercentage(opacity)
 			};
 		}
 		return {text: '?'};
@@ -445,7 +445,7 @@ export class ClipUtils implements MessageSubscriber {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(speed)
+				imageBuffer: drawPercentage(speed)
 			};
 		}
 		return {text: '?'};

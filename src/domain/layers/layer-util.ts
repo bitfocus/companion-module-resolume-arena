@@ -269,7 +269,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(master * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(master),
+				imageBuffer: drawPercentage(master),
 			};
 		}
 		return {text: '?'};
@@ -309,7 +309,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(volume * 100)/100+ 'db',
 				show_topbar: false,
-				png64: drawVolume(volume)
+				imageBuffer: drawVolume(volume)
 			};
 		}
 		return {text: '?'};
@@ -361,7 +361,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(opacity),
+				imageBuffer: drawPercentage(opacity),
 			};
 		}
 		return {text: '?'};
@@ -413,7 +413,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(duration * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(duration),
+				imageBuffer: drawPercentage(duration),
 			};
 		}
 		return {text: '?'};
