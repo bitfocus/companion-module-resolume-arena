@@ -1,7 +1,7 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerOption} from '../../../defaults';
+import {getLayerGroupOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
 import {parameterStates} from '../../../state';
 import {ResolumeArenaModuleInstance} from '../../../index';
@@ -17,7 +17,7 @@ export function layerGroupVolumeChange(
 	return {
 		name: 'Layer Group Volume Change',
 		options: [
-			...getLayerOption(),
+			...getLayerGroupOption(),
 			{
 				id: 'action',
 				type: 'dropdown',
@@ -41,7 +41,7 @@ export function layerGroupVolumeChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value in percentage (e.g. 100 or 10)',
+				label: 'Value in db (e.g. 100 or 10)',
 				useVariables: true
 			}
 		],
@@ -51,7 +51,7 @@ export function layerGroupVolumeChange(
 			if (theApi && theLayerGroupUtils) {
 				const layer = options.layerGroup;
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
-				const currentValue: number = +parameterStates.get()['/composition/layergroups/' + layer + '/audio/volume']?.value;
+				const currentValue: number = +parameterStates.get()['/composition/groups/' + layer + '/audio/volume']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {

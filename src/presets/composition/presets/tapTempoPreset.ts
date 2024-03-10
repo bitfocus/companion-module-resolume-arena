@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function tapTempoPreset(): CompanionButtonPresetDefinition {return {
+export function tapTempoPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Tempo',
+	category,
 	name: 'Tap Tempo',
 	style: {
 		size: '18',

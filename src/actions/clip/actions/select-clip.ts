@@ -1,7 +1,7 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
-import {getColumnOption, getLayerOption} from '../../../defaults';
+import {getClipOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
 
 export function selectClip(
@@ -11,7 +11,7 @@ export function selectClip(
 ): CompanionActionDefinition {
 	return {
 		name: 'Select Clip',
-		options: [...getLayerOption(), ...getColumnOption()],
+		options: [...getClipOption()],
 		callback: async ({options}: {options: any}): Promise<void> => {
 			let rest = restApi();
 			let websocket = websocketApi();

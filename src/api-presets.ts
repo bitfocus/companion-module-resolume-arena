@@ -8,11 +8,11 @@ import {getLayerApiPresets} from './presets/layer/layerPresets';
 
 export function getApiPresets(): CompanionPresetDefinitions {
 	return {
-		...getClipApiPresets(),
+		...getClipApiPresets('Clip'),
 		...getColumnApiPresets(),
-		...getCompositionApiPresets(),
+		...getCompositionApiPresets('Composition'),
 		...getDeckApiPresets(),
-		...getLayerApiPresets(),
-		...getLayerGroupApiPresets(),
+		...getLayerApiPresets('Layer'),
+		...getLayerGroupApiPresets('Layer Group'),
 	};
 }

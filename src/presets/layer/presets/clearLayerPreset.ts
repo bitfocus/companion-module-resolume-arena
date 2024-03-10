@@ -2,9 +2,9 @@ import {combineRgb} from '@companion-module/base';
 import {getDefaultStyleBlue} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function clearLayerPreset(): CompanionButtonPresetDefinition {return {
+export function clearLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Layer',
+	category,
 	name: 'Clear Layer',
 	style: {
 		size: '14',

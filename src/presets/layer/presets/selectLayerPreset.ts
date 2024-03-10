@@ -2,9 +2,9 @@ import {combineRgb} from '@companion-module/base';
 import {getDefaultStyleGreen} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function selectLayerPreset(): CompanionButtonPresetDefinition {return {
+export function selectLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Layer',
+	category,
 	name: 'Select Layer',
 	style: {
 		size: '14',

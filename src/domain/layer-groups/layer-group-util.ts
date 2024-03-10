@@ -37,8 +37,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		if (isComposition) {
 			this.updateActiveLayerGroups();
 			this.initConnectedFromComposition();
-			this.updateLayerOpacities();
-			this.updateLayerVolumes();
+			this.updateLayerGroupOpacities();
+			this.updateLayerGroupVolumes();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
@@ -52,6 +52,12 @@ export class LayerGroupUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/groups\/\d+\/master/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupMaster');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/video\/opacity/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupOpacity');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/audio\/volume/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupVolume');
 			}
 			// TODO: #46, resolume feature request if (!!data.path.match(/\/composition\/groups\/\d+\/speed/)) {
 			// 	this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
@@ -78,7 +84,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	public getLayerGroupFromCompositionState(layerGroup: number): LayerGroup | undefined {
-		return compositionState.get()?.layergroups?.at(layerGroup-1);
+		return this.getLayerGroupsFromCompositionState()?.at(layerGroup-1);
 	}
 
 	initConnectedFromComposition() {
@@ -149,27 +155,27 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	updateLayerVolumes() {
-		const layersObject = this.getLayerGroupsFromCompositionState();
-		if (layersObject) {
+	updateLayerGroupVolumes() {
+		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
+		if (layerGroupsObject) {
 			for (const layerGroupVolumeId of this.layerGroupVolumeIds) {
 				this.layerGroupVolumeWebsocketUnsubscribe(layerGroupVolumeId);
 			}
-			for (const [layer, _subscriptionId] of this.layerGroupVolumeSubscriptions.entries()) {
-				this.layerWebsocketFeedbackSubscribe(layer)
+			for (const [layerGroup, _subscriptionId] of this.layerGroupVolumeSubscriptions.entries()) {
+				this.layerWebsocketFeedbackSubscribe(layerGroup);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupVolume');
 		}
 	}
 
-	updateLayerOpacities() {
-		const layersObject = this.getLayerGroupsFromCompositionState();
-		if (layersObject) {
+	updateLayerGroupOpacities() {
+		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
+		if (layerGroupsObject) {
 			for (const layerGroupOpacityId of this.layerGroupOpacityIds) {
 				this.layerGroupOpacityWebsocketUnsubscribe(layerGroupOpacityId);
 			}
-			for (const [layer, _subscriptionId] of this.layerGroupOpacitySubscriptions.entries()) {
-				this.layerGroupOpacityWebsocketSubscribe(layer)
+			for (const [layerGroup, _subscriptionId] of this.layerGroupOpacitySubscriptions.entries()) {
+				this.layerGroupOpacityWebsocketSubscribe(layerGroup);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupOpacity');
 		}
@@ -180,7 +186,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/bypassed']?.value;
 		}
@@ -188,7 +194,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupBypassedSubscriptions.get(layerGroup)) {
 				this.layerGroupBypassedSubscriptions.set(layerGroup, new Set());
@@ -199,7 +205,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		const layerByPassedSubscription = this.layerGroupBypassedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerByPassedSubscription) {
 			layerByPassedSubscription.delete(feedback.id);
@@ -215,7 +221,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 		}
@@ -223,7 +229,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSoloSubscriptions.get(layerGroup)) {
 				this.layerGroupSoloSubscriptions.set(layerGroup, new Set());
@@ -234,7 +240,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		const layerSoloSubscription = this.layerGroupSoloSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerSoloSubscription) {
 			layerSoloSubscription.delete(feedback.id);
@@ -250,7 +256,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			return this.activeLayerGroups.has(+layerGroup as number);
 		}
@@ -262,7 +268,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/select']?.value;
 		}
@@ -270,7 +276,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSelectedSubscriptions.get(layerGroup)) {
 				this.layerGroupSelectedSubscriptions.set(layerGroup, new Set());
@@ -281,7 +287,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		const layerGroupSelectedSubscriptions = this.layerGroupSelectedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupSelectedSubscriptions) {
 			layerGroupSelectedSubscriptions.delete(feedback.id);
@@ -297,8 +303,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layerGroup = feedback.options.layerGroup as number;
-		var column = feedback.options.column as number;
+		const layerGroup = feedback.options.layerGroup as number;
+		const column = feedback.options.column as number;
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value;
 		}
@@ -310,8 +316,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var column = feedback.options.column;
-		var layerGroup = feedback.options.layerGroup as number;
+		const column = feedback.options.column;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (column !== undefined) {
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
@@ -323,15 +329,15 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layerGroup = +feedback.options.layerGroup! as number;
-			if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
-				return {
-					text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
-						?.value,
-					bgcolor: combineRgb(0, 255, 0),
-					color: combineRgb(0, 0, 0),
-				};
-			}
+		const layerGroup = +feedback.options.layerGroup! as number;
+		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
+			return {
+				text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
+					?.value,
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(0, 0, 0)
+			};
+		}
 		return {};
 	}
 
@@ -340,8 +346,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupColumnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var add = feedback.options.next as number;
-		var layerGroup = +feedback.options.layerGroup! as number;
+		const add = feedback.options.next as number;
+		const layerGroup = +feedback.options.layerGroup! as number;
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculateNextLayerGroupColumn(layerGroup, add);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -365,8 +371,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupColumnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var subtract = feedback.options.previous as number;
-		var layerGroup = +feedback.options.layerGroup! as number;
+		const subtract = feedback.options.previous as number;
+		const layerGroup = +feedback.options.layerGroup! as number;
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculatePreviousLayerGroupColumn(layerGroup, subtract);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -390,20 +396,20 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layerGroup = feedback.options.layerGroup;
+		const layerGroup = feedback.options.layerGroup;
 		const master = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 		if (layerGroup !== undefined && master !== undefined) {
 			return {
 				text: Math.round(master * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(master),
+				png64: drawPercentage(master)
 			};
 		}
 		return {text: '?'};
 	}
 
 	layerGroupMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupMasterSubscriptions.get(layerGroup)) {
 				this.layerGroupMasterSubscriptions.set(layerGroup, new Set());
@@ -414,7 +420,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layerGroup = feedback.options.layerGroup as number;
+		const layerGroup = feedback.options.layerGroup as number;
 		const layerGroupMasterSubscription = this.layerGroupMasterSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupMasterSubscription) {
 			layerGroupMasterSubscription.delete(feedback.id);
@@ -431,11 +437,11 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		const volume = parameterStates.get()['/composition/layers/' + layer + '/audio/volume']?.value;
+		const layerGroup = feedback.options.layerGroup as number;
+		const volume = parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
-				text: Math.round(volume * 100)/100+ 'db',
+				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
 				png64: drawVolume(volume)
 			};
@@ -444,17 +450,17 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	layerGroupVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		if (layer !== undefined) {
-			if (!this.layerGroupVolumeSubscriptions.get(layer)) {
-				this.layerGroupVolumeSubscriptions.set(layer, new Set());
+		const layerGroup = feedback.options.layerGroup as number;
+		if (layerGroup !== undefined) {
+			if (!this.layerGroupVolumeSubscriptions.get(layerGroup)) {
+				this.layerGroupVolumeSubscriptions.set(layerGroup, new Set());
 			}
-			this.layerGroupVolumeSubscriptions.get(layer)?.add(feedback.id);
+			this.layerGroupVolumeSubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
+		const layer = feedback.options.layer as number;
 		const layerGroupVolumeSubscription = this.layerGroupVolumeSubscriptions.get(layer);
 		if (layer !== undefined && layerGroupVolumeSubscription) {
 			layerGroupVolumeSubscription.delete(feedback.id);
@@ -483,35 +489,35 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		const opacity = parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;
+		const layerGroup = feedback.options.layerGroup as number;
+		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(opacity),
+				png64: drawPercentage(opacity)
 			};
 		}
 		return {text: '?'};
 	}
 
 	layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		if (layer !== undefined) {
-			if (!this.layerGroupOpacitySubscriptions.get(layer)) {
-				this.layerGroupOpacitySubscriptions.set(layer, new Set());
+		const layerGroup = feedback.options.layerGroup as number;
+		if (layerGroup !== undefined) {
+			if (!this.layerGroupOpacitySubscriptions.get(layerGroup)) {
+				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
 			}
-			this.layerGroupOpacitySubscriptions.get(layer)?.add(feedback.id);
+			this.layerGroupOpacitySubscriptions.get(layerGroup)?.add(feedback.id);
 		}
 	}
 
 	layerGroupOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		const layerGroupOpacitySubscription = this.layerGroupOpacitySubscriptions.get(layer);
-		if (layer !== undefined && layerGroupOpacitySubscription) {
+		const layerGroup = feedback.options.layer as number;
+		const layerGroupOpacitySubscription = this.layerGroupOpacitySubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerGroupOpacitySubscription) {
 			layerGroupOpacitySubscription.delete(feedback.id);
 			if (layerGroupOpacitySubscription.size === 0) {
-				this.layerGroupOpacitySubscriptions.delete(layer);
+				this.layerGroupOpacitySubscriptions.delete(layerGroup);
 			}
 		}
 	}
@@ -535,7 +541,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	// layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	const layerGroup = feedback.options.layerGroup as number;
 	// 	const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 	// 	if (layerGroup !== undefined && speed!==undefined) {
 	// 		return {
@@ -548,7 +554,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// }
 
 	// layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	const layerGroup = feedback.options.layerGroup as number;
 	// 	if (layerGroup !== undefined) {
 	// 		if (!this.layerGroupSpeedSubscriptions.get(layerGroup)) {
 	// 			this.layerGroupSpeedSubscriptions.set(layerGroup, new Set());
@@ -559,7 +565,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// }
 
 	// layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-	// 	var layerGroup = feedback.options.layerGroup as number;
+	// 	const layerGroup = feedback.options.layerGroup as number;
 	// 	const layerGroupSpeedSubscription = this.layerGroupSpeedSubscriptions.get(layerGroup);
 	// 	if (layerGroup !== undefined && layerGroupSpeedSubscription) {
 	// 		layerGroupSpeedSubscription.delete(feedback.id);

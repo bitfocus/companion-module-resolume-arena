@@ -2,9 +2,9 @@ import {combineRgb} from '@companion-module/base';
 import {getDefaultStyleRed} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function bypassLayerPreset(): CompanionButtonPresetDefinition {return {
+export function bypassLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Layer',
+	category,
 	name: 'Bypass Layer',
 	style: {
 		size: '14',

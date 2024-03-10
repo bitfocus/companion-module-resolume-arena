@@ -2,7 +2,7 @@ import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
-import {getColumnOption, getLayerOption, getSpeedValue} from '../../../defaults';
+import {getClipOption, getSpeedValue} from '../../../defaults';
 import {parameterStates} from '../../../state';
 import {WebsocketInstance} from '../../../websocket';
 import {ClipUtils} from '../../../domain/clip/clip-utils';
@@ -17,8 +17,7 @@ export function clipSpeedChange(
 	return {
 		name: 'Clip Speed Change',
 		options: [
-			...getLayerOption(),
-			...getColumnOption(),
+			...getClipOption(),
 			{
 				id: 'action',
 				type: 'dropdown',
@@ -62,9 +61,6 @@ export function clipSpeedChange(
 						value = inputValue;
 						break;
 					case 'add':
-						console.log('currentValue', currentValue);
-						console.log('inputValue', inputValue);
-
 						value = currentValue + inputValue;
 						break;
 					case 'subtract':
@@ -74,7 +70,6 @@ export function clipSpeedChange(
 						break;
 				}
 				if (value != undefined) {
-					console.log('setSpeed', value, currentValue);
 					websocketApi()?.setParam(clipSpeedId, value);
 				}
 			} else {

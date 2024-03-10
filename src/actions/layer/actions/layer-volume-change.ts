@@ -41,7 +41,7 @@ export function layerVolumeChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value in percentage (e.g. 100 or 10)',
+				label: 'Value in db (e.g. 100 or 10)',
 				useVariables: true
 			}
 		],

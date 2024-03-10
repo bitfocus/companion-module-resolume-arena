@@ -2,9 +2,9 @@ import {combineRgb} from '@companion-module/base';
 import {getDefaultStyleGreen} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function soloLayerPreset(): CompanionButtonPresetDefinition {return {
+export function soloLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Layer',
+	category,
 	name: 'Solo Layer',
 	style: {
 		size: '14',

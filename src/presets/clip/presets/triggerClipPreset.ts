@@ -2,10 +2,10 @@ import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 import {getDefaultLayerColumnOptions, getDefaultStyleGreen} from '../../../defaults';
 
-export function triggerClipPreset(): CompanionButtonPresetDefinition {
+export function triggerClipPreset(category: string): CompanionButtonPresetDefinition {
 	return {
 		type: 'button',
-		category: 'Clip',
+		category,
 		name: 'Trigger Clip',
 		style: {
 			size: '18',

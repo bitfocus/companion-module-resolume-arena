@@ -2,9 +2,9 @@ import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/modul
 import {combineRgb} from '@companion-module/base';
 import {getDefaultLayerColumnOptions, getDefaultStyleBlue} from '../../../defaults';
 
-export function selectClipPreset(): CompanionButtonPresetDefinition{ return {
+export function selectClipPreset(category: string): CompanionButtonPresetDefinition{ return {
 	type: 'button',
-		category: 'Clip',
+		category,
 		name: 'Select Clip',
 		style: {
 		size: '18',

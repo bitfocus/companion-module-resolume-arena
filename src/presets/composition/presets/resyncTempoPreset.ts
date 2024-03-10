@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function resyncTempoPreset(): CompanionButtonPresetDefinition {return {
+export function resyncTempoPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Tempo',
+	category,
 	name: 'Resync Tempo',
 	style: {
 		size: '18',

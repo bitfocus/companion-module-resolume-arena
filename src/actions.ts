@@ -5,6 +5,7 @@ import {getColumnActions} from './actions/column/columnActions';
 import {getCompositionActions} from './actions/composition/compositionActions';
 import {getDeckActions} from './actions/deck/deckActions';
 import {getLayerActions} from './actions/layer/layerActions';
+import {getLayerGroupActions} from './actions/layer-group/layerGroupActions';
 
 export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	return {
@@ -13,5 +14,6 @@ export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		...getCompositionActions(resolumeArenaModuleInstance),
 		...getDeckActions(resolumeArenaModuleInstance),
 		...getLayerActions(resolumeArenaModuleInstance),
+		...getLayerGroupActions(resolumeArenaModuleInstance),
 	};
 }

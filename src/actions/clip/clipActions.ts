@@ -3,6 +3,8 @@ import {CompanionActionDefinitions} from '@companion-module/base';
 import {selectClip} from './actions/select-clip';
 import {connectClip} from './actions/connect-clip';
 import {clipSpeedChange} from './actions/clip-speed-change';
+import {clipOpacityChange} from './actions/clip-opacity-change';
+import {clipVolumeChange} from './actions/clip-volume-change';
 
 export function getClipActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
@@ -12,6 +14,8 @@ export function getClipActions(resolumeArenaModuleInstance: ResolumeArenaModuleI
 	return {
 		selectClip: selectClip(restApi, websocketApi, oscApi),
 		triggerClip: connectClip(restApi, websocketApi, oscApi),
-		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance)
+		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
+		clipOpacityChange: clipOpacityChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
+		clipVolumeChange: clipVolumeChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 	};
 }

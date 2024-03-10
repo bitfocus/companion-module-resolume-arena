@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerNextLayerGroupColumnPreset(): CompanionButtonPresetDefinition {return {
+export function triggerNextLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
-	category: 'Layer Group',
+	category,
 	name: 'Trigger Next Layer Group Column',
 	style: {
 		size: '14',

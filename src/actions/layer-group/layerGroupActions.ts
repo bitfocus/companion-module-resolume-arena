@@ -11,7 +11,7 @@ import {layerGroupMasterChange} from './actions/layer-group-master-change';
 import {layerGroupVolumeChange} from './actions/layer-group-volume-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
 
-export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
+export function getLayerGroupActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
 	const websocketApi = resolumeArenaModuleInstance.getWebsocketApi.bind(resolumeArenaModuleInstance);
 	const oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
