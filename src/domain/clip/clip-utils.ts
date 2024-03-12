@@ -1,5 +1,5 @@
 import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawThumb} from '../../image-utils';
+import {drawPercentage, drawThumb, drawVolume} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
@@ -14,8 +14,12 @@ export class ClipUtils implements MessageSubscriber {
 	private initalLoadDone = false;
 
 	private clipDetailsSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private clipOpacitySubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+	private clipVolumeSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipSpeedSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipSpeedIds: Set<number> = new Set<number>();
+	private clipVolumeIds: Set<number> = new Set<number>();
+	private clipOpacityIds: Set<number> = new Set<number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -28,6 +32,10 @@ export class ClipUtils implements MessageSubscriber {
 				this.initalLoadDone = true;
 				this.initComposition();
 			}
+		}
+		if (isComposition){
+			this.updateLayerVolumes();
+			this.updateLayerOpacities();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
@@ -42,6 +50,12 @@ export class ClipUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position\/behaviour\/speed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/video\/opacity/)) {
+				this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/audio\/volume/)) {
+				this.resolumeArenaInstance.checkFeedbacks('clipVolume');
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipTransportPosition');
@@ -114,7 +128,6 @@ export class ClipUtils implements MessageSubscriber {
 			}
 		}
 		if (thumbPromiseMap.length < 0) {
-			console.log('thumbPromiseMap.length', thumbPromiseMap.length);
 			Promise.allSettled(thumbPromiseMap).then(_ => {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 			});
@@ -144,6 +157,28 @@ export class ClipUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
 	}
 
+	updateLayerVolumes() {
+			for (const clipVolumeId of this.clipVolumeIds) {
+				this.clipVolumeWebsocketUnsubscribe(clipVolumeId);
+			}
+			for (const [clipIdString, _subscriptionId] of this.clipVolumeSubscriptions.entries()) {
+				let clipId = ClipId.fromId(clipIdString);
+				this.clipVolumeWebsocketFeedbackSubscribe(clipId.getLayer(), clipId.getColumn())
+			}
+			this.resolumeArenaInstance.checkFeedbacks('clipVolume');
+	}
+
+	updateLayerOpacities() {
+			for (const clipOpacityId of this.clipOpacityIds) {
+				this.clipOpacityWebsocketUnsubscribe(clipOpacityId);
+			}
+			for (const [clipIdString, _subscriptionId] of this.clipOpacitySubscriptions.entries()) {
+				let clipId = ClipId.fromId(clipIdString);
+				this.clipOpacityWebsocketSubscribe(clipId.getLayer(), clipId.getColumn())
+			}
+			this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
+	}
+
 	public getClipFromCompositionState(layer: number, column: number): Clip | undefined {
 		const layersObject = compositionState.get()?.layers;
 		if (layersObject) {
@@ -155,6 +190,127 @@ export class ClipUtils implements MessageSubscriber {
 			}
 		}
 		return undefined;
+	}
+
+
+/////////////////////////////////////////////////
+// Volume
+/////////////////////////////////////////////////
+
+
+	clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		const volume = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/audio/volume']?.value;
+		if (volume !== undefined) {
+			return {
+				text: Math.round(volume * 100) / 100 + 'db',
+				show_topbar: false,
+				imageBuffer: drawVolume(volume, 12)
+			};
+		}
+		return {text: '?'};
+	}
+
+	clipVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		if (ClipId.isValid(layer, column)) {
+			const idString = new ClipId(layer, column).getIdString();
+			if (!this.clipVolumeSubscriptions.get(idString)) {
+				this.clipVolumeSubscriptions.set(idString, new Set());
+			}
+			this.clipVolumeSubscriptions.get(idString)?.add(feedback.id);
+		}
+	}
+
+	clipVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		if (ClipId.isValid(layer, column)) {
+			const idString = new ClipId(layer, column).getIdString();
+			const clipVolumeSubscription = this.clipVolumeSubscriptions.get(idString);
+			if (clipVolumeSubscription) {
+				clipVolumeSubscription.delete(feedback.id);
+				if (clipVolumeSubscription.size === 0) {
+					this.clipVolumeSubscriptions.delete(idString);
+				}
+			}
+		}
+	}
+
+	clipVolumeWebsocketFeedbackSubscribe(layer: number, column: number) {
+		const clip = this.getClipFromCompositionState(layer, column);
+		const clipVolumeId = clip?.audio?.volume?.id;
+		if (clipVolumeId) {
+			this.clipVolumeIds.add(clipVolumeId);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(clipVolumeId!);
+		}
+	}
+
+	clipVolumeWebsocketUnsubscribe(clipVolumeId: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(clipVolumeId!);
+	}
+
+
+	/////////////////////////////////////////////////
+	// Opacity
+	/////////////////////////////////////////////////
+
+	clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		const opacity = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/video/opacity']?.value;
+		if (opacity !== undefined) {
+			return {
+				text: Math.round(opacity * 100) + '%',
+				show_topbar: false,
+				imageBuffer: drawPercentage(opacity)
+			};
+		}
+		return {text: '?'};
+	}
+
+
+	clipOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		if (ClipId.isValid(layer, column)) {
+			const idString = new ClipId(layer, column).getIdString();
+			if (!this.clipOpacitySubscriptions.get(idString)) {
+				this.clipOpacitySubscriptions.set(idString, new Set());
+			}
+			this.clipOpacitySubscriptions.get(idString)?.add(feedback.id);
+		}
+	}
+
+	clipOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = feedback.options.layer as number;
+		const column = feedback.options.column as number;
+		if (ClipId.isValid(layer, column)) {
+			const idString = new ClipId(layer, column).getIdString();
+			const clipOpacitySubscription = this.clipOpacitySubscriptions.get(idString);
+			if (clipOpacitySubscription) {
+				clipOpacitySubscription.delete(feedback.id);
+				if (clipOpacitySubscription.size === 0) {
+					this.clipOpacitySubscriptions.delete(idString);
+				}
+			}
+		}
+	}
+
+
+	clipOpacityWebsocketSubscribe(layer: number, column: number) {
+		const clip = this.getClipFromCompositionState(layer, column);
+		const clipOpacityId = clip?.video?.opacity?.id;
+		if (clipOpacityId) {
+			this.clipOpacityIds.add(clipOpacityId);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(clipOpacityId!);
+		}
+	}
+
+	clipOpacityWebsocketUnsubscribe(clipOpacityId: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(clipOpacityId!);
 	}
 
 	/////////////////////////////////////////////////
@@ -289,7 +445,7 @@ export class ClipUtils implements MessageSubscriber {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(speed)
+				imageBuffer: drawPercentage(speed)
 			};
 		}
 		return {text: '?'};

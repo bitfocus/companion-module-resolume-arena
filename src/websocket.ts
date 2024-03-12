@@ -16,7 +16,7 @@ export class WebsocketInstance {
 	private ws?: WebSocket;
 
 	constructor(private readonly resolumeArenaInstance: ResolumeArenaModuleInstance, private readonly config: ResolumeArenaConfig) {
-		console.log('constructed websocket');
+		this.resolumeArenaInstance.log('debug', 'websocket constructor called');
 		this.initWebSocket();
 	}
 	async destroy() {

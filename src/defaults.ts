@@ -39,6 +39,13 @@ export function getLayerOption(): SomeCompanionFeedbackInputField[] {
 	];
 }
 
+export function getClipOption(): SomeCompanionFeedbackInputField[] {
+	return [
+		...getLayerOption(),
+		...getColumnOption()
+	];
+}
+
 export function getLayerGroupOption(): SomeCompanionFeedbackInputField[] {
 	return [
 		{
@@ -54,8 +61,8 @@ export function getLayerGroupOption(): SomeCompanionFeedbackInputField[] {
 
 export function getDefaultLayerColumnOptions() {
 	return {
-		layer: '-1',
-		column: '-1',
+		layer: 1,
+		column: 1,
 	};
 }
 

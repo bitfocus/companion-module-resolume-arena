@@ -1,5 +1,5 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage} from '../../image-utils';
+import {drawPercentage, drawVolume} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
@@ -16,8 +16,12 @@ export class LayerUtils implements MessageSubscriber {
 	private activeLayers: Map<number, number> = new Map<number, number>();
 
 	private layerSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerMasterSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerVolumeSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerTransitionDurationIds: Set<number> = new Set<number>();
+	private layerVolumeIds: Set<number> = new Set<number>();
+	private layerOpacityIds: Set<number> = new Set<number>();
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -28,6 +32,8 @@ export class LayerUtils implements MessageSubscriber {
 		if (isComposition) {
 			this.updateActiveLayers();
 			this.updateLayerTransitionDurations();
+			this.updateLayerVolumes();
+			this.updateLayerOpacities();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
@@ -40,7 +46,13 @@ export class LayerUtils implements MessageSubscriber {
 				this.resolumeArenaInstance.checkFeedbacks('layerBypassed');
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/master/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerMaster');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/video\/opacity/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerOpacity');
+			}
+			if (!!data.path.match(/\/composition\/layers\/\d+\/audio\/volume/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerVolume');
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/transition\/duration/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerTransitionDuration');
@@ -98,7 +110,33 @@ export class LayerUtils implements MessageSubscriber {
 				const layer = layerIndex + 1;
 				this.layerTransitionDurationFeedbackSubscribe(layer)
 			}
-			this.resolumeArenaInstance.checkFeedbacks('layerTransitionDuration');
+			this.resolumeArenaInstance.checkFeedbacks('layerVolume');
+		}
+	}
+
+	updateLayerVolumes() {
+		const layersObject = this.getLayersFromCompositionState();
+		if (layersObject) {
+			for (const layerVolumeId of this.layerVolumeIds) {
+				this.layerVolumeWebsocketUnsubscribe(layerVolumeId);
+			}
+			for (const [layer, _subscriptionId] of this.layerVolumeSubscriptions.entries()) {
+				this.layerWebsocketFeedbackSubscribe(layer)
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerVolume');
+		}
+	}
+
+	updateLayerOpacities() {
+		const layersObject = this.getLayersFromCompositionState();
+		if (layersObject) {
+			for (const layerOpacityId of this.layerOpacityIds) {
+				this.layerOpacityWebsocketUnsubscribe(layerOpacityId);
+			}
+			for (const [layer, _subscriptionId] of this.layerOpacitySubscriptions.entries()) {
+				this.layerOpacityWebsocketSubscribe(layer)
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerOpacity');
 		}
 	}
 
@@ -221,17 +259,109 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	/////////////////////////////////////////////////
+	// Master
+	/////////////////////////////////////////////////
+
+	layerMasterFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer;
+		const master = parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
+		if (layer !== undefined && master !== undefined) {
+			return {
+				text: Math.round(master * 100) + '%',
+				show_topbar: false,
+				imageBuffer: drawPercentage(master),
+			};
+		}
+		return {text: '?'};
+	}
+
+	layerMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		if (layer !== undefined) {
+			if (!this.layerMasterSubscriptions.get(layer)) {
+				this.layerMasterSubscriptions.set(layer, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
+			}
+			this.layerMasterSubscriptions.get(layer)?.add(feedback.id);
+		}
+	}
+
+	layerMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		const layerMasterSubscription = this.layerMasterSubscriptions.get(layer);
+		if (layer !== undefined && layerMasterSubscription) {
+			layerMasterSubscription.delete(feedback.id);
+			if (layerMasterSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
+				this.layerMasterSubscriptions.delete(layer);
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////
+	// Volume
+	/////////////////////////////////////////////////
+
+	layerVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		var layer = feedback.options.layer as number;
+		const volume = parameterStates.get()['/composition/layers/' + layer + '/audio/volume']?.value;
+		if (volume !== undefined) {
+			return {
+				text: Math.round(volume * 100)/100+ 'db',
+				show_topbar: false,
+				imageBuffer: drawVolume(volume)
+			};
+		}
+		return {text: '?'};
+	}
+
+	layerVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		if (layer !== undefined) {
+			if (!this.layerVolumeSubscriptions.get(layer)) {
+				this.layerVolumeSubscriptions.set(layer, new Set());
+			}
+			this.layerVolumeSubscriptions.get(layer)?.add(feedback.id);
+		}
+	}
+
+	layerVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		var layer = feedback.options.layer as number;
+		const layerVolumeSubscription = this.layerVolumeSubscriptions.get(layer);
+		if (layer !== undefined && layerVolumeSubscription) {
+			layerVolumeSubscription.delete(feedback.id);
+			if (layerVolumeSubscription.size === 0) {
+				this.layerVolumeSubscriptions.delete(layer);
+			}
+		}
+	}
+
+	layerWebsocketFeedbackSubscribe(layer: number) {
+		const layerObject = this.getLayerFromCompositionState(layer);
+		const layerVolumeId = layerObject?.audio?.volume?.id;
+		if (layerVolumeId) {
+			this.layerVolumeIds.add(layerVolumeId);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(layerVolumeId!);
+		}
+	}
+
+	layerVolumeWebsocketUnsubscribe(layerVolumeId: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(layerVolumeId!);
+	}
+
+
+	/////////////////////////////////////////////////
 	// Opacity
 	/////////////////////////////////////////////////
 
 	layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer;
-		const opacity = parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
-		if (layer !== undefined && opacity !== undefined) {
+		var layer = feedback.options.layer as number;
+		const opacity = parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;
+		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(opacity),
+				imageBuffer: drawPercentage(opacity),
 			};
 		}
 		return {text: '?'};
@@ -242,7 +372,6 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined) {
 			if (!this.layerOpacitySubscriptions.get(layer)) {
 				this.layerOpacitySubscriptions.set(layer, new Set());
-				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
 			}
 			this.layerOpacitySubscriptions.get(layer)?.add(feedback.id);
 		}
@@ -254,10 +383,23 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined && layerOpacitySubscription) {
 			layerOpacitySubscription.delete(feedback.id);
 			if (layerOpacitySubscription.size === 0) {
-				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
 				this.layerOpacitySubscriptions.delete(layer);
 			}
 		}
+	}
+
+
+	layerOpacityWebsocketSubscribe(layer: number) {
+		const layerObject = this.getLayerFromCompositionState(layer);
+		const layerOpacityId = layerObject?.video?.opacity?.id;
+		if (layerOpacityId) {
+			this.layerOpacityIds.add(layerOpacityId);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(layerOpacityId!);
+		}
+	}
+
+	layerOpacityWebsocketUnsubscribe(layerOpacityId: number) {
+		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(layerOpacityId!);
 	}
 
 	/////////////////////////////////////////////////
@@ -271,7 +413,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(duration * 100) + '%',
 				show_topbar: false,
-				png64: drawPercentage(duration),
+				imageBuffer: drawPercentage(duration),
 			};
 		}
 		return {text: '?'};
