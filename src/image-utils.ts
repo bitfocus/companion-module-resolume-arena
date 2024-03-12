@@ -4,8 +4,11 @@ import {PNG} from 'pngjs';
 import {ImageTransformer, PixelFormat, ResizeMode} from '@julusian/image-rs';
 import {compositionState} from './state';
 
-export function drawVolume(volume: number): Uint8Array | undefined {
-	return drawPercentage(Math.pow(10, (volume / 40)));
+export function drawVolume(volume: number, dBMax: number = 0): Uint8Array | undefined {
+	let value = Math.pow(10, (volume / 20));
+	value /= Math.pow(10, (dBMax / 20));
+	value = Math.pow(value, 0.5);
+	return drawPercentage(value);
 }
 
 export function drawPercentage(percentage: number): Uint8Array | undefined {

@@ -206,7 +206,7 @@ export class ClipUtils implements MessageSubscriber {
 			return {
 				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
-				imageBuffer: drawVolume(volume)
+				imageBuffer: drawVolume(volume, 12)
 			};
 		}
 		return {text: '?'};
