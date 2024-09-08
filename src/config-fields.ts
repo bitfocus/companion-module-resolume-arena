@@ -14,9 +14,9 @@ export function configFields(): SomeCompanionConfigField[] {
     {
       type: 'textinput',
       id: 'host',
-      label: 'Resolume Host IP',
+      label: 'Resolume Host IP / hostname',
       width: 8,
-      regex: Regex.IP,
+      regex: Regex.HOSTNAME,
       default: '127.0.0.1'
     },
     {
