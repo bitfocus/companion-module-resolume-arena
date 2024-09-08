@@ -16,8 +16,8 @@ export function connectClip(
 			let rest = restApi();
 			let websocket = websocketApi();
 			if (rest) {
-				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, false)
-				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, true)
+				await websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, true)
+				await websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/connect`, false)
 			} else {
 				oscApi()?.connectClip(options.layer, options.column);
 			}

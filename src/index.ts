@@ -14,6 +14,7 @@ import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
 import {LayerUtils} from './domain/layers/layer-util';
 import {getUpgradeScripts} from './upgrade-scripts';
 import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
+import {getApiVariables} from './api-variables';
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
 	private config!: ResolumeArenaConfig;
@@ -51,6 +52,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		await this.restartApis();
 		this.subscribeFeedbacks();
 		this.setupFeedback();
+		this.setupVariables();
 		this.setActionDefinitions(getActions(this));
 		this.setupPresets();
 
@@ -73,6 +75,14 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	setupPresets() {
 		if (this.restApi) {
 			this.setPresetDefinitions(getApiPresets());
+		} else {
+			this.setPresetDefinitions({});
+		}
+	}
+
+	setupVariables() {
+		if (this.restApi) {
+			this.setVariableDefinitions(getApiVariables());
 		} else {
 			this.setPresetDefinitions({});
 		}

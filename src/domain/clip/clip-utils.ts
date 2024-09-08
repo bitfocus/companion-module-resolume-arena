@@ -33,7 +33,7 @@ export class ClipUtils implements MessageSubscriber {
 				this.initComposition();
 			}
 		}
-		if (isComposition){
+		if (isComposition) {
 			this.updateLayerVolumes();
 			this.updateLayerOpacities();
 		}
@@ -158,25 +158,25 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	updateLayerVolumes() {
-			for (const clipVolumeId of this.clipVolumeIds) {
-				this.clipVolumeWebsocketUnsubscribe(clipVolumeId);
-			}
-			for (const [clipIdString, _subscriptionId] of this.clipVolumeSubscriptions.entries()) {
-				let clipId = ClipId.fromId(clipIdString);
-				this.clipVolumeWebsocketFeedbackSubscribe(clipId.getLayer(), clipId.getColumn())
-			}
-			this.resolumeArenaInstance.checkFeedbacks('clipVolume');
+		for (const clipVolumeId of this.clipVolumeIds) {
+			this.clipVolumeWebsocketUnsubscribe(clipVolumeId);
+		}
+		for (const [clipIdString, _subscriptionId] of this.clipVolumeSubscriptions.entries()) {
+			let clipId = ClipId.fromId(clipIdString);
+			this.clipVolumeWebsocketFeedbackSubscribe(clipId.getLayer(), clipId.getColumn());
+		}
+		this.resolumeArenaInstance.checkFeedbacks('clipVolume');
 	}
 
 	updateLayerOpacities() {
-			for (const clipOpacityId of this.clipOpacityIds) {
-				this.clipOpacityWebsocketUnsubscribe(clipOpacityId);
-			}
-			for (const [clipIdString, _subscriptionId] of this.clipOpacitySubscriptions.entries()) {
-				let clipId = ClipId.fromId(clipIdString);
-				this.clipOpacityWebsocketSubscribe(clipId.getLayer(), clipId.getColumn())
-			}
-			this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
+		for (const clipOpacityId of this.clipOpacityIds) {
+			this.clipOpacityWebsocketUnsubscribe(clipOpacityId);
+		}
+		for (const [clipIdString, _subscriptionId] of this.clipOpacitySubscriptions.entries()) {
+			let clipId = ClipId.fromId(clipIdString);
+			this.clipOpacityWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+		}
+		this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
 	}
 
 	public getClipFromCompositionState(layer: number, column: number): Clip | undefined {
@@ -392,7 +392,16 @@ export class ClipUtils implements MessageSubscriber {
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
-		this.resolumeArenaInstance.log('warn', 'connectedState' + JSON.stringify(feedback.options));
+
+		const clipName = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/name']?.value;
+
+		if ((connectedState as string)?.toLowerCase().includes('preview')) {
+			this.resolumeArenaInstance.setVariableValues({previewedClip: JSON.stringify({layer, column, clipName})});
+			this.resolumeArenaInstance.setVariableValues({previewedClipLayer: layer});
+			this.resolumeArenaInstance.setVariableValues({previewedClipColumn: column});
+			this.resolumeArenaInstance.setVariableValues({previewedClipName: clipName});
+		}
+
 		switch (connectedState) {
 			case 'Connected':
 				if (selectedState) {
@@ -404,6 +413,7 @@ export class ClipUtils implements MessageSubscriber {
 				this.resolumeArenaInstance.log('warn', 'Connected & previewing' + feedback.options.color_connected_preview);
 				return {bgcolor: feedback.options.color_connected_preview as number};
 			case 'Previewing':
+
 				return {bgcolor: feedback.options.color_preview as number};
 			default:
 				return {bgcolor: combineRgb(0, 0, 0)};
@@ -425,7 +435,15 @@ export class ClipUtils implements MessageSubscriber {
 	clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
 		var layer = feedback.options.layer as number;
 		var column = feedback.options.column as number;
-		return parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
+		let value = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
+		if (value) {
+			const clipName = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/name']?.value;
+			this.resolumeArenaInstance.setVariableValues({selectedClip: JSON.stringify({layer, column, clipName})});
+			this.resolumeArenaInstance.setVariableValues({selectedClipLayer: layer});
+			this.resolumeArenaInstance.setVariableValues({selectedClipColumn: column});
+			this.resolumeArenaInstance.setVariableValues({selectedClipName: clipName});
+		}
+		return value;
 	}
 
 	clipSelectedWebsocketSubscribe(layer: number, column: number) {
