@@ -16,8 +16,8 @@ export function selectClip(
 			let rest = restApi();
 			let websocket = websocketApi();
 			if (rest) {
-				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/select`, false)
-				websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/select`, true)
+				await websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/select`, true)
+				await websocket?.triggerPath(`/composition/layers/${options.layer}/clips/${ options.column}/select`, false)
 			} else {
 				oscApi()?.selectClip(options.layer, options.column);
 			}

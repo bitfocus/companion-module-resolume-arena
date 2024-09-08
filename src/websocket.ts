@@ -187,22 +187,22 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	setPath(path: string, value: any) {
+	setPath(path: string, value: any): Promise<void> {
 		const data = {
 			action: 'set',
 			parameter: path,
 			value: value,
 		};
-		this.sendMessage(data);
+		return this.sendMessage(data);
 	}
 
-	setParam(paramId: string, value: any) {
+	setParam(paramId: string, value: any): Promise<void> {
 		const data = {
 			action: 'set',
 			parameter: '/parameter/by-id/' + paramId,
 			value: value,
 		};
-		this.sendMessage(data);
+		return this.sendMessage(data);
 	}
 
 	resetPath(path: string) {
@@ -221,22 +221,22 @@ export class WebsocketInstance {
 		this.sendMessage(data);
 	}
 
-	triggerPath(path: string, value?: boolean) {
+	triggerPath(path: string, value?: boolean): Promise<void> {
 		const data = {
 			action: 'trigger',
 			parameter: path,
 			value
 		};
-		this.sendMessage(data);
+		return this.sendMessage(data);
 	}
 
-	triggerParam(paramId: string, value?: boolean) {
+	triggerParam(paramId: string, value?: boolean): Promise<void> {
 		const data = {
 			action: 'trigger',
 			parameter: '/parameter/by-id/' + paramId,
 			value
 		};
-		this.sendMessage(data);
+		return this.sendMessage(data);
 	}
 
 	subscribePath(path: string) {
