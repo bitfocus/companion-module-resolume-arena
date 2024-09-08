@@ -392,16 +392,19 @@ export class ClipUtils implements MessageSubscriber {
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
+		this.resolumeArenaInstance.log('warn', 'connectedState' + JSON.stringify(feedback.options));
 		switch (connectedState) {
 			case 'Connected':
 				if (selectedState) {
-					return {bgcolor: combineRgb(100, 255, 255)};
+					this.resolumeArenaInstance.log('warn', 'Connected & Selected' + JSON.stringify(feedback.options));
+					return {bgcolor: feedback.options.color_connected_selected as number};
 				}
-				return {bgcolor: combineRgb(0, 255, 0)};
+				return {bgcolor: feedback.options.color_connected as number};
 			case 'Connected & previewing':
-				return {bgcolor: combineRgb(0, 255, 255)};
+				this.resolumeArenaInstance.log('warn', 'Connected & previewing' + feedback.options.color_connected_preview);
+				return {bgcolor: feedback.options.color_connected_preview as number};
 			case 'Previewing':
-				return {bgcolor: combineRgb(0, 0, 255)};
+				return {bgcolor: feedback.options.color_preview as number};
 			default:
 				return {bgcolor: combineRgb(0, 0, 0)};
 		}
