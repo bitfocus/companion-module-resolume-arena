@@ -32,28 +32,29 @@ export default class ArenaOscApi {
 		this._oscSend(this._host, this._port, path, args);
 	}
 
+	public sendTrigger(path: string) {
+		this._oscSend(this._host, this._port, path, OscArgs.One);
+		this._oscSend(this._host, this._port, path, OscArgs.Zero);
+	}
+
 	public selectClip(layer: number, column: number) {
 		this.send(`/composition/layers/${layer}/clips/${column}/select`, OscArgs.One);
 	}
 	
 	public connectClip(layer: number, column: number) {
-		this.send(`/composition/layers/${layer}/clips/${column}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/layers/${layer}/clips/${column}/connect`);
 	}
 
 	public triggerColumn(column: number) {
-		this.send(`/composition/columns/${column}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/columns/${column}/connect`);
 	}
 
 	public clearLayer(layer: number) {
-		let path = `/composition/layers/${layer}/clear`;
-		this.send(path, OscArgs.One);
-		this.send(path, OscArgs.Zero);
+		this.sendTrigger(`/composition/layers/${layer}/clear`);
 	}
   
 	public clearLayerGroup(layerGroup: number) {
-		let path = `/composition/groups/${layerGroup}/disconnectlayers`;
-		this.send(path, OscArgs.One);
-		this.send(path, OscArgs.Zero);
+		this.sendTrigger(`/composition/groups/${layerGroup}/disconnectlayers`);
 	}
 	
 	public bypassLayer(layer: number, bypassed: OSCSomeArguments) {
@@ -67,19 +68,19 @@ export default class ArenaOscApi {
 	}
 
 	public clearAllLayers() {
-		this.send('/composition/disconnectall', OscArgs.One);
+		this.sendTrigger('/composition/disconnectall');
 	}
 
 	public tempoTap() {
-		this.send('/composition/tempocontroller/tempotap', OscArgs.One);
+		this.sendTrigger('/composition/tempocontroller/tempotap');
 	}
 	
 	public tempoResync() {
-		this.send('/composition/tempocontroller/resync', OscArgs.One);
+		this.sendTrigger('/composition/tempocontroller/resync');
 	}
 
 	public triggerlayerGroupColumn(layerGroup: number, column: number) {
-		this.send(`/composition/groups/${layerGroup}/columns/${column}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${column}/connect`);
 	}
 	
 	public layerGroupNextCol(layerGroup: number, lastColumn: number) {
@@ -92,7 +93,7 @@ export default class ArenaOscApi {
 			this.groupPos[layerGroup] = 1;
 		}
 
-		this.send(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`);
 	}
 
 	public groupPrevCol(layerGroup: number, lastColumn: number) {
@@ -105,7 +106,7 @@ export default class ArenaOscApi {
 			this.groupPos[layerGroup] = lastColumn;
 		}
 
-		this.send(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`);
 	}
 
 	public compNextCol(colMaxCompNext: number) {
@@ -114,7 +115,7 @@ export default class ArenaOscApi {
 			this.currentCompCol = 1;
 		}
 
-		this.send(`/composition/columns/${this.currentCompCol}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
 	}
 
 	public compPrevCol(colMaxCompPrev: number) {
@@ -123,7 +124,7 @@ export default class ArenaOscApi {
 			this.currentCompCol = colMaxCompPrev;
 		}
 
-		this.send(`/composition/columns/${this.currentCompCol}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
 	}
 
 	public layerNextCol(layerN: number, colMaxLayerN: number) {
@@ -136,7 +137,7 @@ export default class ArenaOscApi {
 			this.layerPos[layerN] = 1;
 		}
 
-		this.send(`/composition/layers/${layerN}/clips/${this.layerPos[layerN]}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/layers/${layerN}/clips/${this.layerPos[layerN]}/connect`);
 	}
 
 	public layerPrevCol(layerP: number, colMaxLayerP: number) {
@@ -149,7 +150,7 @@ export default class ArenaOscApi {
 			this.layerPos[layerP] = colMaxLayerP;
 		}
 
-		this.send(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`, OscArgs.One);
+		this.sendTrigger(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`);
 	}
 
 	public customOsc(customPath: string, oscType: string, customValue: string, relativeType?: string) {
