@@ -10,7 +10,7 @@ export function getColumnActions(resolumeArenaModuleInstance: ResolumeArenaModul
 	const oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
 	const columnUtils = resolumeArenaModuleInstance.getColumnUtils.bind(resolumeArenaModuleInstance);
 	return {
-		triggerColumn: triggerColumn(restApi, websocketApi, oscApi, columnUtils),
+		triggerColumn: triggerColumn(restApi, websocketApi, oscApi, columnUtils, resolumeArenaModuleInstance),
 		compNextCol: compNextCol(restApi, oscApi),
 		compPrevCol: compPrevCol(restApi, oscApi),
 	};

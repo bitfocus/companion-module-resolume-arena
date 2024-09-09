@@ -198,9 +198,9 @@ export class ClipUtils implements MessageSubscriber {
 /////////////////////////////////////////////////
 
 
-	clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		const volume = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
@@ -212,9 +212,9 @@ export class ClipUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	clipVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipVolumeSubscriptions.get(idString)) {
@@ -224,9 +224,9 @@ export class ClipUtils implements MessageSubscriber {
 		}
 	}
 
-	clipVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			const clipVolumeSubscription = this.clipVolumeSubscriptions.get(idString);
@@ -257,9 +257,9 @@ export class ClipUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		const opacity = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
@@ -272,9 +272,9 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 
-	clipOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipOpacitySubscriptions.get(idString)) {
@@ -284,9 +284,9 @@ export class ClipUtils implements MessageSubscriber {
 		}
 	}
 
-	clipOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layer = feedback.options.layer as number;
-		const column = feedback.options.column as number;
+	async clipOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			const clipOpacitySubscription = this.clipOpacitySubscriptions.get(idString);
@@ -317,9 +317,10 @@ export class ClipUtils implements MessageSubscriber {
 	// ClipDetails
 	/////////////////////////////////////////////////
 
-	clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		if (ClipId.isValid(layer, column)) {
 			var key = new ClipId(layer, column);
 			var result: CompanionAdvancedFeedbackResult = {
@@ -348,9 +349,10 @@ export class ClipUtils implements MessageSubscriber {
 		return {text: undefined, png64: undefined};
 	}
 
-	clipDetailsFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipDetailsFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipDetailsSubscriptions.get(idString)) {
@@ -365,9 +367,10 @@ export class ClipUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
 	}
 
-	clipDetailsFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipDetailsFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		const clipDetailsSubscriptions = this.clipDetailsSubscriptions.get(new ClipId(layer, column).getIdString());
 		if (ClipId.isValid(layer, column) && clipDetailsSubscriptions) {
 			clipDetailsSubscriptions.delete(feedback.id);
@@ -386,9 +389,10 @@ export class ClipUtils implements MessageSubscriber {
 	// Connected
 	/////////////////////////////////////////////////
 
-	clipConnectedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipConnectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
@@ -410,7 +414,6 @@ export class ClipUtils implements MessageSubscriber {
 				}
 				return {bgcolor: feedback.options.color_connected as number};
 			case 'Connected & previewing':
-				this.resolumeArenaInstance.log('warn', 'Connected & previewing' + feedback.options.color_connected_preview);
 				return {bgcolor: feedback.options.color_connected_preview as number};
 			case 'Previewing':
 
@@ -432,9 +435,10 @@ export class ClipUtils implements MessageSubscriber {
 	// Selected
 	/////////////////////////////////////////////////
 
-	clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		let value = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		if (value) {
 			const clipName = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/name']?.value;
@@ -458,9 +462,10 @@ export class ClipUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		const speed = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed']?.value;
 		if (ClipId.isValid(layer, column)) {
 			return {
@@ -472,9 +477,10 @@ export class ClipUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	clipSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipSpeedSubscriptions.get(idString)) {
@@ -495,9 +501,10 @@ export class ClipUtils implements MessageSubscriber {
 		// this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/speed');
 	}
 
-	clipSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		const clipSpeedSubscriptions = this.clipSpeedSubscriptions.get(new ClipId(layer, column).getIdString());
 		if (ClipId.isValid(layer, column) && clipSpeedSubscriptions) {
 			clipSpeedSubscriptions.delete(feedback.id);
@@ -522,9 +529,10 @@ export class ClipUtils implements MessageSubscriber {
 	// Transport Position
 	/////////////////////////////////////////////////
 
-	clipTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var layer = feedback.options.layer as number;
-		var column = feedback.options.column as number;
+	async clipTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+
 		var view = feedback.options.view;
 		var timeRemaining = feedback.options.timeRemaining;
 		const param = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position'] as RangeParameter;

@@ -10,6 +10,7 @@ import {triggerLayerGroupColumn} from './actions/trigger-layer-group-column';
 import {layerGroupMasterChange} from './actions/layer-group-master-change';
 import {layerGroupVolumeChange} from './actions/layer-group-volume-change';
 import {layerGroupOpacityChange} from './actions/layer-group-opacity-change';
+import {layerGroupSpeedChange} from './actions/layer-group-speed-change';
 
 export function getLayerGroupActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
@@ -18,15 +19,15 @@ export function getLayerGroupActions(resolumeArenaModuleInstance: ResolumeArenaM
 	const layerGroupUtils = resolumeArenaModuleInstance.getLayerGroupUtils.bind(resolumeArenaModuleInstance);
 	return {
 		bypassLayerGroup: bypassLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
-		clearLayerGroup: clearLayerGroup(restApi, websocketApi, oscApi),
-		grpNextCol: layerGroupNextCol(restApi, oscApi),
-		grpPrevCol: layerGroupPrevCol(restApi, oscApi),
-		selectLayerGroup: selectLayerGroup(restApi, websocketApi, oscApi),
-		soloLayerGroup: soloLayerGroup(restApi, websocketApi, oscApi),
-		triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, websocketApi, oscApi, layerGroupUtils),
+		clearLayerGroup: clearLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		grpNextCol: layerGroupNextCol(restApi, oscApi, resolumeArenaModuleInstance),
+		grpPrevCol: layerGroupPrevCol(restApi, oscApi, resolumeArenaModuleInstance),
+		selectLayerGroup: selectLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		soloLayerGroup: soloLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		triggerLayerGroupColumn: triggerLayerGroupColumn(restApi, websocketApi, oscApi, layerGroupUtils, resolumeArenaModuleInstance),
 		layerGroupMasterChange: layerGroupMasterChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		layerGroupOpacityChange: layerGroupOpacityChange(restApi, websocketApi, oscApi, layerGroupUtils, resolumeArenaModuleInstance),
 		layerGroupVolumeChange: layerGroupVolumeChange(restApi, websocketApi, oscApi, layerGroupUtils, resolumeArenaModuleInstance),
-		// TODO #46 feature request resolume layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, ResolumeArenaModuleInstance),
+		layerGroupSpeedChange: layerGroupSpeedChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance)
 	};
 }

@@ -46,8 +46,8 @@ export function layerGroupMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layerGroup = options.layerGroup;
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 
 				let value: number | undefined;
@@ -65,7 +65,7 @@ export function layerGroupMasterChange(
 						break;
 				}
 				if (value != undefined) {
-					websocketApi()?.setPath('/composition/layergroups/' + options.layerGroup + '/master', value);
+					websocketApi()?.setPath('/composition/layergroups/' + layerGroup + '/master', value);
 				}
 			}
 		},

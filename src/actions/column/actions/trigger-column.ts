@@ -3,12 +3,14 @@ import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
 import {ColumnUtils} from '../../../domain/columns/column-util';
 import {WebsocketInstance} from '../../../websocket';
+import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function triggerColumn(
-	restApi: () => ArenaRestApi | null,
-	websocketApi: () => WebsocketInstance | null,
-	_oscApi: () => ArenaOscApi | null,
-	columnUtils: () => ColumnUtils | null
+	restApi: () => (ArenaRestApi | null),
+	websocketApi: () => (WebsocketInstance | null),
+	_oscApi: () => (ArenaOscApi | null),
+	columnUtils: () => (ColumnUtils | null),
+	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Trigger Column',
@@ -19,33 +21,33 @@ export function triggerColumn(
 				choices: [
 					{
 						id: 'add',
-						label: '+',
+						label: '+'
 					},
 					{
 						id: 'subtract',
-						label: '-',
+						label: '-'
 					},
 					{
 						id: 'set',
-						label: '=',
-					},
+						label: '='
+					}
 				],
 				default: 'set',
-				label: 'Action',
+				label: 'Action'
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value',
-				useVariables: true,
-			},
+				useVariables: true
+			}
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			let theColumnUtils = columnUtils();
 			if (theApi && theColumnUtils) {
 				const action = options.action;
-				const value = +options.value as number;
+				const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
 				if (action != undefined) {
 					let column: number | undefined;
 					switch (options.action) {
@@ -67,6 +69,6 @@ export function triggerColumn(
 					}
 				}
 			}
-		},
+		}
 	};
 }

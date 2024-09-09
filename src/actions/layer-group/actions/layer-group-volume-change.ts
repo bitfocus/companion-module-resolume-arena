@@ -49,9 +49,9 @@ export function layerGroupVolumeChange(
 			let theApi = restApi();
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
-				const layer = options.layerGroup;
+				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
-				const currentValue: number = +parameterStates.get()['/composition/groups/' + layer + '/audio/volume']?.value;
+				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -68,7 +68,7 @@ export function layerGroupVolumeChange(
 						break;
 				}
 				if (value != undefined) {
-					const layer = theLayerGroupUtils.getLayerGroupFromCompositionState(options.layerGroup);
+					const layer = theLayerGroupUtils.getLayerGroupFromCompositionState(layerGroup);
 					let paramId = layer?.audio!.volume!.id! + '';
 					websocketApi()?.setParam(paramId, value);
 				}
