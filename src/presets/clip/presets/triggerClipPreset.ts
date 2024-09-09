@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {getDefaultLayerColumnOptions, getDefaultStyleGreen} from '../../../defaults';
+import {getDefaultLayerColumnOptions} from '../../../defaults';
 
 export function triggerClipPreset(category: string): CompanionButtonPresetDefinition {
 	return {
@@ -27,8 +27,13 @@ export function triggerClipPreset(category: string): CompanionButtonPresetDefini
 		feedbacks: [
 			{
 				feedbackId: 'connectedClip',
-				options: getDefaultLayerColumnOptions(),
-				style: getDefaultStyleGreen()
+				options: {
+					...getDefaultLayerColumnOptions(),
+					color_connected: 'rgb(0, 255, 0)',
+					color_connected_selected: 'rgb(0,255,255)',
+					color_connected_preview: 'rgb(255, 255, 0)',
+					color_preview: 'rgb(255, 0, 0)'
+				}
 			},
 			{
 				feedbackId: 'clipInfo',
