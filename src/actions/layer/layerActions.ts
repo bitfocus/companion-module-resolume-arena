@@ -9,6 +9,8 @@ import {layerMasterChange} from './actions/layer-master-change';
 import {layerOpacityChange} from './actions/layer-opacity-change';
 import {layerVolumeChange} from './actions/layer-volume-change';
 import {layerTransitionDurationChange} from './actions/layer-transition-duration-change';
+import {layerNextCol} from './actions/layer-next-col';
+import {layerPrevCol} from './actions/layer-prev-col';
 
 export function getLayerActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);
@@ -18,9 +20,11 @@ export function getLayerActions(resolumeArenaModuleInstance: ResolumeArenaModule
 	return {
 		bypassLayerGroup: bypassLayerGroup(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		bypassLayer: bypassLayer(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
-		clearLayer: clearLayer(restApi, websocketApi, oscApi),
-		selectLayer: selectLayer(restApi, websocketApi, oscApi),
-		soloLayer: soloLayer(restApi, websocketApi, oscApi),
+		clearLayer: clearLayer(restApi, websocketApi, oscApi,resolumeArenaModuleInstance),
+		selectLayer: selectLayer(restApi, websocketApi, oscApi,resolumeArenaModuleInstance),
+		soloLayer: soloLayer(restApi, websocketApi, oscApi,resolumeArenaModuleInstance),
+		layerNextCol: layerNextCol(restApi, oscApi,resolumeArenaModuleInstance),
+		layerPrewCol: layerPrevCol(restApi, oscApi,resolumeArenaModuleInstance),
 		layerMasterChange: layerMasterChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		layerOpacityChange: layerOpacityChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),
 		layerVolumeChange: layerVolumeChange(restApi, websocketApi, oscApi, layerUtils, resolumeArenaModuleInstance),

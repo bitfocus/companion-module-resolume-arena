@@ -67,8 +67,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// SELECTED
 	/////////////////////////////////////////////////
 	
-	columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		var column = feedback.options.column;
+	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/connect']?.value;
 		}
@@ -79,8 +79,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// NAME
 	/////////////////////////////////////////////////
 
-	columnNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		var column = feedback.options.column;
+	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (column !== undefined) {
 			return {text: parameterStates.get()['/composition/columns/' + column + '/name']?.value};
 		}

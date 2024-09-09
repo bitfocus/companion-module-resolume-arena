@@ -4,12 +4,13 @@ import ArenaRestApi from '../../../arena-api/rest';
 import {getLayerOption} from '../../../defaults';
 import {parameterStates} from '../../../state';
 import {WebsocketInstance} from '../../../websocket';
+import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function soloLayer(
-	restApi: () => ArenaRestApi | null,
-	websocketApi: () => WebsocketInstance | null,
-	_oscApi: () => ArenaOscApi | null
-): CompanionActionDefinition {
+	restApi: () => (ArenaRestApi | null),
+	websocketApi: () => (WebsocketInstance | null),
+	_oscApi: () => (ArenaOscApi | null)
+	, resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
 	return {
 		name: 'Solo Layer',
 		options: [
@@ -40,12 +41,13 @@ export function soloLayer(
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
 				let solo;
+				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
 				if (options.solo == 'toggle') {
-					solo = !parameterStates.get()['/composition/layers/' + options.layer + '/solo']?.value;
+					solo = !parameterStates.get()['/composition/layers/' + layer + '/solo']?.value;
 				} else {
 					solo = options.solo == 'on';
 				}
-				thewebsocketApi?.setPath('/composition/layers/' + options.layer + '/solo', solo);
+				thewebsocketApi?.setPath('/composition/layers/' + layer + '/solo', solo);
 			}
 		},
 	};

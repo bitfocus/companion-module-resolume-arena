@@ -4,13 +4,14 @@ import ArenaRestApi from '../../../arena-api/rest';
 import {getLayerGroupOption} from '../../../defaults';
 import {LayerGroupUtils} from '../../../domain/layer-groups/layer-group-util';
 import {WebsocketInstance} from '../../../websocket';
+import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function triggerLayerGroupColumn(
-	restApi: () => ArenaRestApi | null,
-	websocketApi: () => WebsocketInstance | null,
-	_oscApi: () => ArenaOscApi | null,
-	layerGroupUtils: () => LayerGroupUtils | null
-): CompanionActionDefinition {
+	restApi: () => (ArenaRestApi | null),
+	websocketApi: () => (WebsocketInstance | null),
+	_oscApi: () => (ArenaOscApi | null),
+	layerGroupUtils: () => (LayerGroupUtils | null)
+	, resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
 	return {
 		name: 'Trigger Layer Group Column',
 		options: [
@@ -50,22 +51,23 @@ export function triggerLayerGroupColumn(
 				const value = +options.value as number;
 				if (action != undefined) {
 					let column: number | undefined;
+					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
 					switch (options.action) {
 						case 'set':
 							column = value;
 							break;
 						case 'add':
-							column = theLayerGroupUtils.calculateNextLayerGroupColumn(options.layerGroup, value);
+							column = theLayerGroupUtils.calculateNextLayerGroupColumn(layerGroup, value);
 							break;
 						case 'subtract':
-							column = theLayerGroupUtils.calculatePreviousLayerGroupColumn(options.layerGroup, value);
+							column = theLayerGroupUtils.calculatePreviousLayerGroupColumn(layerGroup, value);
 							break;
 						default:
 							break;
 					}
 					if (column != undefined) {
-						websocketApi()?.triggerPath('/composition/layergroups/' + options.layerGroup + '/columns/' + column + '/connect', false);
-						websocketApi()?.triggerPath('/composition/layergroups/' + options.layerGroup + '/columns/' + column+ '/connect', true);
+						websocketApi()?.triggerPath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect', false);
+						websocketApi()?.triggerPath('/composition/layergroups/' + layerGroup + '/columns/' + column+ '/connect', true);
 					}
 				}
 			}

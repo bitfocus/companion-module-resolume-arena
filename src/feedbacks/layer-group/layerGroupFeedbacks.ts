@@ -12,6 +12,7 @@ import {layerGroupColumnName} from './feedbacks/layerGroupColumnName';
 import {selectedLayerGroupColumnName} from './feedbacks/selectedLayerGroupColumnName';
 import {nextLayerGroupColumnName} from './feedbacks/nextLayerGroupColumnName';
 import {previousLayerGroupColumnName} from './feedbacks/previousLayerGroupColumnName';
+import {layerGroupSpeed} from './feedbacks/layerGroupSpeed';
 
 export function getLayerGroupApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {
@@ -22,8 +23,7 @@ export function getLayerGroupApiFeedbacks(resolumeArenaInstance: ResolumeArenaMo
 		layerGroupMaster: layerGroupMaster(resolumeArenaInstance),
 		layerGroupOpacity: layerGroupOpacity(resolumeArenaInstance),
 		layerGroupVolume: layerGroupVolume(resolumeArenaInstance),
-		// TODO #46, resolume feature request
-		// layerGroupSpeed: layerGroupSpeed(resolumeArenaInstance),
+		layerGroupSpeed: layerGroupSpeed(resolumeArenaInstance),
 		layerGroupColumnsSelected: layerGroupColumnsSelected(resolumeArenaInstance),
 		layerGroupColumnName: layerGroupColumnName(resolumeArenaInstance),
 		selectedLayerGroupColumnName: selectedLayerGroupColumnName(resolumeArenaInstance),

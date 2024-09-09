@@ -20,7 +20,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	private layerGroupVolumeSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerGroupOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	// TODO: #46, resolume feature request private layerGroupSpeedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerGroupSpeedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private selectedLayerGroupColumns: Map<number, number> = new Map<number, number>();
 	private lastLayerGroupColumns: Map<number, number> = new Map<number, number>();
@@ -185,16 +185,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// BYPASSED
 	/////////////////////////////////////////////////
 
-	layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/bypassed']?.value;
 		}
 		return false;
 	}
 
-	layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupBypassedSubscriptions.get(layerGroup)) {
 				this.layerGroupBypassedSubscriptions.set(layerGroup, new Set());
@@ -204,8 +204,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const layerByPassedSubscription = this.layerGroupBypassedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerByPassedSubscription) {
 			layerByPassedSubscription.delete(feedback.id);
@@ -220,16 +220,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SOLO
 	/////////////////////////////////////////////////
 
-	layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 		}
 		return false;
 	}
 
-	layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSoloSubscriptions.get(layerGroup)) {
 				this.layerGroupSoloSubscriptions.set(layerGroup, new Set());
@@ -239,8 +239,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const layerSoloSubscription = this.layerGroupSoloSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerSoloSubscription) {
 			layerSoloSubscription.delete(feedback.id);
@@ -255,8 +255,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// ACTIVE
 	/////////////////////////////////////////////////
 
-	layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return this.activeLayerGroups.has(+layerGroup as number);
 		}
@@ -267,16 +267,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED
 	/////////////////////////////////////////////////
 
-	layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/select']?.value;
 		}
 		return false;
 	}
 
-	layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSelectedSubscriptions.get(layerGroup)) {
 				this.layerGroupSelectedSubscriptions.set(layerGroup, new Set());
@@ -286,8 +286,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const layerGroupSelectedSubscriptions = this.layerGroupSelectedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupSelectedSubscriptions) {
 			layerGroupSelectedSubscriptions.delete(feedback.id);
@@ -302,9 +302,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED COLUMN
 	/////////////////////////////////////////////////
 
-	layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): boolean {
-		const layerGroup = feedback.options.layerGroup as number;
-		const column = feedback.options.column as number;
+	async layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value;
 		}
@@ -315,9 +315,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// COLUMN NAME
 	/////////////////////////////////////////////////
 
-	layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const column = feedback.options.column;
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (column !== undefined) {
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
@@ -328,8 +328,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layerGroup = +feedback.options.layerGroup! as number;
+	async layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
 			return {
 				text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
@@ -345,9 +345,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// NEXT COLUMN NAME
 	/////////////////////////////////////////////////
 
-	layerGroupColumnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	async layerGroupColumnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
 		const add = feedback.options.next as number;
-		const layerGroup = +feedback.options.layerGroup! as number;
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculateNextLayerGroupColumn(layerGroup, add);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -370,9 +370,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// PREVIOUS COLUMN NAME
 	/////////////////////////////////////////////////
 
-	layerGroupColumnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	async layerGroupColumnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
 		const subtract = feedback.options.previous as number;
-		const layerGroup = +feedback.options.layerGroup! as number;
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculatePreviousLayerGroupColumn(layerGroup, subtract);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -395,8 +395,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layerGroup = feedback.options.layerGroup;
+	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const master = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 		if (layerGroup !== undefined && master !== undefined) {
 			return {
@@ -408,8 +408,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	layerGroupMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupMasterSubscriptions.get(layerGroup)) {
 				this.layerGroupMasterSubscriptions.set(layerGroup, new Set());
@@ -419,8 +419,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	layerGroupMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const layerGroupMasterSubscription = this.layerGroupMasterSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupMasterSubscription) {
 			layerGroupMasterSubscription.delete(feedback.id);
@@ -436,8 +436,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Volume
 	/////////////////////////////////////////////////
 
-	layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const volume = parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
@@ -449,8 +449,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	layerGroupVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupVolumeSubscriptions.get(layerGroup)) {
 				this.layerGroupVolumeSubscriptions.set(layerGroup, new Set());
@@ -459,8 +459,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	layerGroupVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-		const layer = feedback.options.layer as number;
+	async layerGroupVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layer = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layer as string);
 		const layerGroupVolumeSubscription = this.layerGroupVolumeSubscriptions.get(layer);
 		if (layer !== undefined && layerGroupVolumeSubscription) {
 			layerGroupVolumeSubscription.delete(feedback.id);
@@ -488,8 +488,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
@@ -501,8 +501,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-		const layerGroup = feedback.options.layerGroup as number;
+	async layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupOpacitySubscriptions.get(layerGroup)) {
 				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
@@ -537,42 +537,42 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	/////////////////////////////////////////////////
-	// Speed ----> TODO: #46, resolume feature request
+	// Speed
 	/////////////////////////////////////////////////
 
-	// layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
-	// 	const layerGroup = feedback.options.layerGroup as number;
-	// 	const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
-	// 	if (layerGroup !== undefined && speed!==undefined) {
-	// 		return {
-	// 			text: Math.round(speed * 100) + '%',
-	// 			show_topbar: false,
-	// 			imageBuffer: drawPercentage(speed),
-	// 		};
-	// 	}
-	// 	return {text: '?'};
-	// }
+	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
+		const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
+		if (layerGroup !== undefined && speed!==undefined) {
+			return {
+				text: Math.round(speed * 100) + '%',
+				show_topbar: false,
+				imageBuffer: drawPercentage(speed),
+			};
+		}
+		return {text: '?'};
+	}
 
-	// layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
-	// 	const layerGroup = feedback.options.layerGroup as number;
-	// 	if (layerGroup !== undefined) {
-	// 		if (!this.layerGroupSpeedSubscriptions.get(layerGroup)) {
-	// 			this.layerGroupSpeedSubscriptions.set(layerGroup, new Set());
-	// 			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/speed');
-	// 		}
-	// 		this.layerGroupSpeedSubscriptions.get(layerGroup)?.add(feedback.id);
-	// 	}
-	// }
+	async layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
+		if (layerGroup !== undefined) {
+			if (!this.layerGroupSpeedSubscriptions.get(layerGroup)) {
+				this.layerGroupSpeedSubscriptions.set(layerGroup, new Set());
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/speed');
+			}
+			this.layerGroupSpeedSubscriptions.get(layerGroup)?.add(feedback.id);
+		}
+	}
 
-	// layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
-	// 	const layerGroup = feedback.options.layerGroup as number;
-	// 	const layerGroupSpeedSubscription = this.layerGroupSpeedSubscriptions.get(layerGroup);
-	// 	if (layerGroup !== undefined && layerGroupSpeedSubscription) {
-	// 		layerGroupSpeedSubscription.delete(feedback.id);
-	// 		if (layerGroupSpeedSubscription.size === 0) {
-	// 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/speed');
-	// 			this.layerGroupSpeedSubscriptions.delete(layerGroup);
-	// 		}
-	// 	}
-	// }
+	async layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const layerGroup = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.layerGroup as string);
+		const layerGroupSpeedSubscription = this.layerGroupSpeedSubscriptions.get(layerGroup);
+		if (layerGroup !== undefined && layerGroupSpeedSubscription) {
+			layerGroupSpeedSubscription.delete(feedback.id);
+			if (layerGroupSpeedSubscription.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/speed');
+				this.layerGroupSpeedSubscriptions.delete(layerGroup);
+			}
+		}
+	}
 }

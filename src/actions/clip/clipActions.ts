@@ -12,8 +12,8 @@ export function getClipActions(resolumeArenaModuleInstance: ResolumeArenaModuleI
 	const oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
 	const clipUtils = resolumeArenaModuleInstance.getClipUtils.bind(resolumeArenaModuleInstance);
 	return {
-		selectClip: selectClip(restApi, websocketApi, oscApi),
-		triggerClip: connectClip(restApi, websocketApi, oscApi),
+		selectClip: selectClip(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
+		triggerClip: connectClip(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
 		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 		clipOpacityChange: clipOpacityChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 		clipVolumeChange: clipVolumeChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),

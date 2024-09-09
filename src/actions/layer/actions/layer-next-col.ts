@@ -1,35 +1,39 @@
-import {CompanionActionDefinition} from '@companion-module/base';
+import {CompanionActionDefinition, Regex} from '@companion-module/base';
 import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
+import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function layerNextCol(
-	_restApi: () => ArenaRestApi | null,
-	oscApi: () => ArenaOscApi | null
+	_restApi: () => (ArenaRestApi | null),
+	oscApi: () => (ArenaOscApi | null),
+	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Next Column',
 		options: [
 			{
-				type: 'number',
+				type: 'textinput',
+				regex: Regex.NUMBER,
 				label: 'Layer Number',
 				id: 'layerN',
-				min: 1,
-				max: 65536,
-				default: 1,
+				default: '1',
 				required: true,
+				useVariables: true
 			},
 			{
-				type: 'number',
+				type: 'textinput',
+				regex: Regex.NUMBER,
 				label: 'Last (max) Column',
 				id: 'colMaxLayerN',
-				min: 1,
-				max: 65536,
-				default: 4,
+				default: '1',
 				required: true,
+				useVariables: true
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			oscApi()?.layerNextCol(options.layerN, options.colMaxLayerN);
+			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const colMaxLayerN = +await resolumeArenaModuleInstance.parseVariablesInString(options.colMaxLayerN);
+			oscApi()?.layerNextCol(layer, colMaxLayerN);
 		},
 	};
 }

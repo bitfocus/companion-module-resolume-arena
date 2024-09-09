@@ -4,11 +4,13 @@ import ArenaRestApi from '../../../arena-api/rest';
 import {getLayerGroupOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
 import {compositionState} from '../../../state';
+import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function clearLayerGroup(
-	restApi: () => ArenaRestApi | null,
-	websocketApi: () => WebsocketInstance | null,
-	oscApi: () => ArenaOscApi | null
+	restApi: () => (ArenaRestApi | null),
+	websocketApi: () => (WebsocketInstance | null),
+	oscApi: () => (ArenaOscApi | null),
+	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Clear Layer Group',
@@ -18,7 +20,7 @@ export function clearLayerGroup(
 			if (rest) {
 				const layergroups = compositionState.get()?.layergroups;
 				if (layergroups) {
-					const layerGroup = +options.layerGroup as number;
+					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
 					const layersObject = layergroups[layerGroup-1].layers;
 					if (layersObject) {
 						for (const [_layerIndex, layerObject] of layersObject.entries()) {
@@ -35,7 +37,8 @@ export function clearLayerGroup(
 					}
 				}
 			} else {
-				oscApi()?.clearLayerGroup(options.layerGroup);
+				const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				oscApi()?.clearLayerGroup(layerGroup);
 			}
 		},
 	};

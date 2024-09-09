@@ -50,7 +50,9 @@ export function clipVolumeChange(
 			let theClipUtils = clipUtils();
 			if (theApi && theClipUtils) {
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
-				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/clips/' + options.column + '/audio/volume']?.value;
+				const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+				const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
+				const currentValue: number = parameterStates.get()['/composition/layers/' + layerInput + '/clips/' + columnInput + '/audio/volume']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -67,7 +69,7 @@ export function clipVolumeChange(
 						break;
 				}
 				if (value != undefined) {
-					const layer = theClipUtils.getClipFromCompositionState(options.layer, options.column);
+					const layer = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
 					let paramId = layer?.audio!.volume!.id! + '';
 					websocketApi()?.setParam(paramId, value);
 				}

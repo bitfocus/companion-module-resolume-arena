@@ -8,6 +8,6 @@ export function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaC
 	return [
 		upgrade_v1_0_4,
 		upgrade_v3_0_1,
-		upgrade_v3_5_2
+		upgrade_v3_5_2,
 	];
 }

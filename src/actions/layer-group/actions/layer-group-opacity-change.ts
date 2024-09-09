@@ -49,9 +49,9 @@ export function layerGroupOpacityChange(
 			let theApi = restApi();
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
-				const layer = options.layerGroup;
+				const layerGroupInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-				const currentValue: number = +parameterStates.get()['/composition/groups/' + layer + '/video/opacity']?.value;
+				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroupInput + '/video/opacity']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -68,7 +68,7 @@ export function layerGroupOpacityChange(
 						break;
 				}
 				if (value != undefined) {
-					const layerGroup = theLayerGroupUtils.getLayerGroupFromCompositionState(options.layerGroup);
+					const layerGroup = theLayerGroupUtils.getLayerGroupFromCompositionState(layerGroupInput);
 					let paramId = layerGroup?.video!.opacity!.id! + '';
 					websocketApi()?.setParam(paramId, value);
 				}

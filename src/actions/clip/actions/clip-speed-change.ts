@@ -50,10 +50,12 @@ export function clipSpeedChange(
 			let theOscApi = oscApi();
 			let theClipUtils = clipUtils();
 			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+			const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+			const column = +await resolumeArenaInstance.parseVariablesInString(options.column);
 			if (theApi && theClipUtils) {
-				const clip = theClipUtils.getClipFromCompositionState(options.layer, options.column);
+				const clip = theClipUtils.getClipFromCompositionState(layer, column);
 				const clipSpeedId = clip?.transport?.controls?.speed?.id + '';
-				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed']?.value;
+				const currentValue: number = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed']?.value;
 
 				let value: number | undefined;
 				switch (options.action) {
@@ -76,7 +78,7 @@ export function clipSpeedChange(
 				switch (options.action) {
 					case 'set':
 						theOscApi?.customOsc(
-							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed',
 							'f',
 							getSpeedValue(inputValue)+'',
 							'n'
@@ -85,7 +87,7 @@ export function clipSpeedChange(
 					case 'add':
 						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
 						theOscApi?.customOsc(
-							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed',
 							'f',
 							inputValue + '',
 							'+'
@@ -94,7 +96,7 @@ export function clipSpeedChange(
 					case 'subtract':
 						resolumeArenaInstance.log('warn', 'relative osc commands have a bug in resolume');
 						theOscApi?.customOsc(
-							'/composition/layers/' + options.layer + '/clips/' + options.column + '/transport/position/behaviour/speed',
+							'/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed',
 							'f',
 							inputValue + '',
 							'-'
