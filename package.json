@@ -36,7 +36,7 @@
 		"url": "git+https://github.com/bitfocus/companion-module-resolume-arena.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.7.0",
+		"@companion-module/base": "~1.10.0",
 		"@julusian/image-rs": "^0.2.1",
 		"@persevie/statemanjs": "^1.6.0",
 		"companion-module-utils": "^0.4.0",

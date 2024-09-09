@@ -18,11 +18,8 @@ export function selectClip(
 			let rest = restApi();
 			let websocket = websocketApi();
 
-			resolumeArenaModuleInstance.log('error','clicked select' + JSON.stringify(options))
-
 			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
 			const column = +await resolumeArenaModuleInstance.parseVariablesInString(options.column);
-			resolumeArenaModuleInstance.log('error','clicked select layer' + layer + ' col ' + column)
 
 			if (rest) {
 				await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/select`, true);
