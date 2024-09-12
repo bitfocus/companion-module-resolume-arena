@@ -19,22 +19,12 @@ export function layerPrevCol(
 				default: '1',
 				required: true,
 				useVariables: true
-			},
-			{
-				type: 'textinput',
-				regex: Regex.NUMBER,
-				label: 'Last (max) Column',
-				id: 'colMaxLayerN',
-				default: '1',
-				required: true,
-				useVariables: true
-			},
+			}
 		],
 
 		callback: async ({options}: {options: any}) => {
 			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const colMaxLayerN = +await resolumeArenaModuleInstance.parseVariablesInString(options.colMaxLayerN);
-			oscApi()?.layerPrevCol(layer, colMaxLayerN);
+			oscApi()?.layerPrevCol(layer);
 		},
 	};
 }

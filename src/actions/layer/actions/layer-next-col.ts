@@ -19,21 +19,11 @@ export function layerNextCol(
 				default: '1',
 				required: true,
 				useVariables: true
-			},
-			{
-				type: 'textinput',
-				regex: Regex.NUMBER,
-				label: 'Last (max) Column',
-				id: 'colMaxLayerN',
-				default: '1',
-				required: true,
-				useVariables: true
-			},
+			}
 		],
 		callback: async ({options}: {options: any}) => {
 			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const colMaxLayerN = +await resolumeArenaModuleInstance.parseVariablesInString(options.colMaxLayerN);
-			oscApi()?.layerNextCol(layer, colMaxLayerN);
+			oscApi()?.layerNextCol(layer);
 		},
 	};
 }
