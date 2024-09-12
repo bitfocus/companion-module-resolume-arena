@@ -20,7 +20,6 @@ export default class ArenaOscApi {
 	private _oscSend: OscSendFunc;
 	private groupPos: number[] = [];
 	private layerPos: number[] = [];
-	private currentCompCol: number = 0;
 
 	constructor(host: string, port: number, oscSend: OscSendFunc) {
 		this._host = host;
@@ -109,22 +108,12 @@ export default class ArenaOscApi {
 		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`);
 	}
 
-	public compNextCol(colMaxCompNext: number) {
-		this.currentCompCol++;
-		if (this.currentCompCol > colMaxCompNext) {
-			this.currentCompCol = 1;
-		}
-
-		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
+	public compNextCol() {
+		this.sendTrigger(`/composition/connectnextcolumn`);
 	}
 
-	public compPrevCol(colMaxCompPrev: number) {
-		this.currentCompCol--;
-		if (this.currentCompCol < 1) {
-			this.currentCompCol = colMaxCompPrev;
-		}
-
-		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
+	public compPrevCol() {
+		this.sendTrigger(`/composition/connectprevcolumn`);
 	}
 
 	public layerNextCol(layerN: number, colMaxLayerN: number) {
