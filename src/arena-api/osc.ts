@@ -5,12 +5,12 @@ export type OscSendFunc = (host: string, port: number, path: string, args: OSCSo
 export class OscArgs {
 	public static One = {
 		type: 'i' as 'i',
-		value: 1,
+		value: 1
 	};
 
 	public static Zero = {
 		type: 'i' as 'i',
-		value: 0,
+		value: 0
 	};
 }
 
@@ -19,8 +19,6 @@ export default class ArenaOscApi {
 	private _port: number;
 	private _oscSend: OscSendFunc;
 	private groupPos: number[] = [];
-	private layerPos: number[] = [];
-	private currentCompCol: number = 0;
 
 	constructor(host: string, port: number, oscSend: OscSendFunc) {
 		this._host = host;
@@ -34,13 +32,15 @@ export default class ArenaOscApi {
 
 	public sendTrigger(path: string) {
 		this._oscSend(this._host, this._port, path, OscArgs.One);
-		this._oscSend(this._host, this._port, path, OscArgs.Zero);
+		setTimeout(() => {
+			this._oscSend(this._host, this._port, path, OscArgs.Zero);
+		},50);
 	}
 
 	public selectClip(layer: number, column: number) {
 		this.send(`/composition/layers/${layer}/clips/${column}/select`, OscArgs.One);
 	}
-	
+
 	public connectClip(layer: number, column: number) {
 		this.sendTrigger(`/composition/layers/${layer}/clips/${column}/connect`);
 	}
@@ -52,16 +52,16 @@ export default class ArenaOscApi {
 	public clearLayer(layer: number) {
 		this.sendTrigger(`/composition/layers/${layer}/clear`);
 	}
-  
+
 	public clearLayerGroup(layerGroup: number) {
 		this.sendTrigger(`/composition/groups/${layerGroup}/disconnectlayers`);
 	}
-	
+
 	public bypassLayer(layer: number, bypassed: OSCSomeArguments) {
 		let path = `/composition/layers/${layer}/bypassed`;
 		this.send(path, bypassed);
 	}
-  
+
 	public bypassLayerGroup(layerGroup: number, bypassed: OSCSomeArguments) {
 		let path = `/composition/groups/${layerGroup}/bypassed`;
 		this.send(path, bypassed);
@@ -74,7 +74,7 @@ export default class ArenaOscApi {
 	public tempoTap() {
 		this.sendTrigger('/composition/tempocontroller/tempotap');
 	}
-	
+
 	public tempoResync() {
 		this.sendTrigger('/composition/tempocontroller/resync');
 	}
@@ -82,7 +82,7 @@ export default class ArenaOscApi {
 	public triggerlayerGroupColumn(layerGroup: number, column: number) {
 		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${column}/connect`);
 	}
-	
+
 	public layerGroupNextCol(layerGroup: number, lastColumn: number) {
 		if (this.groupPos[layerGroup] == undefined) {
 			this.groupPos[layerGroup] = 1;
@@ -109,48 +109,28 @@ export default class ArenaOscApi {
 		this.sendTrigger(`/composition/groups/${layerGroup}/columns/${this.groupPos[layerGroup]}/connect`);
 	}
 
-	public compNextCol(colMaxCompNext: number) {
-		this.currentCompCol++;
-		if (this.currentCompCol > colMaxCompNext) {
-			this.currentCompCol = 1;
-		}
-
-		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
+	public compNextDeck() {
+		this.sendTrigger(`/composition/selectnextdeck`);
 	}
 
-	public compPrevCol(colMaxCompPrev: number) {
-		this.currentCompCol--;
-		if (this.currentCompCol < 1) {
-			this.currentCompCol = colMaxCompPrev;
-		}
-
-		this.sendTrigger(`/composition/columns/${this.currentCompCol}/connect`);
+	public compPrevDeck() {
+		this.sendTrigger(`/composition/selectprevdeck`);
 	}
 
-	public layerNextCol(layerN: number, colMaxLayerN: number) {
-		if (this.layerPos[layerN] == undefined) {
-			this.layerPos[layerN] = 1;
-		} else {
-			this.layerPos[layerN]++;
-		}
-		if (this.layerPos[layerN] > colMaxLayerN) {
-			this.layerPos[layerN] = 1;
-		}
-
-		this.sendTrigger(`/composition/layers/${layerN}/clips/${this.layerPos[layerN]}/connect`);
+	public compNextCol() {
+		this.sendTrigger(`/composition/connectnextcolumn`);
 	}
 
-	public layerPrevCol(layerP: number, colMaxLayerP: number) {
-		if (this.layerPos[layerP] == undefined) {
-			this.layerPos[layerP] = 1;
-		} else {
-			this.layerPos[layerP]--;
-		}
-		if (this.layerPos[layerP] < 1) {
-			this.layerPos[layerP] = colMaxLayerP;
-		}
+	public compPrevCol() {
+		this.sendTrigger(`/composition/connectprevcolumn`);
+	}
 
-		this.sendTrigger(`/composition/layers/${layerP}/clips/${this.layerPos[layerP]}/connect`);
+	public layerNextCol(layer: number) {
+		this.sendTrigger(`/composition/layers/${layer}/connectnextclip`);
+	}
+
+	public layerPrevCol(layer: number) {
+		this.sendTrigger(`/composition/layers/${layer}/connectprevclip`);
 	}
 
 	public customOsc(customPath: string, oscType: string, customValue: string, relativeType?: string) {
@@ -159,19 +139,19 @@ export default class ArenaOscApi {
 			case '+':
 				args.push({
 					type: 's',
-					value: '' + relativeType,
+					value: '' + relativeType
 				});
 				break;
 			case '-':
 				args.push({
 					type: 's',
-					value: '' + relativeType,
+					value: '' + relativeType
 				});
 				break;
 			case '*':
 				args.push({
 					type: 's',
-					value: '' + relativeType,
+					value: '' + relativeType
 				});
 				break;
 			case 'n':
@@ -183,19 +163,19 @@ export default class ArenaOscApi {
 			case 'i':
 				args.push({
 					type: oscType,
-					value: parseInt(customValue),
+					value: parseInt(customValue)
 				});
 				break;
 			case 'f':
 				args.push({
 					type: oscType,
-					value: parseFloat(customValue),
+					value: parseFloat(customValue)
 				});
 				break;
 			case 's':
 				args.push({
 					type: oscType,
-					value: '' + customValue,
+					value: '' + customValue
 				});
 				break;
 			case 'n':

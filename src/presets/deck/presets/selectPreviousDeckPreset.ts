@@ -15,10 +15,8 @@ export function selectPreviousDeckPreset(): CompanionButtonPresetDefinition {ret
 		{
 			down: [
 				{
-					actionId: 'selectDeck',
+					actionId: 'selectPreviousDeck',
 					options: {
-						action: 'subtract',
-						value: 1,
 					},
 				},
 			],

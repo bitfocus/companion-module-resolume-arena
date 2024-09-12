@@ -9,18 +9,9 @@ export function compNextCol(
 	return {
 		name: 'Composition Next Column',
 		options: [
-			{
-				type: 'number',
-				label: 'Last (max) Column',
-				id: 'colMaxCompNext',
-				min: 1,
-				max: 65536,
-				default: 4,
-				required: true,
-			},
 		],
-		callback: async ({options}: {options: any}) => {
-			oscApi()?.compNextCol(options.colMaxCompNext);
+		callback: async () => {
+			oscApi()?.compNextCol();
 		},
 	};
 }

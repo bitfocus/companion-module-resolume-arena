@@ -9,19 +9,10 @@ export function compPrevCol(
 	return {
 		name: 'Composition Previous Column',
 		options: [
-			{
-				type: 'number',
-				label: 'Last (max) Column',
-				id: 'colMaxCompPrev',
-				min: 1,
-				max: 65536,
-				default: 4,
-				required: true,
-			},
 		],
 
-		callback: async ({options}: {options: any}) => {
-			oscApi()?.compPrevCol(options.colMaxCompPrev);
+		callback: async () => {
+			oscApi()?.compPrevCol();
 		},
 	};
 }
