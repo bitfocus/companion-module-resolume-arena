@@ -41,7 +41,7 @@ export function layerTransitionDurationChange(
 			{
 				type: 'textinput',
 				id: 'value',
-				label: 'Value in percentage (e.g. 100 or 10)',
+				label: 'Value in seconds (e.g. 1 or 0.1)',
 				useVariables: true
 			}
 		],
@@ -52,7 +52,7 @@ export function layerTransitionDurationChange(
 				const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
 				const layerTransitionDurationId = layer?.transition?.duration?.id + '';
 
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
 				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/transition/duration']?.value;
 
 				let value: number | undefined;
