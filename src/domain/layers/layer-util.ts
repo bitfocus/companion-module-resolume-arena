@@ -322,6 +322,7 @@ export class LayerUtils implements MessageSubscriber {
 				this.layerVolumeSubscriptions.set(layer, new Set());
 			}
 			this.layerVolumeSubscriptions.get(layer)?.add(feedback.id);
+			this.layerWebsocketFeedbackSubscribe(layer);
 		}
 	}
 
@@ -332,6 +333,7 @@ export class LayerUtils implements MessageSubscriber {
 			layerVolumeSubscription.delete(feedback.id);
 			if (layerVolumeSubscription.size === 0) {
 				this.layerVolumeSubscriptions.delete(layer);
+				this.layerVolumeWebsocketUnsubscribe(layer);
 			}
 		}
 	}
@@ -374,6 +376,7 @@ export class LayerUtils implements MessageSubscriber {
 				this.layerOpacitySubscriptions.set(layer, new Set());
 			}
 			this.layerOpacitySubscriptions.get(layer)?.add(feedback.id);
+			this.layerOpacityWebsocketSubscribe(layer);
 		}
 	}
 
@@ -384,6 +387,7 @@ export class LayerUtils implements MessageSubscriber {
 			layerOpacitySubscription.delete(feedback.id);
 			if (layerOpacitySubscription.size === 0) {
 				this.layerOpacitySubscriptions.delete(layer);
+				this.layerOpacityWebsocketUnsubscribe(layer)
 			}
 		}
 	}
