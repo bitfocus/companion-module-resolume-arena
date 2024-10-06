@@ -504,6 +504,26 @@ export class LayerUtils implements MessageSubscriber {
 							secondsOnly.toString().padStart(2, '0'),
 						size: 14,
 					};
+				case 'timestampFrame_noHours':
+					return {
+						text:
+							(timeRemaining ? '-' : '') +
+							((hours*60)+minutesOnly).toString().padStart(2, '0') +
+							':' +
+							secondsOnly.toString().padStart(2, '0') +
+							': ' +
+							framesOnly.toString().padStart(2, '0'),
+						size: 14
+					};
+				case 'timestamp_noHours':
+					return {
+						text:
+							(timeRemaining ? '-' : '') +
+							((hours*60)+minutesOnly).toString().padStart(2, '0') +
+							':' +
+							secondsOnly.toString().padStart(2, '0'),
+						size: 18
+					};
 				default:
 					break;
 			}

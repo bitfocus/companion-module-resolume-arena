@@ -21,6 +21,14 @@ export function clipTransportPosition(resolumeArenaInstance: ResolumeArenaModule
 							label: 'hh:mm:ss:ff - including frames'
 						},
 						{
+							id: 'timestamp_noHours',
+							label: 'mm:ss'
+						},
+						{
+							id: 'timestampFrame_noHours',
+							label: 'mm:ss:ff - including frames'
+						},
+						{
 							id: 'fullSeconds',
 							label: '10000s'
 						},
