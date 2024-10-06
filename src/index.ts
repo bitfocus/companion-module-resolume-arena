@@ -105,14 +105,17 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
 			try {
 				const productInfo = await this.restApi.productInfo()
+				this.log('info', 'productInfo: '+ JSON.stringify(productInfo));
 				if ((productInfo).major) {
 					this.updateStatus(InstanceStatus.Connecting);
 					this.websocketApi = new WebsocketApi(this, this.config);
 					this.websocketApi.waitForWebsocketReady();
 				} else {
+					this.log('error', 'productInfo wrong');
 					this.updateStatus(InstanceStatus.ConnectionFailure);
 				}
 			} catch (error) {
+				this.log('error', 'productInfo failed: '+ error );
 				this.updateStatus(InstanceStatus.ConnectionFailure);
 			}
 			

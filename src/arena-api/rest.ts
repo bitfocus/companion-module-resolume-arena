@@ -1,10 +1,10 @@
-import { Agent as httpAgent } from 'http';
-import { Agent as httpsAgent } from 'https';
-import fetch, { HeadersInit, Response } from 'node-fetch';
-import { ArenaClipsApi } from './child-apis/ArenaClipsApi';
-import { ArenaLayersApi } from './child-apis/ArenaLayersApi';
-import { ArenaLayerGroupsApi } from './child-apis/ArenaLayerGroupsApi';
-import { ArenaColumnsApi } from './child-apis/ArenaColumnsApi';
+import {Agent as httpAgent} from 'http';
+import {Agent as httpsAgent} from 'https';
+import fetch, {Headers, HeadersInit, RequestInit, Response} from 'node-fetch';
+import {ArenaClipsApi} from './child-apis/ArenaClipsApi';
+import {ArenaLayersApi} from './child-apis/ArenaLayersApi';
+import {ArenaLayerGroupsApi} from './child-apis/ArenaLayerGroupsApi';
+import {ArenaColumnsApi} from './child-apis/ArenaColumnsApi';
 
 class HTTPResponseError extends Error {
   response: any;
@@ -39,12 +39,6 @@ export type ArenaFetchFunction =
   & ArenaFetchBoolFunction
   & ArenaFetchOkFunction;
 
-interface FetchOptions {
-  method: string,
-  headers: HeadersInit,
-  agent: httpAgent | httpsAgent,
-  body: any
-}
 export default class ArenaRestApi {
   private _host: string;
   private _port: number;
@@ -85,7 +79,7 @@ export default class ArenaRestApi {
         console.log("404 on", response.url)
         return response;
       }else{
-
+        console.error("http Status: ", response.status, response.url)
         throw new HTTPResponseError(response);
       }
     }
@@ -105,11 +99,11 @@ export default class ArenaRestApi {
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: 'base64', body?: any): Promise<string>;
   private async arenaFetch(method: HttpMethod, relativeUrl: string, returnType: string, body?: any): Promise<any> {
     var url = `${this.apiUrl}/${relativeUrl}`;
-    var options: FetchOptions = {
+    var options: RequestInit = {
       method,
       headers: this._defaultHeaders,
       agent: this._agent,
-      body: null
+      timeout: 2000
     };
     if (body != undefined && body != null) {
       if (typeof(body) == 'object') {
@@ -122,6 +116,7 @@ export default class ArenaRestApi {
       url,
       options
     );
+
     this.checkStatus(response);
     switch (returnType) {
       case 'ok':
