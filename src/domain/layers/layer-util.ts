@@ -411,7 +411,7 @@ export class LayerUtils implements MessageSubscriber {
 		const duration = parameterStates.get()['/composition/layers/' + layer + '/transition/duration']?.value;
 		if (layer !== undefined && duration !== undefined) {
 			return {
-				text: Math.round(duration * 100) + '%',
+				text: Math.round(duration * 100)/100 + 's',
 				show_topbar: false,
 				imageBuffer: drawPercentage(duration),
 			};
