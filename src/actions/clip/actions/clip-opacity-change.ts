@@ -3,9 +3,9 @@ import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
 import {getClipOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
-import {parameterStates} from '../../../state';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import {ClipUtils} from '../../../domain/clip/clip-utils';
+import {ClipId} from '../../../domain/clip/clip-id';
 
 export function clipOpacityChange(
 	restApi: () => ArenaRestApi | null,
@@ -52,26 +52,29 @@ export function clipOpacityChange(
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
 				const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
 				const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
-				const currentValue: number = parameterStates.get()['/composition/layers/' + layerInput + '/clips/' + columnInput + '/video/opacity']?.value;
+				const currentValue: number | undefined = (await theApi.Clips.getStatus(new ClipId(layerInput, columnInput))).video?.opacity.value;
 
-				let value: number | undefined;
-				switch (options.action) {
-					case 'set':
-						value = inputValue;
-						break;
-					case 'add':
-						value = currentValue + inputValue;
-						break;
-					case 'subtract':
-						value = currentValue - inputValue;
-						break;
-					default:
-						break;
-				}
-				if (value != undefined) {
-					const layer = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
-					let paramId = layer?.video!.opacity!.id! + '';
-					websocketApi()?.setParam(paramId, value);
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						const layer = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
+						let paramId = layer?.video!.opacity!.id! + '';
+						await websocketApi()?.subscribeParam(+paramId);
+						await websocketApi()?.setParam(paramId, value);
+					}
 				}
 			}
 		}

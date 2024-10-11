@@ -16,6 +16,12 @@ export function getClipApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleIn
 		clipSpeed: clipSpeed(resolumeArenaInstance),
 		clipTransportPosition: clipTransportPosition(resolumeArenaInstance),
 		clipOpacity: clipOpacity(resolumeArenaInstance),
-		clipVolume: clipVolume(resolumeArenaInstance),
+		clipVolume: clipVolume(resolumeArenaInstance)
 	};
+}
+
+export function getOtherClipFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance, currentFeedbackKey: string) {
+	let feedbacks = Object.keys(getClipApiFeedbacks(resolumeArenaInstance));
+	feedbacks.splice(feedbacks.indexOf(currentFeedbackKey),1);
+	return feedbacks;
 }

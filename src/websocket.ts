@@ -19,6 +19,7 @@ export class WebsocketInstance {
 		this.resolumeArenaInstance.log('debug', 'websocket constructor called');
 		this.initWebSocket();
 	}
+
 	async destroy() {
 		this.isInitialized = false;
 		if (this.reconnect_timer) {
@@ -108,7 +109,9 @@ export class WebsocketInstance {
 					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
-					this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
+					if (!message.path.includes('/transport/position')) {
+						this.resolumeArenaInstance.log('debug', message.type + ' | ' + message.path + ' | ' + message.value);
+					}
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
 					});
@@ -174,7 +177,7 @@ export class WebsocketInstance {
 	getPath(path: string) {
 		const data = {
 			action: 'get',
-			parameter: path,
+			parameter: path
 		};
 		this.sendMessage(data);
 	}
@@ -182,7 +185,7 @@ export class WebsocketInstance {
 	getParam(paramId: string) {
 		const data = {
 			action: 'get',
-			parameter: '/parameter/by-id/' + paramId,
+			parameter: '/parameter/by-id/' + paramId
 		};
 		this.sendMessage(data);
 	}
@@ -191,7 +194,7 @@ export class WebsocketInstance {
 		const data = {
 			action: 'set',
 			parameter: path,
-			value: value,
+			value: value
 		};
 		return this.sendMessage(data);
 	}
@@ -200,7 +203,7 @@ export class WebsocketInstance {
 		const data = {
 			action: 'set',
 			parameter: '/parameter/by-id/' + paramId,
-			value: value,
+			value: value
 		};
 		return this.sendMessage(data);
 	}
@@ -208,7 +211,7 @@ export class WebsocketInstance {
 	resetPath(path: string) {
 		const data = {
 			action: 'reset',
-			parameter: path,
+			parameter: path
 		};
 		this.sendMessage(data);
 	}
@@ -216,7 +219,7 @@ export class WebsocketInstance {
 	resetParam(paramId: string) {
 		const data = {
 			action: 'reset',
-			parameter: '/parameter/by-id/' + paramId,
+			parameter: '/parameter/by-id/' + paramId
 		};
 		this.sendMessage(data);
 	}
@@ -242,18 +245,18 @@ export class WebsocketInstance {
 	subscribePath(path: string) {
 		const data = {
 			action: 'subscribe',
-			parameter: path,
+			parameter: path
 		};
 		this.sendMessage(data);
 	}
 
 	subscribeParam(paramId: number, subPath?: string) {
 		if (!paramId) {
-			throw(new Error('paramId should not be undefined').stack)
+			throw (new Error('paramId should not be undefined').stack);
 		}
 		const data = {
 			action: 'subscribe',
-			parameter: '/parameter/by-id/' + paramId,
+			parameter: '/parameter/by-id/' + paramId
 		};
 		if (subPath) {
 			data.parameter += subPath;
@@ -264,7 +267,7 @@ export class WebsocketInstance {
 	unsubscribePath(path: string) {
 		const data = {
 			action: 'unsubscribe',
-			parameter: path,
+			parameter: path
 		};
 		this.sendMessage(data);
 	}
@@ -272,7 +275,7 @@ export class WebsocketInstance {
 	unsubscribeParam(paramId: number) {
 		const data = {
 			action: 'unsubscribe',
-			parameter: '/parameter/by-id/' + paramId,
+			parameter: '/parameter/by-id/' + paramId
 		};
 		this.sendMessage(data);
 	}
