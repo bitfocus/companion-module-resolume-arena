@@ -1,5 +1,6 @@
 import {ClipId} from '../../domain/clip/clip-id';
 import {ArenaFetchFunction} from '../rest';
+import {ClipStatus} from './clip-options/ClipStatus';
 
 export class ArenaClipsApi {
 	private arenaFetch: ArenaFetchFunction;
@@ -8,9 +9,9 @@ export class ArenaClipsApi {
 		this.arenaFetch = fetchFn;
 	}
 
-	async getStatus(clipId: ClipId): Promise<{}> {
+	async getStatus(clipId: ClipId): Promise<ClipStatus> {
 		var url = `composition/layers/${clipId.getLayer()}/clips/${clipId.getColumn()}`;
-		return await this.arenaFetch('get', url, 'json');
+		return (await this.arenaFetch('get', url, 'json')) as ClipStatus;
 	}
 
 	async getThumb(clipId: ClipId): Promise<string> {

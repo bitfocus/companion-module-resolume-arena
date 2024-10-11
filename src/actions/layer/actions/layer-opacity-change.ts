@@ -3,7 +3,6 @@ import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
 import {getLayerOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
-import {parameterStates} from '../../../state';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import {LayerUtils} from '../../../domain/layers/layer-util';
 
@@ -49,28 +48,31 @@ export function layerOpacityChange(
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-				const layer = options.layer;
+				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-				const currentValue: number = +parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;
+				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).video?.opacity?.value;
 
-				let value: number | undefined;
-				switch (options.action) {
-					case 'set':
-						value = inputValue;
-						break;
-					case 'add':
-						value = currentValue + inputValue;
-						break;
-					case 'subtract':
-						value = currentValue - inputValue;
-						break;
-					default:
-						break;
-				}
-				if (value != undefined) {
-					const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
-					let paramId = layer?.video!.opacity!.id! + '';
-					websocketApi()?.setParam(paramId, value);
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						const layerObject = theLayerUtils.getLayerFromCompositionState(layer);
+						let paramId = layerObject?.video!.opacity!.id! + '';
+						websocketApi()?.subscribeParam(+paramId);
+						websocketApi()?.setParam(paramId, value);
+					}
 				}
 			}
 		}

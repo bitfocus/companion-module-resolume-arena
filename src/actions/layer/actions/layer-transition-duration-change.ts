@@ -3,7 +3,6 @@ import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
 import {getLayerOption} from '../../../defaults';
 import {WebsocketInstance} from '../../../websocket';
-import {parameterStates} from '../../../state';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import {LayerUtils} from '../../../domain/layers/layer-util';
 
@@ -49,28 +48,32 @@ export function layerTransitionDurationChange(
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-				const layer = theLayerUtils.getLayerFromCompositionState(options.layer);
-				const layerTransitionDurationId = layer?.transition?.duration?.id + '';
+				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+				const layerFromState = theLayerUtils.getLayerFromCompositionState(layer);
+				const layerTransitionDurationId = layerFromState?.transition?.duration?.id + '';
 
 				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
-				const currentValue: number = parameterStates.get()['/composition/layers/' + options.layer + '/transition/duration']?.value;
+				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).transition?.duration?.value;
 
-				let value: number | undefined;
-				switch (options.action) {
-					case 'set':
-						value = inputValue;
-						break;
-					case 'add':
-						value = currentValue + inputValue;
-						break;
-					case 'subtract':
-						value = currentValue - inputValue;
-						break;
-					default:
-						break;
-				}
-				if (value != undefined) {
-					websocketApi()?.setParam(layerTransitionDurationId, value);
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						websocketApi()?.subscribeParam(+layerTransitionDurationId);
+						websocketApi()?.setParam(layerTransitionDurationId, value);
+					}
 				}
 			}
 		}

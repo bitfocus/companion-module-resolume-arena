@@ -3,9 +3,9 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 import ArenaOscApi from '../../../arena-api/osc';
 import ArenaRestApi from '../../../arena-api/rest';
 import {getClipOption, getSpeedValue} from '../../../defaults';
-import {parameterStates} from '../../../state';
 import {WebsocketInstance} from '../../../websocket';
 import {ClipUtils} from '../../../domain/clip/clip-utils';
+import {ClipId} from '../../../domain/clip/clip-id';
 
 export function clipSpeedChange(
 	restApi: () => ArenaRestApi | null,
@@ -55,24 +55,26 @@ export function clipSpeedChange(
 			if (theApi && theClipUtils) {
 				const clip = theClipUtils.getClipFromCompositionState(layer, column);
 				const clipSpeedId = clip?.transport?.controls?.speed?.id + '';
-				const currentValue: number = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed']?.value;
-
-				let value: number | undefined;
-				switch (options.action) {
-					case 'set':
-						value = inputValue;
-						break;
-					case 'add':
-						value = currentValue + inputValue;
-						break;
-					case 'subtract':
-						value = currentValue - inputValue;
-						break;
-					default:
-						break;
-				}
-				if (value != undefined) {
-					websocketApi()?.setParam(clipSpeedId, value);
+				const currentValue: number | undefined = (await theApi!.Clips.getStatus(new ClipId(layer, column))).transport?.controls?.speed?.value;
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						websocketApi()?.subscribeParam(+clipSpeedId);
+						websocketApi()?.setParam(clipSpeedId, value);
+					}
 				}
 			} else {
 				switch (options.action) {
@@ -80,7 +82,7 @@ export function clipSpeedChange(
 						theOscApi?.customOsc(
 							'/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed',
 							'f',
-							getSpeedValue(inputValue)+'',
+							getSpeedValue(inputValue) + '',
 							'n'
 						);
 						break;

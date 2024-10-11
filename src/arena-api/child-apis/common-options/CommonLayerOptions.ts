@@ -22,6 +22,12 @@ export interface CommonLayerOptions {
 		pan?: CommonOptionsPropertyRange;
 		effects?: LayerOptionsAudioEffect[];
 	};
+	video?: {
+		opacity?: CommonOptionsPropertyRange;
+	};
+	transition?: {
+		duration?: CommonOptionsPropertyRange;
+	};
 }
 
 export interface CommonLayerWriteOptions {

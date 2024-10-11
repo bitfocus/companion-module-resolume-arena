@@ -2,6 +2,7 @@ import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
+import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
 
 export class ColumnUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -67,8 +68,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// SELECTED
 	/////////////////////////////////////////////////
 
-	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
-		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
+		const column = +await context.parseVariablesInString(feedback.options.column as string);
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/connect']?.value;
 		}
@@ -79,8 +80,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// NAME
 	/////////////////////////////////////////////////
 
-	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
-		const column = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.column as string);
+	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const column = +await context.parseVariablesInString(feedback.options.column as string);
 		if (column !== undefined) {
 			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string;
 			return {text: text.replace('#', column.toString())};
@@ -97,7 +98,7 @@ export class ColumnUtils implements MessageSubscriber {
 			return {
 				text: parameterStates.get()['/composition/columns/' + this.selectedColumn + '/name']?.value.replace('#', this.selectedColumn.toString()),
 				bgcolor: combineRgb(0, 255, 0),
-				color: combineRgb(0, 0, 0),
+				color: combineRgb(0, 0, 0)
 			};
 		}
 		return {};
@@ -112,7 +113,11 @@ export class ColumnUtils implements MessageSubscriber {
 		if (this.selectedColumn !== undefined && this.lastColumn != undefined) {
 			let column = this.calculateNextColumn(add);
 			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string;
-			return {text: text.replace('#', column.toString())};
+			if (text) {
+				return {text: text.replace('#', column.toString())};
+			} else {
+				return {};
+			}
 		}
 		return {};
 	}
@@ -136,8 +141,11 @@ export class ColumnUtils implements MessageSubscriber {
 		if (this.selectedColumn !== undefined && this.lastColumn !== undefined) {
 			let column = this.calculatePreviousColumn(subtract);
 			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string;
-			return {text: text.replace('#', column.toString())};
-		}
+			if (text) {
+				return {text: text.replace('#', column.toString())};
+			} else {
+				return {};
+			}		}
 		return {};
 	}
 
