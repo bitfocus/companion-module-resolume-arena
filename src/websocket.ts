@@ -251,8 +251,9 @@ export class WebsocketInstance {
 	}
 
 	subscribeParam(paramId: number, subPath?: string) {
-		if (!paramId) {
-			throw (new Error('paramId should not be undefined').stack);
+		if (paramId) {
+			this.resolumeArenaInstance.log('warn', 'paramId should not be undefined');
+			return;
 		}
 		const data = {
 			action: 'subscribe',

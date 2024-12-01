@@ -83,8 +83,8 @@ export class ColumnUtils implements MessageSubscriber {
 	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const column = +await context.parseVariablesInString(feedback.options.column as string);
 		if (column !== undefined) {
-			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string;
-			return {text: text.replace('#', column.toString())};
+			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string | undefined;
+			return {text: text?.replace('#', column.toString())};
 		}
 		return {};
 	}

@@ -60,9 +60,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/audio\/volume/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupVolume');
 			}
-			// TODO: #46, resolume feature request if (!!data.path.match(/\/composition\/groups\/\d+\/speed/)) {
-			// 	this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
-			// }
+			if (!!data.path.match(/\/composition\/groups\/\d+\/speed/)) {
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
+			}
 			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
 				if (data.value) {
 					const matches = data.path.match(/\/composition\/groups\/(\d+)\/columns\/(\d+)\/connect/);
