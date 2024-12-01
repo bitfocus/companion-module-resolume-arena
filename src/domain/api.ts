@@ -345,6 +345,32 @@ export interface ClipThumbnail {
     isDefault?: boolean;
 }
 /**
+ * 
+ * @export
+ * @interface ClipidThumbnailBody
+ */
+export interface ClipidThumbnailBody {
+    /**
+     * The image data to set as thumbnail
+     * @type {Blob}
+     * @memberof ClipidThumbnailBody
+     */
+    file?: Blob;
+}
+/**
+ * 
+ * @export
+ * @interface ClipindexThumbnailBody
+ */
+export interface ClipindexThumbnailBody {
+    /**
+     * The image data to set as thumbnail
+     * @type {Blob}
+     * @memberof ClipindexThumbnailBody
+     */
+    file?: Blob;
+}
+/**
  * A parameter containing color data
  * @export
  * @interface ColorParameter
@@ -520,7 +546,6 @@ export interface Composition {
      * @memberof Composition
      */
     tempoController?: TempoController;
-    tempocontroller?: Tempocontroller;
 }
 /**
  * Cross fade between two clips
@@ -584,6 +609,12 @@ export interface Deck {
      */
     id?: number;
     /**
+     * Is this deck closed
+     * @type {boolean}
+     * @memberof Deck
+     */
+    closed?: boolean;
+    /**
      * 
      * @type {StringParameter}
      * @memberof Deck
@@ -607,6 +638,63 @@ export interface Deck {
      * @memberof Deck
      */
     scrollx?: IntegerParameter;
+}
+/**
+ * An effect to be used on a clip. layer (group) or the composition
+ * @export
+ * @interface Effect
+ */
+export interface Effect {
+    /**
+     * The unique identifier for the effect
+     * @type {string}
+     * @memberof Effect
+     */
+    idstring?: string;
+    /**
+     * The descriptive name of the source
+     * @type {string}
+     * @memberof Effect
+     */
+    name?: string;
+    /**
+     * All the presets for this source
+     * @type {Array<EffectPresets>}
+     * @memberof Effect
+     */
+    presets?: Array<EffectPresets>;
+}
+/**
+ * 
+ * @export
+ * @interface EffectPresets
+ */
+export interface EffectPresets {
+    /**
+     * The unique identifier for the preset
+     * @type {number}
+     * @memberof EffectPresets
+     */
+    id?: number;
+    /**
+     * The name of the preset
+     * @type {string}
+     * @memberof EffectPresets
+     */
+    name?: string;
+}
+/**
+ * The available effects for clips, layer (group)s and the composition
+ * @export
+ * @interface Effects
+ */
+export interface Effects {
+    /**
+     * The available video effects
+     * @type {Array<Effect>}
+     * @memberof Effects
+     */
+    video?: Array<Effect>;
 }
 /**
  * A parameter that handles events, but does not contain a value
@@ -855,6 +943,12 @@ export interface LayerGroup {
     master?: RangeParameter;
     /**
      * 
+     * @type {RangeParameter}
+     * @memberof LayerGroup
+     */
+    speed?: RangeParameter;
+    /**
+     * 
      * @type {BooleanParameter}
      * @memberof LayerGroup
      */
@@ -1065,6 +1159,18 @@ export interface RangeParameter {
      */
     max?: number;
     /**
+     * The lowest value we clamped the range to, inclusive
+     * @type {number}
+     * @memberof RangeParameter
+     */
+    _in?: number;
+    /**
+     * The highest value we clamped the range to, inclusive
+     * @type {number}
+     * @memberof RangeParameter
+     */
+    out?: number;
+    /**
      * The value for the parameter
      * @type {number}
      * @memberof RangeParameter
@@ -1091,6 +1197,19 @@ export interface ResetParameter {
     resetanimation?: boolean;
 }
 /**
+ * 
+ * @export
+ * @interface SelectedThumbnailBody
+ */
+export interface SelectedThumbnailBody {
+    /**
+     * The image data to set as thumbnail
+     * @type {Blob}
+     * @memberof SelectedThumbnailBody
+     */
+    file?: Blob;
+}
+/**
  * A source to be used in a clip
  * @export
  * @interface Source
@@ -1103,17 +1222,36 @@ export interface Source {
      */
     idstring?: string;
     /**
-     * The desriptive name of the source
+     * The descriptive name of the source
      * @type {string}
      * @memberof Source
      */
     name?: string;
     /**
      * All the presets for this source
-     * @type {Array<string>}
+     * @type {Array<SourcePresets>}
      * @memberof Source
      */
-    presets?: Array<string>;
+    presets?: Array<SourcePresets>;
+}
+/**
+ * 
+ * @export
+ * @interface SourcePresets
+ */
+export interface SourcePresets {
+    /**
+     * The unique identifier for the preset
+     * @type {number}
+     * @memberof SourcePresets
+     */
+    id?: number;
+    /**
+     * The name of the preset
+     * @type {string}
+     * @memberof SourcePresets
+     */
+    name?: string;
 }
 /**
  * The available sources for clips
@@ -1189,44 +1327,6 @@ export interface TempoController {
      * @memberof TempoController
      */
     tempoTap?: EventParameter;
-    tempo_tap?: EventParameter;
-    /**
-     * 
-     * @type {EventParameter}
-     * @memberof TempoController
-     */
-    resync?: EventParameter;
-}
-/**
- * The controller for various tempo-related aspects of the composition
- * @export
- * @interface Tempocontroller
- */
-export interface Tempocontroller {
-    /**
-     * 
-     * @type {RangeParameter}
-     * @memberof TempoController
-     */
-    tempo?: RangeParameter;
-    /**
-     * 
-     * @type {EventParameter}
-     * @memberof TempoController
-     */
-    tempo_pull?: EventParameter;
-    /**
-     * 
-     * @type {EventParameter}
-     * @memberof TempoController
-     */
-    tempo_push?: EventParameter;
-    /**
-     * 
-     * @type {EventParameter}
-     * @memberof TempoController
-     */
-    tempo_tap?: EventParameter;
     /**
      * 
      * @type {EventParameter}
@@ -1408,11 +1508,17 @@ export interface VideoEffect {
      */
     id?: number;
     /**
-     * The name of the effect
+     * The unique name of the key
      * @type {string}
      * @memberof VideoEffect
      */
     name?: string;
+    /**
+     * The name to show the user
+     * @type {string}
+     * @memberof VideoEffect
+     */
+    displayName?: string;
     /**
      * 
      * @type {BooleanParameter & any}
@@ -1494,17 +1600,17 @@ export interface VideoFileInfo {
  */
 export interface VideoTrack {
     /**
-     * The number of pixels the clip is wide
-     * @type {number}
+     * 
+     * @type {RangeParameter}
      * @memberof VideoTrack
      */
-    width?: number;
+    width?: RangeParameter;
     /**
-     * The number of pixels the clip is high
-     * @type {number}
+     * 
+     * @type {RangeParameter}
      * @memberof VideoTrack
      */
-    height?: number;
+    height?: RangeParameter;
     /**
      * 
      * @type {RangeParameter}

@@ -16,7 +16,7 @@ export function tempoResync(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				let tapTempoId = compositionState.get()!.tempocontroller?.resync?.id!
+				let tapTempoId = compositionState.get()!.tempoController?.resync?.id!
 				thewebsocketApi?.triggerParam(tapTempoId+'', true)
 				thewebsocketApi?.triggerParam(tapTempoId+'', false)
 			} else {

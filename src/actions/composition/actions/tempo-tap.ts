@@ -16,7 +16,7 @@ export function tempoTap(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				let tapTempoId = compositionState.get()!.tempocontroller?.tempo_tap?.id!
+				let tapTempoId = compositionState.get()!.tempoController?.tempoTap?.id!
 				thewebsocketApi?.triggerParam(tapTempoId+'', true)
 				thewebsocketApi?.triggerParam(tapTempoId+'', false)
 			} else {

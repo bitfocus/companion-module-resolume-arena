@@ -32,7 +32,7 @@ export function drawThumb(thumb: string): Uint8Array {
 		inputDecoded.height,
 		PixelFormat.Rgba
 	)
-		.scale(inputDecoded.width, inputDecoded.width / video.width! * video.height!, ResizeMode.Fill)
+		.scale(inputDecoded.width, inputDecoded.width / video.width!.value! * video.height!.value!, ResizeMode.Fill)
 		.scale(64, 64, ResizeMode.Fill)
 		.toBufferSync(PixelFormat.Rgb);
 

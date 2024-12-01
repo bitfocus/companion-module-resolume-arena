@@ -17,8 +17,8 @@ export class CompositionUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempocontroller?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempocontroller?.tempo?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.audio?.volume?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.audio?.volume?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.video?.opacity?.id!);
