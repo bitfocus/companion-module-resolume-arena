@@ -149,8 +149,12 @@ export class ClipUtils implements MessageSubscriber {
 	async getThumbs(clipId: ClipId, feedbackId: string) {
 		let thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
 		if (thumb) {
-			this.clipThumbs.set(clipId.getIdString(), drawThumb(thumb));
-			this.resolumeArenaInstance.checkFeedbacksById(feedbackId);
+			try {
+				this.clipThumbs.set(clipId.getIdString(), drawThumb(thumb));
+				this.resolumeArenaInstance.checkFeedbacksById(feedbackId);
+			} catch (e) {
+				this.resolumeArenaInstance.log('warn', 'could not draw thumb: ' + e);
+			}
 		} else {
 			this.resolumeArenaInstance.log('warn', 'thumb is not');
 			return;
