@@ -437,6 +437,12 @@ export interface Column {
      * @memberof Column
      */
     connected?: ChoiceParameter;
+    /**
+     * Get whether the column is currently selected
+     * @type {ChoiceParameter}
+     * @memberof Column
+     */
+    selected?: ChoiceParameter;
 }
 /**
  * The complete composition, containing all the decks, layers, clips and their effects
