@@ -3,7 +3,6 @@ import WebSocket from 'ws';
 import {ResolumeArenaConfig} from './config-fields.js';
 import {ResolumeArenaModuleInstance} from './index.js';
 import {compositionState, parameterStates} from './state.js';
-import {stack} from 'qunit';
 
 export interface MessageSubscriber {
 	messageUpdates(data: {path: string; value: string | boolean | number}, isComposition: boolean): void;
@@ -252,8 +251,8 @@ export class WebsocketInstance {
 	}
 
 	subscribeParam(paramId: number, subPath?: string) {
-		if (paramId === undefined) {
-			this.resolumeArenaInstance.log('warn', 'paramId should not be undefined' + stack());
+		if (!paramId) {
+			this.resolumeArenaInstance.log('warn', 'paramId should not be undefined');
 			return;
 		}
 		const data = {
