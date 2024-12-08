@@ -5,7 +5,7 @@ import {ColumnUtils} from '../../../domain/columns/column-util';
 import {WebsocketInstance} from '../../../websocket';
 import {ResolumeArenaModuleInstance} from '../../../index';
 
-export function triggerColumn(
+export function selectColumn(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
@@ -13,7 +13,7 @@ export function triggerColumn(
 	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
-		name: 'Trigger Column',
+		name: 'Select Column',
 		options: [
 			{
 				id: 'action',
@@ -55,17 +55,17 @@ export function triggerColumn(
 							column = value;
 							break;
 						case 'add':
-							column = theColumnUtils.calculateNextColumn(value);
+							column = theColumnUtils.calculateSelectedNextColumn(value);
 							break;
 						case 'subtract':
-							column = theColumnUtils.calculatePreviousColumn(value);
+							column = theColumnUtils.calculateSelectedPreviousColumn(value);
 							break;
 						default:
 							break;
 					}
 					if (column != undefined) {
-						websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', false);
-						websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', true);
+						websocketApi()?.triggerPath('/composition/columns/' + column + '/select', false);
+						websocketApi()?.triggerPath('/composition/columns/' + column + '/select', true);
 					}
 				}
 			}

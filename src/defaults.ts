@@ -92,6 +92,13 @@ export function getDefaultStyleGreen() {
 	};
 }
 
+export function getDefaultStyleCyan() {
+	return {
+		color: combineRgb(0, 0, 0),
+		bgcolor: combineRgb(0, 255, 255)
+	};
+}
+
 export function getDefaultStyleBlue() {
 	return {
 		color: combineRgb(0, 0, 0),

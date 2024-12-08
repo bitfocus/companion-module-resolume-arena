@@ -1,13 +1,13 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerNextColumnPreset(): CompanionButtonPresetDefinition {return {
+export function connectNextColumnPreset(): CompanionButtonPresetDefinition {return {
 	type: 'button',
 	category: 'Column',
-	name: 'Trigger Next Column',
+	name: 'Connect Next Column',
 	style: {
 		size: '14',
-		text: 'Trigger Next Column',
+		text: 'Connect Next Column',
 		color: combineRgb(255, 255, 255),
 		bgcolor: combineRgb(0, 0, 0),
 	},
@@ -15,7 +15,7 @@ export function triggerNextColumnPreset(): CompanionButtonPresetDefinition {retu
 		{
 			down: [
 				{
-					actionId: 'triggerColumn',
+					actionId: 'connectColumn',
 					options: {
 						action: 'add',
 						value: 1,
@@ -27,7 +27,7 @@ export function triggerNextColumnPreset(): CompanionButtonPresetDefinition {retu
 	],
 	feedbacks: [
 		{
-			feedbackId: 'nextColumnName',
+			feedbackId: 'nextConnectedColumnName',
 			options: {
 				next: 1,
 			},
