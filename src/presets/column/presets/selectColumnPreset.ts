@@ -1,14 +1,14 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultColumnOptions, getDefaultStyleGreen} from '../../../defaults';
+import {getDefaultColumnOptions, getDefaultStyleCyan, getDefaultStyleGreen} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerColumnPreset(): CompanionButtonPresetDefinition {return {
+export function selectColumnPreset(): CompanionButtonPresetDefinition {return {
 	type: 'button',
 	category: 'Column',
-	name: 'Trigger Column By Index',
+	name: 'Select Column By Index',
 	style: {
 		size: '14',
-		text: 'Trigger Column',
+		text: 'Select Column',
 		color: combineRgb(255, 255, 255),
 		bgcolor: combineRgb(0, 0, 0),
 	},
@@ -16,7 +16,7 @@ export function triggerColumnPreset(): CompanionButtonPresetDefinition {return {
 		{
 			down: [
 				{
-					actionId: 'triggerColumn',
+					actionId: 'selectColumn',
 					options: {action: 'set', value: 1},
 				},
 			],
@@ -30,6 +30,11 @@ export function triggerColumnPreset(): CompanionButtonPresetDefinition {return {
 		},
 		{
 			feedbackId: 'columnSelected',
+			options: {...getDefaultColumnOptions()},
+			style: getDefaultStyleCyan(),
+		},
+		{
+			feedbackId: 'columnConnected',
 			options: {...getDefaultColumnOptions()},
 			style: getDefaultStyleGreen(),
 		},

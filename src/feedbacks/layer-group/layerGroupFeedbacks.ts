@@ -10,9 +10,13 @@ import {layerGroupVolume} from './feedbacks/layerGroupVolume';
 import {layerGroupColumnsSelected} from './feedbacks/layerGroupColumnsSelected';
 import {layerGroupColumnName} from './feedbacks/layerGroupColumnName';
 import {selectedLayerGroupColumnName} from './feedbacks/selectedLayerGroupColumnName';
-import {nextLayerGroupColumnName} from './feedbacks/nextLayerGroupColumnName';
-import {previousLayerGroupColumnName} from './feedbacks/previousLayerGroupColumnName';
+import {nextSelectedLayerGroupColumnName} from './feedbacks/nextSelectedLayerGroupColumnName';
+import {previousSelectedLayerGroupColumnName} from './feedbacks/previousSelectedLayerGroupColumnName';
 import {layerGroupSpeed} from './feedbacks/layerGroupSpeed';
+import {layerGroupColumnsConnected} from './feedbacks/layerGroupColumnsConnected';
+import {nextConnectedLayerGroupColumnName} from './feedbacks/nextConnectedLayerGroupColumnName';
+import {previousConnectedLayerGroupColumnName} from './feedbacks/previousConnectedLayerGroupColumnName';
+import {connectedLayerGroupColumnName} from './feedbacks/connectedLayerGroupColumnName';
 
 export function getLayerGroupApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {
@@ -25,9 +29,13 @@ export function getLayerGroupApiFeedbacks(resolumeArenaInstance: ResolumeArenaMo
 		layerGroupVolume: layerGroupVolume(resolumeArenaInstance),
 		layerGroupSpeed: layerGroupSpeed(resolumeArenaInstance),
 		layerGroupColumnsSelected: layerGroupColumnsSelected(resolumeArenaInstance),
+		layerGroupColumnsConnected: layerGroupColumnsConnected(resolumeArenaInstance),
 		layerGroupColumnName: layerGroupColumnName(resolumeArenaInstance),
 		selectedLayerGroupColumnName: selectedLayerGroupColumnName(resolumeArenaInstance),
-		nextLayerGroupColumnName: nextLayerGroupColumnName(resolumeArenaInstance),
-		previousLayerGroupColumnName: previousLayerGroupColumnName(resolumeArenaInstance),
+		connectedLayerGroupColumnName: connectedLayerGroupColumnName(resolumeArenaInstance),
+		nextSelectedLayerGroupColumnName: nextSelectedLayerGroupColumnName(resolumeArenaInstance),
+		nextConnectedLayerGroupColumnName: nextConnectedLayerGroupColumnName(resolumeArenaInstance),
+		previousSelectedLayerGroupColumnName: previousSelectedLayerGroupColumnName(resolumeArenaInstance),
+		previousConnectedLayerGroupColumnName: previousConnectedLayerGroupColumnName(resolumeArenaInstance),
 	};
 }
