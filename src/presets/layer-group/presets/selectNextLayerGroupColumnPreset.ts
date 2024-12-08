@@ -1,13 +1,13 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerNextLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
+export function selectNextLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
 	category,
-	name: 'Trigger Next Layer Group Column',
+	name: 'Select Next Layer Group Column',
 	style: {
 		size: '14',
-		text: 'Trigger Next Layer Group Column',
+		text: 'Select Next Layer Group Column',
 		color: combineRgb(255, 255, 255),
 		bgcolor: combineRgb(0, 0, 0)
 	},
@@ -15,7 +15,7 @@ export function triggerNextLayerGroupColumnPreset(category: string): CompanionBu
 		{
 			down: [
 				{
-					actionId: 'triggerLayerGroupColumn',
+					actionId: 'selectLayerGroupColumn',
 					options: {
 						layerGroup: '1',
 						action: 'add',
@@ -28,7 +28,7 @@ export function triggerNextLayerGroupColumnPreset(category: string): CompanionBu
 	],
 	feedbacks: [
 		{
-			feedbackId: 'nextLayerGroupColumnName',
+			feedbackId: 'nextSelectedLayerGroupColumnName',
 			options: {
 				layerGroup: '1',
 				next: 1

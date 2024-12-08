@@ -1,13 +1,13 @@
 import {combineRgb} from '@companion-module/base';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerPreviousLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
+export function connectNextLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
 	category,
-	name: 'Trigger Previous Layer Group Column',
+	name: 'Connect Next Layer Group Column',
 	style: {
 		size: '14',
-		text: 'Trigger Previous Layer Group Column',
+		text: 'Connect Next Layer Group Column',
 		color: combineRgb(255, 255, 255),
 		bgcolor: combineRgb(0, 0, 0)
 	},
@@ -15,10 +15,10 @@ export function triggerPreviousLayerGroupColumnPreset(category: string): Compani
 		{
 			down: [
 				{
-					actionId: 'triggerLayerGroupColumn',
+					actionId: 'connectLayerGroupColumn',
 					options: {
 						layerGroup: '1',
-						action: 'subtract',
+						action: 'add',
 						value: 1
 					}
 				}
@@ -28,10 +28,10 @@ export function triggerPreviousLayerGroupColumnPreset(category: string): Compani
 	],
 	feedbacks: [
 		{
-			feedbackId: 'previousLayerGroupColumnName',
+			feedbackId: 'nextConnectedLayerGroupColumnName',
 			options: {
 				layerGroup: '1',
-				previous: 1
+				next: 1
 			}
 		}
 	]

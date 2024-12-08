@@ -21,6 +21,14 @@ export function upgrade_v3_10_0(
 				feedback.feedbackId = 'previousSelectedColumnName'
 					updateFeedbacks.push(feedback);
 				break;
+			case 'nextLayerGroupColumnName':
+				feedback.feedbackId = 'nextSelectedLayerGroupColumnName'
+					updateFeedbacks.push(feedback);
+				break;
+			case 'previousLayerGroupColumnName':
+				feedback.feedbackId = 'previousSelectedLayerGroupColumnName'
+					updateFeedbacks.push(feedback);
+				break;
 		}
 	}
 
@@ -31,6 +39,10 @@ export function upgrade_v3_10_0(
 		switch (action.actionId) {
 			case 'triggerColumn':
 				action.actionId = 'connectColumn'
+				updateActions.push(action);
+				break;
+			case 'triggerLayerGroupColumn':
+				action.actionId = 'connectLayerGroupColumn'
 				updateActions.push(action);
 				break;
 		}

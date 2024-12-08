@@ -21,9 +21,10 @@ export class LayerGroupUtils implements MessageSubscriber {
 	private layerGroupVolumeSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerGroupOpacitySubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
-	private layerGroupSpeedSubscriptions:  Map<number, Set<string>> = new Map<number, Set<string>>();
+	private layerGroupSpeedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private selectedLayerGroupColumns: Map<number, number> = new Map<number, number>();
+	private connectedLayerGroupColumns: Map<number, number> = new Map<number, number>();
 	private lastLayerGroupColumns: Map<number, number> = new Map<number, number>();
 
 	private layerGroupVolumeIds: Set<number> = new Set<number>();
@@ -63,16 +64,35 @@ export class LayerGroupUtils implements MessageSubscriber {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/speed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
 			}
-			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
+			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/select/)) {
 				if (data.value) {
-					const matches = data.path.match(/\/composition\/groups\/(\d+)\/columns\/(\d+)\/connect/);
+					const matches = data.path.match(/\/composition\/groups\/(\d+)\/columns\/(\d+)\/select/);
 					this.selectedLayerGroupColumns.set(+matches[1], +matches[2]);
 				}
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsSelected');
 				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnName');
 				this.resolumeArenaInstance.checkFeedbacks('selectedLayerGroupColumnName');
-				this.resolumeArenaInstance.checkFeedbacks('nextLayerGroupColumnName');
-				this.resolumeArenaInstance.checkFeedbacks('previousLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('nextSelectedLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('previousSelectedLayerGroupColumnName');
+			}
+			if (!!data.path.match(/\/composition\/groups\/\d+\/columns\/\d+\/connect/)) {
+				if (data.value) {
+					const matches = data.path.match(/\/composition\/groups\/(\d+)\/columns\/(\d+)\/connect/);
+					const layerGroup = +matches[1] as number;
+					const column = +matches[2] as number;
+					const oldValue = this.connectedLayerGroupColumns.get(layerGroup);
+					let connectedState = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value;
+					if (connectedState === 'Connected') {
+						this.connectedLayerGroupColumns.set(+layerGroup, +column);
+					}else if (connectedState === 'Disconnected' && oldValue===column){
+						this.connectedLayerGroupColumns.set(layerGroup, this.selectedLayerGroupColumns.get(layerGroup)!);
+					}
+				}
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnsConnected');
+				this.resolumeArenaInstance.checkFeedbacks('layerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('connectedLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('nextConnectedLayerGroupColumnName');
+				this.resolumeArenaInstance.checkFeedbacks('previousConnectedLayerGroupColumnName');
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
 				this.updateActiveLayerGroups();
@@ -85,7 +105,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	public getLayerGroupFromCompositionState(layerGroup: number): LayerGroup | undefined {
-		return this.getLayerGroupsFromCompositionState()?.at(layerGroup-1);
+		return this.getLayerGroupsFromCompositionState()?.at(layerGroup - 1);
 	}
 
 	initConnectedFromComposition() {
@@ -101,11 +121,18 @@ export class LayerGroupUtils implements MessageSubscriber {
 						this.resolumeArenaInstance
 							.getWebsocketApi()
 							?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
+						this.resolumeArenaInstance
+							.getWebsocketApi()
+							?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/select');
 						this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/name');
 
 						this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/connect');
+						this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/select');
 						this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + layerGroup + '/columns/' + column + '/name');
-						if (columnObject.connected?.value) {
+						if (columnObject.selected?.value) {
+							this.selectedLayerGroupColumns.set(layerGroup, column);
+						}
+						if (columnObject.connected?.value === 'Connected') {
 							this.selectedLayerGroupColumns.set(layerGroup, column);
 						}
 						this.lastLayerGroupColumns.set(layerGroup, column);
@@ -300,19 +327,6 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	/////////////////////////////////////////////////
-	// SELECTED COLUMN
-	/////////////////////////////////////////////////
-
-	async layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
-		if (LayerGroupColumnId.isValid(layerGroup, column)) {
-			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value;
-		}
-		return false;
-	}
-
-	/////////////////////////////////////////////////
 	// COLUMN NAME
 	/////////////////////////////////////////////////
 
@@ -320,9 +334,27 @@ export class LayerGroupUtils implements MessageSubscriber {
 		const column = +await context.parseVariablesInString(feedback.options.column as string);
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (column !== undefined) {
-			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
+			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
+			if (text) {
+				return {text: text.replace('#', column.toString())};
+			} else {
+				return {};
+			}
 		}
 		return {};
+	}
+
+	/////////////////////////////////////////////////
+	// SELECTED COLUMN
+	/////////////////////////////////////////////////
+
+	async layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		if (LayerGroupColumnId.isValid(layerGroup, column)) {
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/select']?.value;
+		}
+		return false;
 	}
 
 	/////////////////////////////////////////////////
@@ -332,31 +364,38 @@ export class LayerGroupUtils implements MessageSubscriber {
 	async layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
-			return {
-				text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
-					?.value,
-				bgcolor: combineRgb(0, 255, 0),
-				color: combineRgb(0, 0, 0)
-			};
+			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
+				?.value.replace('#', this.selectedLayerGroupColumns.get(layerGroup)?.toString());
+			if (parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/select']?.value) {
+				return {
+					text: text,
+					bgcolor: combineRgb(0, 255, 255),
+					color: combineRgb(0, 0, 0)
+				};
+			} else {
+				return {
+					text: text
+				};
+			}
 		}
 		return {};
 	}
 
 	/////////////////////////////////////////////////
-	// NEXT COLUMN NAME
+	// NEXT SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnNextNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnNextSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const add = feedback.options.next as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculateNextLayerGroupColumn(layerGroup, add);
+			let column = this.calculateNextSelectedLayerGroupColumn(layerGroup, add);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
 		return {};
 	}
 
-	calculateNextLayerGroupColumn(layerGroup: number, add: number): number {
+	calculateNextSelectedLayerGroupColumn(layerGroup: number, add: number): number {
 		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
 		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
 		if (column + add > lastColumn) {
@@ -368,20 +407,20 @@ export class LayerGroupUtils implements MessageSubscriber {
 	}
 
 	/////////////////////////////////////////////////
-	// PREVIOUS COLUMN NAME
+	// PREVIOUS SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnPreviousNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnPreviousSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const subtract = feedback.options.previous as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculatePreviousLayerGroupColumn(layerGroup, subtract);
+			let column = this.calculatePreviousSelectedLayerGroupColumn(layerGroup, subtract);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
 		}
 		return {};
 	}
 
-	calculatePreviousLayerGroupColumn(layerGroup: number, subtract: number): number {
+	calculatePreviousSelectedLayerGroupColumn(layerGroup: number, subtract: number): number {
 		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
 		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
 		if (column - subtract < 1) {
@@ -391,6 +430,104 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 		return column;
 	}
+
+	/////////////////////////////////////////////////
+	// CONNECTED COLUMN
+	/////////////////////////////////////////////////
+
+	async layerGroupColumnsConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		if (LayerGroupColumnId.isValid(layerGroup, column)) {
+			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value === 'Connected';
+		}
+		return false;
+	}
+
+	/////////////////////////////////////////////////
+	// CONNECTED COLUMN NAME
+	/////////////////////////////////////////////////
+
+	async layerGroupColumnConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined) {
+			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.connectedLayerGroupColumns.get(layerGroup) + '/name']
+				?.value.replace('#', this.connectedLayerGroupColumns.get(layerGroup)?.toString());
+			if (parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.connectedLayerGroupColumns.get(layerGroup) + '/connect']?.value === 'Connected') {
+				return {
+					text: text,
+					bgcolor: combineRgb(0, 255, 0),
+					color: combineRgb(0, 0, 0)
+				};
+			} else {
+				return {
+					text: text
+				};
+			}
+		}
+		return {};
+	}
+
+	/////////////////////////////////////////////////
+	// NEXT CONNECTED COLUMN NAME
+	/////////////////////////////////////////////////
+
+	async layerGroupColumnNextConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const add = feedback.options.next as number;
+		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
+			let column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
+			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
+			if (text) {
+				return {text: text.replace('#', column.toString())};
+			} else {
+				return {};
+			}
+		}
+		return {};
+	}
+
+	calculateNextConnectedLayerGroupColumn(layerGroup: number, add: number): number {
+		let column = +this.connectedLayerGroupColumns.get(+layerGroup)!;
+		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+		if (column + add > lastColumn) {
+			column = +column + add - lastColumn;
+		} else {
+			column += add;
+		}
+		return column;
+	}
+
+	/////////////////////////////////////////////////
+	// PREVIOUS CONNECTED COLUMN NAME
+	/////////////////////////////////////////////////
+
+	async layerGroupColumnPreviousConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const subtract = feedback.options.previous as number;
+		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
+			let column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
+			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
+			if (text) {
+				return {text: text.replace('#', column.toString())};
+			} else {
+				return {};
+			}
+		}
+		return {};
+	}
+
+	calculatePreviousConnectedLayerGroupColumn(layerGroup: number, subtract: number): number {
+		let column = +this.connectedLayerGroupColumns.get(+layerGroup)!;
+		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+		if (column - subtract < 1) {
+			column = +lastColumn + column - subtract;
+		} else {
+			column = column - subtract;
+		}
+		return column;
+	}
+
 
 	/////////////////////////////////////////////////
 	// Master
@@ -544,11 +681,11 @@ export class LayerGroupUtils implements MessageSubscriber {
 	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
-		if (layerGroup !== undefined && speed!==undefined) {
+		if (layerGroup !== undefined && speed !== undefined) {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(speed),
+				imageBuffer: drawPercentage(speed)
 			};
 		}
 		return {text: '?'};
