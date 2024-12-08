@@ -2,13 +2,13 @@ import {combineRgb} from '@companion-module/base';
 import {getDefaultStyleGreen} from '../../../defaults';
 import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
 
-export function triggerLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
+export function connectLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',
 	category,
-	name: 'Trigger Layer Group Column',
+	name: 'Connect Layer Group Column',
 	style: {
 		size: '14',
-		text: 'Trigger Layer Group Column',
+		text: 'Connect Layer Group Column',
 		color: combineRgb(255, 255, 255),
 		bgcolor: combineRgb(0, 0, 0)
 	},
@@ -16,7 +16,7 @@ export function triggerLayerGroupColumnPreset(category: string): CompanionButton
 		{
 			down: [
 				{
-					actionId: 'triggerLayerGroupColumn',
+					actionId: 'connectLayerGroupColumn',
 					options: {
 						layerGroup: '1',
 						action: 'set',
@@ -29,7 +29,7 @@ export function triggerLayerGroupColumnPreset(category: string): CompanionButton
 	],
 	feedbacks: [
 		{
-			feedbackId: 'layerGroupColumnsSelected',
+			feedbackId: 'layerGroupColumnsConnected',
 			options: {
 				column: '1',
 				layerGroup: '1'
