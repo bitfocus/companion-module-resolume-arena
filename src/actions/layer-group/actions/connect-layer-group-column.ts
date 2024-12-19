@@ -6,14 +6,14 @@ import {LayerGroupUtils} from '../../../domain/layer-groups/layer-group-util';
 import {WebsocketInstance} from '../../../websocket';
 import {ResolumeArenaModuleInstance} from '../../../index';
 
-export function triggerLayerGroupColumn(
+export function connectLayerGroupColumn(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
 	layerGroupUtils: () => (LayerGroupUtils | null)
 	, resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
 	return {
-		name: 'Trigger Layer Group Column',
+		name: 'Connect Layer Group Column',
 		options: [
 			...getLayerGroupOption(),
 			{
@@ -51,16 +51,16 @@ export function triggerLayerGroupColumn(
 				const value = +options.value as number;
 				if (action != undefined) {
 					let column: number | undefined;
-					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layerGroup);
 					switch (options.action) {
 						case 'set':
 							column = value;
 							break;
 						case 'add':
-							column = theLayerGroupUtils.calculateNextLayerGroupColumn(layerGroup, value);
+							column = theLayerGroupUtils.calculateNextConnectedLayerGroupColumn(layerGroup, value);
 							break;
 						case 'subtract':
-							column = theLayerGroupUtils.calculatePreviousLayerGroupColumn(layerGroup, value);
+							column = theLayerGroupUtils.calculatePreviousConnectedLayerGroupColumn(layerGroup, value);
 							break;
 						default:
 							break;

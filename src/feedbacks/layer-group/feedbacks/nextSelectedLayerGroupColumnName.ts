@@ -2,10 +2,10 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 import {getLayerGroupOption} from '../../../defaults';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
-export function nextLayerGroupColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
+export function nextSelectedLayerGroupColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
-		name: 'Next Layer Group Column Name',
+		name: 'Next Selected Layer Group Column Name',
 		options: [...getLayerGroupOption(), {
 			id: 'next',
 			type: 'number',
@@ -14,6 +14,6 @@ export function nextLayerGroupColumnName(resolumeArenaInstance: ResolumeArenaMod
 			min: 1,
 			max: 65535
 		}],
-		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnNextNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!)
+		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnNextSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};
 }
