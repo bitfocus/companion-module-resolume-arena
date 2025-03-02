@@ -20,6 +20,12 @@ export function clipInfo(resolumeArenaInstance: ResolumeArenaModuleInstance):Com
 				type: 'checkbox',
 				label: 'Show Name',
 				default: true
+			},
+			{
+				id: 'showText',
+				type: 'checkbox',
+				label: 'Show Text',
+				default: false
 			}
 		],
 		callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),

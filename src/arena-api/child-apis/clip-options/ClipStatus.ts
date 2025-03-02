@@ -11,6 +11,9 @@ export interface ClipStatus {
   }
   video?:{
     opacity: CommonOptionsPropertyRange
+    sourceparams?: {
+      Text?: CommonOptionsPropertyString
+    }
   },
   transport?:{
     controls?: {
