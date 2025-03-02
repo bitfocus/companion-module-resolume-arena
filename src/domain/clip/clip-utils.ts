@@ -372,6 +372,10 @@ export class ClipUtils implements MessageSubscriber {
 			if (feedback.options.showName) {
 				result.text = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/name']?.value;
 			}
+			if (feedback.options.showText) {
+				let clipStatus = await this.resolumeArenaInstance.restApi?.Clips.getStatus(key);
+				result.text = clipStatus?.video?.sourceparams?.Text?.value;
+			}
 			if (feedback.options.showThumb) {
 				if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
 					result.imageBuffer = this.clipThumbs.get(key.getIdString());
