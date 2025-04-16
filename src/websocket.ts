@@ -122,8 +122,12 @@ export class WebsocketInstance {
 				console.log('invalid message', event.data);
 			}
 		};
-		this.ws.on('error', (data) => {
+		this.ws.on('error', (data: {errno: number, code: string, syscall: string, address: string, port: number}) => {
 			this.resolumeArenaInstance.log('error', `WebSocket error: ${data}`);
+			if (data.code === 'ECONNREFUSED') {
+				this.resolumeArenaInstance.updateStatus(InstanceStatus.ConnectionFailure);
+				void this.resolumeArenaInstance.restartApis();
+			}
 		});
 	}
 

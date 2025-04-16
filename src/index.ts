@@ -99,33 +99,39 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		return Promise.resolve();
 	}
 
-	private async restartApis() {
+	async restartApis() {
 		const config = this.config;
 		if (config.webapiPort && config.useRest) {
 			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
 			try {
-				const productInfo = await this.restApi.productInfo()
-				this.log('info', 'productInfo: '+ JSON.stringify(productInfo));
+				this.updateStatus(InstanceStatus.Connecting);
+				const productInfo = await this.restApi.productInfo();
+				this.log('info', 'productInfo: ' + JSON.stringify(productInfo));
 				if ((productInfo).major) {
-					this.updateStatus(InstanceStatus.Connecting);
 					this.websocketApi = new WebsocketApi(this, this.config);
 					this.websocketApi.waitForWebsocketReady();
 				} else {
-					this.log('error', 'productInfo wrong');
+					this.log('error', 'productInfo wrong, will retry in 5 seconds');
 					this.updateStatus(InstanceStatus.ConnectionFailure);
+					setTimeout(() => {
+						this.restartApis();
+					}, 5000);
 				}
 			} catch (error) {
-				this.log('error', 'productInfo failed: '+ error );
+				this.log('error', 'productInfo failed, will retry in 5 seconds: ' + error);
 				this.updateStatus(InstanceStatus.ConnectionFailure);
+				setTimeout(() => {
+					this.restartApis();
+				}, 5000);
 			}
-			
+
 		} else {
 			this.restApi = null;
 			this.websocketApi = null;
 		}
 		if (config.port) {
 			this.oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this));
-			if(!this.restApi){
+			if (!this.restApi) {
 				this.updateStatus(InstanceStatus.Ok);
 			}
 		} else {
@@ -168,18 +174,23 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	getClipUtils(): ClipUtils | null {
 		return this.clipUtils;
 	}
+
 	getLayerUtils(): LayerUtils | null {
 		return this.layerUtils;
 	}
+
 	getColumnUtils(): ColumnUtils | null {
 		return this.columnUtils;
 	}
+
 	getLayerGroupUtils(): LayerGroupUtils | null {
 		return this.layerGroupUtils;
 	}
+
 	getCompositionUtils(): CompositionUtils | null {
 		return this.compositionUtils;
 	}
+
 	getDeckUtils(): DeckUtils | null {
 		return this.deckUtils;
 	}
