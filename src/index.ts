@@ -1,211 +1,248 @@
-import ArenaOscApi from './arena-api/osc';
-import ArenaRestApi from './arena-api/rest';
-import {configFields, ResolumeArenaConfig} from './config-fields';
+import ArenaOscApi from './arena-api/osc'
+import ArenaRestApi from './arena-api/rest'
+import { configFields, ResolumeArenaConfig } from './config-fields'
 
-import {InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField} from '@companion-module/base';
-import {getActions} from './actions';
-import {getApiFeedbacks} from './api-feedback';
-import {getApiPresets} from './api-presets';
-import {ClipUtils} from './domain/clip/clip-utils';
-import {ColumnUtils} from './domain/columns/column-util';
-import {CompositionUtils} from './domain/composition/composition-utils';
-import {DeckUtils} from './domain/deck/deck-util';
-import {LayerGroupUtils} from './domain/layer-groups/layer-group-util';
-import {LayerUtils} from './domain/layers/layer-util';
-import {getUpgradeScripts} from './upgrade-scripts';
-import {MessageSubscriber, WebsocketInstance as WebsocketApi} from './websocket';
-import {getApiVariables} from './api-variables';
+import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from '@companion-module/base'
+import { getActions } from './actions'
+import { getApiFeedbacks } from './api-feedback'
+import { getApiPresets } from './api-presets'
+import { ClipUtils } from './domain/clip/clip-utils'
+import { ColumnUtils } from './domain/columns/column-util'
+import { CompositionUtils } from './domain/composition/composition-utils'
+import { DeckUtils } from './domain/deck/deck-util'
+import { LayerGroupUtils } from './domain/layer-groups/layer-group-util'
+import { LayerUtils } from './domain/layers/layer-util'
+import { getUpgradeScripts } from './upgrade-scripts'
+import { MessageSubscriber, WebsocketInstance as WebsocketApi } from './websocket'
+import { getApiVariables } from './api-variables'
+import { ArenaOscListener } from './osc-listener'
+import { OscState } from './osc-state'
+import { getAllOscVariables } from './variables/osc-variables'
+import { getOscTransportPresets } from './presets/osc-transport/oscTransportPresets'
+import { getOscTransportFeedbacks } from './feedbacks/osc-transport/oscTransportFeedbacks'
 
 export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
-	private config!: ResolumeArenaConfig;
-	public restApi: ArenaRestApi | null = null;
-	private websocketApi: WebsocketApi | null = null;
-	private oscApi: ArenaOscApi | null = null;
+	private config!: ResolumeArenaConfig
+	public restApi: ArenaRestApi | null = null
+	private websocketApi: WebsocketApi | null = null
+	private oscApi: ArenaOscApi | null = null
+	private oscListener: ArenaOscListener | null = null
+	private oscState: OscState
 
-	private clipUtils: ClipUtils;
-	private layerUtils: LayerUtils;
-	private layerGroupUtils: LayerGroupUtils;
-	private columnUtils: ColumnUtils;
-	private compositionUtils: CompositionUtils;
-	private deckUtils: DeckUtils;
-	private websocketSubscribers: Set<MessageSubscriber> = new Set();
+	private clipUtils: ClipUtils
+	private layerUtils: LayerUtils
+	private layerGroupUtils: LayerGroupUtils
+	private columnUtils: ColumnUtils
+	private compositionUtils: CompositionUtils
+	private deckUtils: DeckUtils
+	private websocketSubscribers: Set<MessageSubscriber> = new Set()
 
 	constructor(internal: unknown) {
-		super(internal);
+		super(internal)
 
-		this.clipUtils = new ClipUtils(this);
-		this.layerUtils = new LayerUtils(this);
-		this.layerGroupUtils = new LayerGroupUtils(this);
-		this.columnUtils = new ColumnUtils(this);
-		this.compositionUtils = new CompositionUtils(this);
-		this.deckUtils = new DeckUtils(this);
+		this.oscState = new OscState(this)
+		this.clipUtils = new ClipUtils(this)
+		this.layerUtils = new LayerUtils(this)
+		this.layerGroupUtils = new LayerGroupUtils(this)
+		this.columnUtils = new ColumnUtils(this)
+		this.compositionUtils = new CompositionUtils(this)
+		this.deckUtils = new DeckUtils(this)
 	}
 
-	/**
-	 * Main initialization function called once the module is
-	 * OK to start doing things. Principally, this is when
-	 * the module should establish a connection to the device.
-	 */
 	async init(config: ResolumeArenaConfig, _isFirstInit: boolean): Promise<void> {
-		this.config = config;
+		this.config = config
 
-		await this.restartApis();
-		this.subscribeFeedbacks();
-		this.setupFeedback();
-		this.setupVariables();
-		this.setActionDefinitions(getActions(this));
-		this.setupPresets();
+		await this.restartApis()
+		this.subscribeFeedbacks()
+		this.setupFeedback()
+		this.setupVariables()
+		this.setActionDefinitions(getActions(this))
+		this.setupPresets()
 
-		this.websocketSubscribers.add(this.layerUtils);
-		this.websocketSubscribers.add(this.layerGroupUtils);
-		this.websocketSubscribers.add(this.columnUtils);
-		this.websocketSubscribers.add(this.clipUtils);
-		this.websocketSubscribers.add(this.compositionUtils);
-		this.websocketSubscribers.add(this.deckUtils);
+		this.websocketSubscribers.add(this.layerUtils)
+		this.websocketSubscribers.add(this.layerGroupUtils)
+		this.websocketSubscribers.add(this.columnUtils)
+		this.websocketSubscribers.add(this.clipUtils)
+		this.websocketSubscribers.add(this.compositionUtils)
+		this.websocketSubscribers.add(this.deckUtils)
 	}
 
-	setupFeedback() {
+	setupFeedback(): void {
+		const feedbacks = {}
 		if (this.restApi) {
-			this.setFeedbackDefinitions(getApiFeedbacks(this));
-		} else {
-			this.setFeedbackDefinitions({});
+			Object.assign(feedbacks, getApiFeedbacks(this))
 		}
+		if (this.config?.useOscListener) {
+			Object.assign(feedbacks, getOscTransportFeedbacks(this))
+		}
+		this.setFeedbackDefinitions(feedbacks)
 	}
 
-	setupPresets() {
+	setupPresets(): void {
+		const presets = {}
 		if (this.restApi) {
-			this.setPresetDefinitions(getApiPresets());
-		} else {
-			this.setPresetDefinitions({});
+			Object.assign(presets, getApiPresets())
 		}
+		if (this.config?.useOscListener) {
+			Object.assign(presets, getOscTransportPresets(this.oscState.getRegisteredLayers()))
+		}
+		this.setPresetDefinitions(presets)
 	}
 
-	setupVariables() {
+	setupVariables(): void {
+		const variables = []
 		if (this.restApi) {
-			this.setVariableDefinitions(getApiVariables());
-		} else {
-			this.setPresetDefinitions({});
+			variables.push(...getApiVariables())
 		}
+		if (this.config?.useOscListener) {
+			variables.push(...getAllOscVariables(this.oscState.getRegisteredLayers()))
+		}
+		this.setVariableDefinitions(variables)
 	}
 
-	/**
-	 * Called when the configuration is updated.
-	 * @param config The new config object
-	 */
+	registerOscVariables(): void {
+		this.setupVariables()
+		this.setupPresets()
+	}
+
 	async configUpdated(config: ResolumeArenaConfig): Promise<void> {
-		this.config = config;
-		await this.restartApis();
-		this.subscribeFeedbacks();
-		return Promise.resolve();
+		this.config = config
+		await this.restartApis()
+		this.subscribeFeedbacks()
+		return Promise.resolve()
 	}
 
-	async restartApis() {
-		const config = this.config;
+	async restartApis(): Promise<void> {
+		const config = this.config
+
+		if (this.oscListener) {
+			this.oscListener.destroy()
+			this.oscListener = null
+		}
+		this.oscState.clear()
+
 		if (config.webapiPort && config.useRest) {
-			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL);
+			this.restApi = new ArenaRestApi(config.host, config.webapiPort, config.useSSL)
 			try {
-				this.updateStatus(InstanceStatus.Connecting);
-				const productInfo = await this.restApi.productInfo();
-				this.log('info', 'productInfo: ' + JSON.stringify(productInfo));
-				if ((productInfo).major) {
-					this.websocketApi = new WebsocketApi(this, this.config);
-					this.websocketApi.waitForWebsocketReady();
+				this.updateStatus(InstanceStatus.Connecting)
+				const productInfo = await this.restApi.productInfo()
+				this.log('info', 'productInfo: ' + JSON.stringify(productInfo))
+				if ((productInfo as { major?: number }).major) {
+					this.websocketApi = new WebsocketApi(this, this.config)
+					this.websocketApi.waitForWebsocketReady()
 				} else {
-					this.log('error', 'productInfo wrong, will retry in 5 seconds');
-					this.updateStatus(InstanceStatus.ConnectionFailure);
+					this.log('error', 'productInfo wrong, will retry in 5 seconds')
+					this.updateStatus(InstanceStatus.ConnectionFailure)
 					setTimeout(() => {
-						this.restartApis();
-					}, 5000);
+						void this.restartApis()
+					}, 5000)
 				}
 			} catch (error) {
-				this.log('error', 'productInfo failed, will retry in 5 seconds: ' + error);
-				this.updateStatus(InstanceStatus.ConnectionFailure);
+				this.log('error', 'productInfo failed, will retry in 5 seconds: ' + error)
+				this.updateStatus(InstanceStatus.ConnectionFailure)
 				setTimeout(() => {
-					this.restartApis();
-				}, 5000);
+					void this.restartApis()
+				}, 5000)
 			}
+		} else {
+			this.restApi = null
+			this.websocketApi = null
+		}
 
-		} else {
-			this.restApi = null;
-			this.websocketApi = null;
-		}
 		if (config.port) {
-			this.oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this));
-			if (!this.restApi) {
-				this.updateStatus(InstanceStatus.Ok);
+			this.oscApi = new ArenaOscApi(config.host, config.port, this.oscSend.bind(this))
+			if (!this.restApi && !config.useOscListener) {
+				this.updateStatus(InstanceStatus.Ok)
 			}
 		} else {
-			this.oscApi = null;
+			this.oscApi = null
 		}
-		this.setupFeedback();
-		this.setActionDefinitions(getActions(this));
+
+		if (config.useOscListener && config.oscRxPort) {
+			this.oscListener = new ArenaOscListener(config.oscRxPort, this)
+			this.oscListener.start()
+			this.oscState.startPeriodicRefresh()
+		}
+
+		this.setupFeedback()
+		this.setupVariables()
+		this.setActionDefinitions(getActions(this))
+		this.setupPresets()
 	}
 
-	/**
-	 * Provide a simple return
-	 * of the necessary fields for the
-	 * instance configuration screen.
-	 * @return {object[]}
-	 */
 	getConfigFields(): SomeCompanionConfigField[] {
-		return configFields();
+		return configFields()
 	}
 
 	getConfig(): ResolumeArenaConfig {
-		return this.config;
+		return this.config
 	}
 
 	getWebSocketSubscrivers(): Set<MessageSubscriber> {
-		return this.websocketSubscribers;
+		return this.websocketSubscribers
 	}
 
 	getRestApi(): ArenaRestApi | null {
-		return this.restApi;
+		return this.restApi
 	}
 
 	getWebsocketApi(): WebsocketApi | null {
-		return this.websocketApi;
+		return this.websocketApi
 	}
 
 	getOscApi(): ArenaOscApi | null {
-		return this.oscApi;
+		return this.oscApi
 	}
 
 	getClipUtils(): ClipUtils | null {
-		return this.clipUtils;
+		return this.clipUtils
 	}
 
 	getLayerUtils(): LayerUtils | null {
-		return this.layerUtils;
+		return this.layerUtils
 	}
 
 	getColumnUtils(): ColumnUtils | null {
-		return this.columnUtils;
+		return this.columnUtils
 	}
 
 	getLayerGroupUtils(): LayerGroupUtils | null {
-		return this.layerGroupUtils;
+		return this.layerGroupUtils
 	}
 
 	getCompositionUtils(): CompositionUtils | null {
-		return this.compositionUtils;
+		return this.compositionUtils
 	}
 
 	getDeckUtils(): DeckUtils | null {
-		return this.deckUtils;
+		return this.deckUtils
 	}
 
-	/**
-	 * Clean up the instance before it is destroyed.
-	 * This is called both on shutdown and when an instance
-	 * is disabled or deleted. Destroy any timers and socket
-	 * connections here.
-	 * @return {void}
-	 */
+	handleOscInput(address: string, value: number | string, _args: unknown[]): void {
+		this.oscState.handleMessage(address, value)
+	}
+
+	isOscListenerActive(): boolean {
+		return this.oscListener?.isActive() ?? false
+	}
+
+	getOscState(): OscState {
+		return this.oscState
+	}
+
+	getOscListener(): ArenaOscListener | null {
+		return this.oscListener
+	}
+
 	async destroy(): Promise<void> {
-		this.restApi = null;
-		this.oscApi = null;
+		this.restApi = null
+		this.oscApi = null
+		if (this.oscListener) {
+			this.oscListener.destroy()
+			this.oscListener = null
+		}
+		this.oscState.destroy()
 	}
 }
 
-runEntrypoint(ResolumeArenaModuleInstance, getUpgradeScripts());
+runEntrypoint(ResolumeArenaModuleInstance, getUpgradeScripts())
