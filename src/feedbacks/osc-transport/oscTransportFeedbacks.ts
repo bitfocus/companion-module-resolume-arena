@@ -1,12 +1,15 @@
-// @ts-nocheck
-import { combineRgb } from '@companion-module/base'
+import {combineRgb} from '@companion-module/base'
+import type {CompanionAdvancedFeedbackResult, CompanionFeedbackDefinitions} from '@companion-module/base'
+import type {ResolumeArenaModuleInstance} from '../../index'
 
 /**
  * OSC Transport Feedbacks — countdown color changes.
  * These work with OSC-only (no REST required).
  */
-export function getOscTransportFeedbacks(resolumeArenaInstance) {
-    return {
+export function getOscTransportFeedbacks(
+	resolumeArenaInstance: ResolumeArenaModuleInstance
+): CompanionFeedbackDefinitions {
+	return {
         oscCountdownWarning: {
             type: 'advanced',
             name: 'OSC: Countdown Warning',
@@ -41,7 +44,7 @@ export function getOscTransportFeedbacks(resolumeArenaInstance) {
                     returnType: 'number',
                 },
             ],
-            callback: async (feedback) => {
+            callback: async (feedback: any): Promise<CompanionAdvancedFeedbackResult> => {
                 const oscState = resolumeArenaInstance.getOscState();
                 if (!oscState) return {};
 
@@ -90,7 +93,7 @@ export function getOscTransportFeedbacks(resolumeArenaInstance) {
                     returnType: 'number',
                 },
             ],
-            callback: async (feedback) => {
+            callback: async (feedback: any): Promise<CompanionAdvancedFeedbackResult> => {
                 const oscState = resolumeArenaInstance.getOscState();
                 if (!oscState) return {};
 
@@ -101,5 +104,5 @@ export function getOscTransportFeedbacks(resolumeArenaInstance) {
                 return {};
             },
         },
-    };
+	}
 }

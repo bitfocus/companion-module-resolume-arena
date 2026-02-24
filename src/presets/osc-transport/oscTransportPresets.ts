@@ -1,18 +1,18 @@
-// @ts-nocheck
-import { combineRgb } from '@companion-module/base'
+import {combineRgb} from '@companion-module/base'
+import type {CompanionPresetDefinitions, CompanionButtonPresetDefinition, CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
 
 // ── Shared Colors ──
-const white = combineRgb(255, 255, 255);
-const black = combineRgb(0, 0, 0);
-const red = combineRgb(255, 0, 0);
-const green = combineRgb(0, 200, 0);
-const blue = combineRgb(0, 100, 255);
-const orange = combineRgb(255, 140, 0);
-const yellow = combineRgb(255, 220, 0);
-const purple = combineRgb(160, 60, 255);
-const darkGray = combineRgb(40, 40, 40);
+const white = combineRgb(255, 255, 255)
+const black = combineRgb(0, 0, 0)
+const red = combineRgb(255, 0, 0)
+const green = combineRgb(0, 200, 0)
+const blue = combineRgb(0, 100, 255)
+const orange = combineRgb(255, 140, 0)
+const yellow = combineRgb(255, 220, 0)
+const purple = combineRgb(160, 60, 255)
+const darkGray = combineRgb(40, 40, 40)
 
-const moduleId = 'resolume-arena';
+const moduleId = 'resolume-arena'
 
 // Color scheme (consistent across all preset groups):
 // green    = trigger / play / bypass off / master 100% / opacity 100%
@@ -37,19 +37,28 @@ const moduleId = 'resolume-arena';
 // 11. Tempo (composition only)
 // 12. Utility (composition only)
 
-function btn(category, name, text, color, bgcolor, size, actions, feedbacks) {
-    return {
+function btn(
+	category: string,
+	name: string,
+	text: string,
+	color: number,
+	bgcolor: number,
+	size: string,
+	actions: Array<[string, Record<string, string>]>,
+	feedbacks?: Array<{feedbackId: string; options: CompanionOptionValues}>
+): CompanionButtonPresetDefinition {
+	return {
         type: 'button',
         category,
         name,
-        style: { size: size || 'auto', text, color: color || white, bgcolor: bgcolor || darkGray },
+        style: { size: (size || 'auto') as any, text, color: color || white, bgcolor: bgcolor || darkGray },
         steps: [{ down: actions.map(a => ({ actionId: a[0], options: a[1] })), up: [] }],
-        feedbacks: feedbacks || [],
-    };
+		feedbacks: (feedbacks || []) as CompanionPresetFeedback[],
+	}
 }
 
-export function getOscTransportPresets(extraLayers) {
-    const presets = {};
+export function getOscTransportPresets(extraLayers?: Set<number>): CompanionPresetDefinitions {
+    const presets: CompanionPresetDefinitions = {}
     for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l));
     if (extraLayers) {
         for (const l of extraLayers) {
@@ -58,14 +67,14 @@ export function getOscTransportPresets(extraLayers) {
     }
     for (let g = 1; g <= 3; g++) Object.assign(presets, getGroupPresets(g));
     Object.assign(presets, getCompositionPresets());
-    return presets;
+    return presets
 }
 
-function getLayerPresets(layer) {
-    const cat = `OSC Transport / Layer ${layer}`;
-    const L = `${layer}`;
-    const pfx = `oscL${L}`;
-    const lp = `Layer ${layer}\\n`;
+function getLayerPresets(layer: number): CompanionPresetDefinitions {
+    const cat = `OSC Transport / Layer ${layer}`
+    const L = `${layer}`
+    const pfx = `oscL${L}`
+    const lp = `Layer ${layer}\\n`
 
     return {
         // 1. Trigger
@@ -134,14 +143,14 @@ function getLayerPresets(layer) {
                 { feedbackId: 'oscCountdownWarning', options: { layer: L, color_30: orange, color_10: red, text_color: white } },
             ],
         },
-    };
+    }
 }
 
-function getGroupPresets(group) {
-    const cat = `OSC Transport / Group ${group}`;
-    const G = `${group}`;
-    const pfx = `oscG${G}`;
-    const gp = `Group ${group}\\n`;
+function getGroupPresets(group: number): CompanionPresetDefinitions {
+    const cat = `OSC Transport / Group ${group}`
+    const G = `${group}`
+    const pfx = `oscG${G}`
+    const gp = `Group ${group}\\n`
 
     return {
         // 1. Trigger
@@ -167,11 +176,11 @@ function getGroupPresets(group) {
         [`${pfx}_Master0`]: btn(cat, 'Master 0%', `${gp}Master\\n0%`, white, red, 'auto', [['oscGroupSetMaster', { group: G, value: '0.0' }]]),
         [`${pfx}_Master100`]: btn(cat, 'Master 100%', `${gp}Master\\n100%`, white, green, 'auto', [['oscGroupSetMaster', { group: G, value: '1.0' }]]),
 
-    };
+    }
 }
 
-function getCompositionPresets() {
-    const cat = 'OSC Transport / Composition';
+function getCompositionPresets(): CompanionPresetDefinitions {
+    const cat = 'OSC Transport / Composition'
 
     return {
         // 1. Trigger

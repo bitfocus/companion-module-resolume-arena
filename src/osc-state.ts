@@ -1,5 +1,36 @@
-// @ts-nocheck
-import { OSC_DEFAULT_LAYERS } from "./variables/osc-variables";
+import {OSC_DEFAULT_LAYERS} from './variables/osc-variables'
+import type {ResolumeArenaModuleInstance} from './index'
+import type {ArenaOscListener} from './osc-listener'
+
+interface ClipState {
+	activeClip: number
+	connected: number
+	position: number
+	duration: number
+	durationEstimated: boolean
+	queried: boolean
+	speed: number
+	name: string
+}
+
+interface EstimationState {
+	prevPos: number
+	prevTime: number
+	samples: number[]
+	estimatedDurationSec: number
+	settled: boolean
+}
+
+interface LayerState {
+	master: number
+	opacity: number
+	volume: number
+	bypassed: boolean
+	direction: number
+	layerPosition: number | undefined
+	clip: ClipState
+	estimation: EstimationState
+}
 /**
  * Manages all state received from Resolume's OSC output.
  *
@@ -16,29 +47,38 @@ import { OSC_DEFAULT_LAYERS } from "./variables/osc-variables";
  *   normalizedValue = seconds / maxRange
  */
 export class OscState {
-    instance;
-    layers = new Map();
-    /** Track which layers have had their variables registered */
-    registeredLayers = new Set();
-    /** Periodic refresh interval handle */
-    refreshInterval = null;
-    /** Currently active composition column */
-    activeColumn = 0;
-    /** Column names cache */
-    columnNames = new Map();
-    /**
-     * Resolume's max range for transport position in seconds.
-     * Default is 604800 (7 days).
-     */
-    maxRange = 604800;
-    /** Composition-level state */
-    compositionMaster = 1;
-    compositionOpacity = 1;
-    compositionVolume = 1;
-    compositionTempo = 120;
-    constructor(instance) {
-        this.instance = instance;
-    }
+	private instance: ResolumeArenaModuleInstance
+	private layers: Map<number, LayerState> = new Map()
+	/** Track which layers have had their variables registered */
+	private registeredLayers: Set<number> = new Set()
+	/** Periodic refresh interval handle */
+	private refreshInterval: ReturnType<typeof setInterval> | null = null
+	private _quickRefreshTimer: ReturnType<typeof setTimeout> | null = null
+	private _lastRemainingInt: Map<number, number> = new Map()
+	private _lastQueryTime: Map<number, number> = new Map()
+	/** Currently active composition column */
+	public activeColumn: number = 0
+	/** Column names cache */
+	private columnNames: Map<number, string> = new Map()
+	/**
+	 * Resolume's max range for transport position in seconds.
+	 * Default is 604800 (7 days).
+	 */
+	private maxRange: number = 604800
+	/** Composition-level state */
+	private compositionMaster: number = 1
+	private compositionOpacity: number = 1
+	private compositionVolume: number = 1
+	private compositionTempo: number = 120
+	private oscListener: ArenaOscListener | null = null
+
+	constructor(instance: ResolumeArenaModuleInstance) {
+		this.instance = instance
+		void this.compositionMaster
+		void this.compositionOpacity
+		void this.compositionVolume
+		void this.compositionTempo
+	}
     // ──────────────────────────────────────────────────────────
     // Message Routing
     // ──────────────────────────────────────────────────────────
@@ -46,10 +86,9 @@ export class OscState {
      * Route an incoming OSC message to the appropriate handler.
      * Called by the OSC listener for every incoming message — no throttling.
      */
-    handleMessage(address, value) {
-        if (!address.startsWith('/composition'))
-            return;
-        let match;
+	handleMessage(address: string, value: number | string): void {
+		if (!address.startsWith('/composition')) return
+		let match: RegExpMatchArray | null
         // ── Layer Position (source of truth for which clip is outputting) ──
         match = address.match(/^\/composition\/layers\/(\d+)\/position$/);
         if (match) {
@@ -211,7 +250,7 @@ export class OscState {
                     this.instance.checkFeedbacks('oscActiveColumn');
                     // Column changed — new clips are active, re-query everything
                     // Reset queried flags so position handler will re-query
-                    for (const [layerNum, layerState] of this.layers) {
+                    for (const [_layerNum, layerState] of this.layers) {
                         layerState.clip.queried = false;
                         layerState.clip.duration = 0;
                         layerState.clip.durationEstimated = false;
@@ -330,7 +369,7 @@ export class OscState {
      * then calculate total duration = 1.0 / (avgDeltaPos / avgDeltaTime).
      * After enough consistent samples, lock in the estimate.
      */
-    estimateDuration(layerState, pos) {
+	estimateDuration(layerState: LayerState, pos: number): void {
         const now = Date.now();
         const est = layerState.estimation;
         // Skip if position is near zero (clip just started, unstable)
@@ -386,7 +425,7 @@ export class OscState {
     // ──────────────────────────────────────────────────────────
     // State Accessors
     // ──────────────────────────────────────────────────────────
-    getOrCreateLayer(layer) {
+	getOrCreateLayer(layer: number): LayerState {
         if (!this.layers.has(layer)) {
             this.layers.set(layer, {
                 master: 1,
@@ -421,56 +460,56 @@ export class OscState {
             }
             this.registeredLayers.add(layer);
         }
-        return this.layers.get(layer);
+		return this.layers.get(layer)!
     }
-    getLayer(layer) {
+	getLayer(layer: number): LayerState | undefined {
         return this.layers.get(layer);
     }
     /** Get the active clip state for a layer */
-    getActiveClip(layer) {
+	getActiveClip(layer: number): ClipState | undefined {
         return this.layers.get(layer)?.clip;
     }
-    getAllLayers() {
+	getAllLayers(): Map<number, LayerState> {
         return this.layers;
     }
     /** Get all layer numbers that have been discovered */
-    getRegisteredLayers() {
+	getRegisteredLayers(): Set<number> {
         return this.registeredLayers;
     }
     // ──────────────────────────────────────────────────────────
     // Time Conversion Utilities
     // ──────────────────────────────────────────────────────────
     /** Convert a normalized value (0-1) to seconds */
-    normalizedToSeconds(normalized) {
+	normalizedToSeconds(normalized: number): number {
         return normalized * this.maxRange;
     }
     /** Convert seconds to a normalized value (0-1) */
-    secondsToNormalized(seconds) {
+	secondsToNormalized(seconds: number): number {
         return seconds / this.maxRange;
     }
     /** Get active clip's duration in seconds for a layer */
-    getLayerDurationSeconds(layer) {
+	getLayerDurationSeconds(layer: number): number {
         const clip = this.getActiveClip(layer);
         if (!clip || clip.duration === 0)
             return 0;
         return clip.duration * this.maxRange;
     }
     /** Get active clip's elapsed time in seconds for a layer */
-    getLayerElapsedSeconds(layer) {
+	getLayerElapsedSeconds(layer: number): number {
         const clip = this.getActiveClip(layer);
         if (!clip || clip.duration === 0)
             return 0;
         return clip.position * clip.duration * this.maxRange;
     }
     /** Get active clip's remaining time in seconds for a layer */
-    getLayerRemainingSeconds(layer) {
+	getLayerRemainingSeconds(layer: number): number {
         const clip = this.getActiveClip(layer);
         if (!clip || clip.duration === 0)
             return 0;
         return Math.max(0, (1 - clip.position) * clip.duration * this.maxRange);
     }
     /** Get progress as 0-1 fraction for a layer */
-    getLayerProgress(layer) {
+	getLayerProgress(layer: number): number {
         const clip = this.getActiveClip(layer);
         if (!clip)
             return 0;
@@ -482,7 +521,7 @@ export class OscState {
      *
      * @returns normalized position (0-1) to send via OSC, or undefined if no clip data
      */
-    getPositionForSecondsFromEnd(layer, secondsFromEnd) {
+	getPositionForSecondsFromEnd(layer: number, secondsFromEnd: number): number | undefined {
         const clip = this.getActiveClip(layer);
         if (!clip || clip.duration === 0)
             return undefined;
@@ -494,7 +533,7 @@ export class OscState {
      * Get the active clip column number for a layer.
      * Needed for building the OSC address to send commands to.
      */
-    getActiveClipColumn(layer) {
+	getActiveClipColumn(layer: number): number | undefined {
         const clip = this.getActiveClip(layer);
         if (!clip || clip.activeClip === 0)
             return undefined;
@@ -504,7 +543,7 @@ export class OscState {
     // Formatting Utilities
     // ──────────────────────────────────────────────────────────
     /** Convert seconds to HH:MM:SS or MM:SS timecode string */
-    secondsToTimecode(totalSeconds) {
+	secondsToTimecode(totalSeconds: number): string {
         const negative = totalSeconds < 0;
         const abs = Math.abs(totalSeconds);
         const h = Math.floor(abs / 3600);
@@ -517,7 +556,7 @@ export class OscState {
         return `${prefix}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
     /** Convert seconds to HH:MM:SS:FF timecode string */
-    secondsToTimecodeFrames(totalSeconds, fps = 30) {
+	secondsToTimecodeFrames(totalSeconds: number, fps: number = 30): string {
         const negative = totalSeconds < 0;
         const abs = Math.abs(totalSeconds);
         const h = Math.floor(abs / 3600);
@@ -538,7 +577,7 @@ export class OscState {
      * Called on every incoming OSC message — no throttling.
      * Millumin does the same and it results in smooth countdowns.
      */
-    updateLayerVariables(layer) {
+	updateLayerVariables(layer: number): void {
         const clip = this.getActiveClip(layer);
         if (!clip)
             return;
@@ -548,7 +587,7 @@ export class OscState {
         // So elapsed = position * total duration, remaining = (1 - position) * total duration
         const elapsedSec = durationSec > 0 ? clip.position * durationSec : 0;
         const remainingSec = durationSec > 0 ? Math.max(0, (1 - clip.position) * durationSec) : 0;
-        const variables = {};
+        const variables: Record<string, string> = {}
         variables[`${prefix}_elapsed`] = this.secondsToTimecode(elapsedSec);
         variables[`${prefix}_duration`] = this.secondsToTimecode(durationSec);
         variables[`${prefix}_remaining`] = this.secondsToTimecode(remainingSec);
@@ -558,12 +597,11 @@ export class OscState {
         try {
             this.instance.setVariableValues(variables);
         }
-        catch (e) {
-            this.instance.log('warn', `Failed to set variable values: ${e.message}`);
+        catch (e: unknown) {
+            this.instance.log('warn', `Failed to set variable values: ${(e as Error).message}`)
         }
         // Check feedbacks only when remaining seconds integer changes (not every frame)
         const remainingInt = Math.floor(remainingSec);
-        if (!this._lastRemainingInt) this._lastRemainingInt = new Map();
         if (this._lastRemainingInt.get(layer) !== remainingInt) {
             this._lastRemainingInt.set(layer, remainingInt);
             this.instance.checkFeedbacks('oscCountdownWarning');
@@ -582,7 +620,7 @@ export class OscState {
      * Critical: we send FROM the listener port so Resolume's response
      * comes back to the port we're actually listening on.
      */
-    queryClipInfo(layer, column) {
+	queryClipInfo(layer: number, column: number): void {
         const listener = this.instance.getOscListener();
         const config = this.instance.getConfig();
         if (!listener) {
@@ -590,7 +628,6 @@ export class OscState {
         }
         // Debounce: no more than one query per layer per second
         const now = Date.now();
-        if (!this._lastQueryTime) this._lastQueryTime = new Map();
         const lastQuery = this._lastQueryTime.get(layer) || 0;
         if (now - lastQuery < 1000) {
             return;
@@ -608,7 +645,7 @@ export class OscState {
      * Public method to manually query all tracked layers.
      * Can be triggered from a Companion action for testing.
      */
-    queryAllLayers() {
+	queryAllLayers(): void {
         for (const [layerNum, layerState] of this.layers) {
             const clip = layerState.clip.activeClip;
             if (clip > 0) {
@@ -622,7 +659,7 @@ export class OscState {
      * UI rearrangements that don't trigger connected messages, etc.
      * Runs every 5 seconds and only queries layers that have active clips.
      */
-    startPeriodicRefresh() {
+	startPeriodicRefresh(): void {
         this.stopPeriodicRefresh();
         // Fire initial queries immediately
         this.queryColumns();
@@ -642,7 +679,7 @@ export class OscState {
     /**
      * Query column connected state using wildcard.
      */
-    queryColumns() {
+	queryColumns(): void {
         const listener = this.instance.getOscListener();
         const config = this.instance.getConfig();
         if (!listener) return;
@@ -653,7 +690,7 @@ export class OscState {
      * Query all clip info (name + duration) using wildcards.
      * Used after column changes to immediately get new clip data.
      */
-    queryClipInfoWildcard() {
+	queryClipInfoWildcard(): void {
         const listener = this.instance.getOscListener();
         const config = this.instance.getConfig();
         if (!listener) return;
@@ -663,7 +700,7 @@ export class OscState {
     /**
      * Full refresh — columns + clip info. Called after actions that change clips.
      */
-    queryAll() {
+	queryAll(): void {
         this.queryColumns();
         this.queryClipInfoWildcard();
     }
@@ -672,7 +709,7 @@ export class OscState {
      * Used after column triggers, clip changes, auto-transitions.
      * Debounced to 200ms to prevent flood.
      */
-    scheduleQuickRefresh() {
+	scheduleQuickRefresh(): void {
         if (this._quickRefreshTimer) return; // already scheduled
         this._quickRefreshTimer = setTimeout(() => {
             this._quickRefreshTimer = null;
@@ -689,7 +726,7 @@ export class OscState {
     /**
      * Stop the periodic refresh interval.
      */
-    stopPeriodicRefresh() {
+	stopPeriodicRefresh(): void {
         if (this.refreshInterval) {
             clearInterval(this.refreshInterval);
             this.refreshInterval = null;
@@ -698,11 +735,12 @@ export class OscState {
     // ──────────────────────────────────────────────────────────
     // Lifecycle
     // ──────────────────────────────────────────────────────────
-    clear() {
+	clear(): void {
         this.layers.clear();
         this.registeredLayers.clear();
     }
-    destroy() {
+	destroy(): void {
+		void this.oscListener
         this.stopPeriodicRefresh();
         if (this._quickRefreshTimer) {
             clearTimeout(this._quickRefreshTimer);

@@ -1,4 +1,6 @@
-// @ts-nocheck
+import {CompanionActionDefinitions} from '@companion-module/base'
+import type {CompanionInputFieldTextInput} from '@companion-module/base'
+import type {ResolumeArenaModuleInstance} from '../../index'
 
 /**
  * OSC Transport Actions — Millumin-equivalent actions for Resolume Arena.
@@ -8,30 +10,32 @@
  *
  * All text inputs support Companion variables via useVariables: true.
  */
-export function getOscTransportActions(resolumeArenaModuleInstance) {
-    const oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
-    const oscState = resolumeArenaModuleInstance.getOscState.bind(resolumeArenaModuleInstance);
-    const parse = resolumeArenaModuleInstance.parseVariablesInString.bind(resolumeArenaModuleInstance);
+export function getOscTransportActions(
+	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+): CompanionActionDefinitions {
+	const oscApi = () => resolumeArenaModuleInstance.getOscApi()
+	const oscState = () => resolumeArenaModuleInstance.getOscState()
+	const parse = (s: string) => resolumeArenaModuleInstance.parseVariablesInString(s)
 
     // ─── Shared option builders ───
 
-    const layerOption = {
+	const layerOption: CompanionInputFieldTextInput = {
         id: 'layer',
         type: 'textinput',
         label: 'Layer',
         default: '1',
         useVariables: true,
-    };
+    }
 
-    const columnOption = {
+    const columnOption: CompanionInputFieldTextInput = {
         id: 'column',
         type: 'textinput',
         label: 'Column',
         default: '1',
         useVariables: true,
-    };
+    }
 
-    const clipOptions = [layerOption, columnOption];
+    const clipOptions: CompanionInputFieldTextInput[] = [layerOption, columnOption]
 
     return {
         // ══════════════════════════════════════════════════════════
@@ -49,7 +53,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const col = +await parse(options.column);
                 oscApi()?.triggerColumn(col);
                 // Query columns after a short delay to pick up the new state
@@ -95,7 +99,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const col = +await parse(options.column);
                 oscApi()?.send(`/composition/columns/${col}/select`, { type: 'i', value: 1 });
             },
@@ -108,7 +112,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
         oscConnectClip: {
             name: 'OSC: Connect Clip (Play)',
             options: [...clipOptions],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const column = +await parse(options.column);
                 oscApi()?.connectClip(layer, column);
@@ -119,7 +123,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
         oscClearLayer: {
             name: 'OSC: Clear Layer (Stop)',
             options: [layerOption],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 oscApi()?.clearLayer(layer);
                 oscState()?.scheduleQuickRefresh();
@@ -129,7 +133,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
         oscLayerNextClip: {
             name: 'OSC: Layer Next Clip',
             options: [layerOption],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 oscApi()?.layerNextCol(layer);
                 oscState()?.scheduleQuickRefresh();
@@ -139,7 +143,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
         oscLayerPrevClip: {
             name: 'OSC: Layer Previous Clip',
             options: [layerOption],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 oscApi()?.layerPrevCol(layer);
                 oscState()?.scheduleQuickRefresh();
@@ -168,22 +172,23 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     default: 'pause',
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const api = oscApi();
                 if (!api) return;
                 const path = `/composition/layers/${layer}/direction`;
-                if (options.state === 'toggle') {
+                const state = options.state as string
+                if (state === 'toggle') {
                     const state = oscState();
-                    const layerData = state?.layers?.get(layer);
+                    const layerData = state?.getLayer(layer);
                     if (layerData && layerData.direction === 1) {
                         api.send(path, { type: 'i', value: 2 }); // was paused → play
                     } else {
                         api.send(path, { type: 'i', value: 1 }); // was playing → pause
                     }
                 } else {
-                    const dirMap = { backward: 0, pause: 1, forward: 2 };
-                    api.send(path, { type: 'i', value: dirMap[options.state] });
+                    const dirMap: Record<string, number> = { backward: 0, pause: 1, forward: 2 };
+                    api.send(path, { type: 'i', value: dirMap[state] });
                 }
             },
         },
@@ -201,7 +206,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const speed = parseFloat(await parse(options.speed));
                 const api = oscApi();
@@ -230,7 +235,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 const api = oscApi();
@@ -255,7 +260,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 const api = oscApi();
@@ -271,7 +276,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
             name: 'OSC: Select Clip',
             description: 'Select a clip (highlight it in the UI) without triggering playback.',
             options: [...clipOptions],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const column = +await parse(options.column);
                 oscApi()?.selectClip(layer, column);
@@ -291,7 +296,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const position = parseFloat(await parse(options.position));
                 const api = oscApi();
@@ -316,7 +321,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const timeSec = parseFloat(await parse(options.time));
                 const api = oscApi();
@@ -348,7 +353,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const jogSec = parseFloat(await parse(options.time));
                 const api = oscApi();
@@ -382,7 +387,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const secFromEnd = parseFloat(await parse(options.seconds));
                 const api = oscApi();
@@ -406,7 +411,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
             name: 'OSC: Restart Clip on Layer',
             description: 'Restarts the currently active clip on the given layer from the beginning.',
             options: [layerOption],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const api = oscApi();
                 if (!api) return;
@@ -434,7 +439,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send('/composition/video/opacity', { type: 'f', value });
             },
@@ -452,7 +457,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send('/composition/audio/volume', { type: 'f', value });
             },
@@ -470,7 +475,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send('/composition/master', { type: 'f', value });
             },
@@ -488,7 +493,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send('/composition/speed', { type: 'f', value });
             },
@@ -506,7 +511,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const tempo = parseFloat(await parse(options.tempo));
                 oscApi()?.send('/composition/tempocontroller/tempo', { type: 'f', value: tempo });
             },
@@ -544,7 +549,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/layers/${layer}/video/opacity`, { type: 'f', value });
@@ -563,7 +568,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/layers/${layer}/audio/volume`, { type: 'f', value });
@@ -582,7 +587,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/layers/${layer}/master`, { type: 'f', value });
@@ -605,11 +610,12 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     default: 'toggle',
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const api = oscApi();
                 if (!api) return;
-                switch (options.bypass) {
+                const bypass = options.bypass as string
+                switch (bypass) {
                     case 'on':
                         api.send(`/composition/layers/${layer}/bypassed`, { type: 'i', value: 1 });
                         break;
@@ -639,11 +645,12 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     default: 'toggle',
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const api = oscApi();
                 if (!api) return;
-                switch (options.solo) {
+                const solo = options.solo as string
+                switch (solo) {
                     case 'on':
                         api.send(`/composition/layers/${layer}/solo`, { type: 'i', value: 1 });
                         break;
@@ -661,7 +668,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
             name: 'OSC: Select Layer',
             description: 'Select (highlight) a layer in the Resolume UI.',
             options: [layerOption],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 oscApi()?.send(`/composition/layers/${layer}/select`, { type: 'i', value: 1 });
             },
@@ -680,7 +687,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/layers/${layer}/transition/duration`, { type: 'f', value });
@@ -700,7 +707,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const layer = +await parse(options.layer);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/layers/${layer}/speed`, { type: 'f', value });
@@ -738,7 +745,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const deck = +await parse(options.deck);
                 oscApi()?.send(`/composition/decks/${deck}/select`, { type: 'i', value: 1 });
             },
@@ -767,7 +774,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const column = +await parse(options.column);
                 oscApi()?.triggerlayerGroupColumn(group, column);
@@ -794,7 +801,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const lastColumn = +await parse(options.lastColumn);
                 oscApi()?.layerGroupNextCol(group, lastColumn);
@@ -821,7 +828,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const lastColumn = +await parse(options.lastColumn);
                 oscApi()?.groupPrevCol(group, lastColumn);
@@ -841,7 +848,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 oscApi()?.clearLayerGroup(group);
                 oscState()?.scheduleQuickRefresh();
@@ -869,12 +876,13 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     default: 'on',
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const api = oscApi();
                 if (!api) return;
-                const val = options.bypass === 'on' ? { type: 'i', value: 1 } : { type: 'i', value: 0 };
-                api.bypassLayerGroup(group, val);
+                const bypass = options.bypass as string
+                const val = bypass === 'on' ? { type: 'i', value: 1 } : { type: 'i', value: 0 }
+                api.bypassLayerGroup(group, val as any)
             },
         },
 
@@ -896,7 +904,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/groups/${group}/master`, { type: 'f', value });
@@ -921,7 +929,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/groups/${group}/video/opacity`, { type: 'f', value });
@@ -946,7 +954,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/groups/${group}/audio/volume`, { type: 'f', value });
@@ -971,7 +979,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const value = parseFloat(await parse(options.value));
                 oscApi()?.send(`/composition/groups/${group}/speed`, { type: 'f', value });
@@ -999,9 +1007,10 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     default: 'on',
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
-                const val = options.solo === 'on' ? 1 : 0;
+                const solo = options.solo as string
+                const val = solo === 'on' ? 1 : 0;
                 oscApi()?.send(`/composition/groups/${group}/solo`, { type: 'i', value: val });
             },
         },
@@ -1018,7 +1027,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 oscApi()?.send(`/composition/groups/${group}/select`, { type: 'i', value: 1 });
             },
@@ -1043,7 +1052,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const group = +await parse(options.group);
                 const column = +await parse(options.column);
                 oscApi()?.send(`/composition/groups/${group}/columns/${column}/select`, { type: 'i', value: 1 });
@@ -1100,7 +1109,7 @@ export function getOscTransportActions(resolumeArenaModuleInstance) {
                     useVariables: true,
                 },
             ],
-            callback: async ({ options }) => {
+            callback: async ({options}: {options: Record<string, any>}) => {
                 const path = await parse(options.customPath);
                 const value = await parse(options.customValue);
                 oscApi()?.customOsc(path, options.oscType, value, options.relativeType);
