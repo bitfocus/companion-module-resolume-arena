@@ -54,9 +54,8 @@
 		"husky": "^9.0.11",
 		"nock": "^13.2.2",
 		"qunit": "^2.17.2",
-		"rimraf": "^6.1.3",
+		"rimraf": "^3.0.2",
 		"ts-node": "^10.4.0",
 		"typescript": "^4.5.5"
-	},
-	"packageManager": "yarn@4.4.0+sha512.91d93b445d9284e7ed52931369bc89a663414e5582d00eea45c67ddc459a2582919eece27c412d6ffd1bd0793ff35399381cb229326b961798ce4f4cc60ddfdb"
+	}
 }
