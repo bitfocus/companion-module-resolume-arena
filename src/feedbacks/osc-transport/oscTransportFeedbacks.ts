@@ -1,5 +1,5 @@
 // @ts-nocheck
-const base_1 = require("@companion-module/base");
+import { combineRgb } from '@companion-module/base'
 
 /**
  * OSC Transport Feedbacks — countdown color changes.

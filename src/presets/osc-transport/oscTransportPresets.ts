@@ -1,5 +1,5 @@
 // @ts-nocheck
-const base_1 = require("@companion-module/base");
+import { combineRgb } from '@companion-module/base'
 
 // ── Shared Colors ──
 const white = combineRgb(255, 255, 255);
@@ -82,7 +82,7 @@ function getLayerPresets(layer) {
         [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}Reverse`, white, blue, '18', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
         [`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}Pause`, white, red, '18', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
         [`${pfx}_Play`]: btn(cat, 'Play', `${lp}Play`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
-        [`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}Restart`, white, green, '18', [['oscClipRestart', { layer: L }]]),
+        [`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}Restart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
 
         // 5. Bypass
         [`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${lp}Bypass\\nOff`, white, green, 'auto', [['oscBypassLayer', { layer: L, bypass: 'off' }]]),
@@ -93,8 +93,8 @@ function getLayerPresets(layer) {
         [`${pfx}_Opacity100`]: btn(cat, 'Opacity 100%', `${lp}Opacity\\n100%`, white, green, 'auto', [['oscSetLayerOpacity', { layer: L, value: '1.0' }]]),
 
         // 7. Jog
-        [`${pfx}_JogBack`]: btn(cat, 'Jog -10s', `${lp}Jog -10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, seconds: '-10' }]]),
-        [`${pfx}_JogFwd`]: btn(cat, 'Jog +10s', `${lp}Jog +10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, seconds: '10' }]]),
+        [`${pfx}_JogBack`]: btn(cat, 'Jog -10s', `${lp}Jog -10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '-10' }]]),
+        [`${pfx}_JogFwd`]: btn(cat, 'Jog +10s', `${lp}Jog +10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '10' }]]),
 
         // 8. Countdown Jumps
         [`${pfx}_GoToLast60`]: btn(cat, 'Last 60s', `${lp}Last 60s`, white, purple, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '60' }]]),
