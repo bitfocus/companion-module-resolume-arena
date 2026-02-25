@@ -19,7 +19,7 @@ you've misconfigured Resolume). There is no way to tell if the OSC port is conne
 so the module will always show an OK status if you only specify the OSC port.
 
 #### OSC Listener (Optional)
-Enable the OSC Listener to receive real-time feedback from Resolume over OSC. This provides transport variables (elapsed time, remaining time, duration, clip name), countdown warning feedbacks, and active column tracking — without requiring the REST API.
+Enable the OSC Listener to receive real-time feedback from Resolume over OSC. This provides transport variables (elapsed time, remaining time, duration, clip name), progress bar feedback with countdown color warnings, and active column tracking — without requiring the REST API.
 
 To set up:
 1. In the module config, enable **Enable OSC Listener** and set the **OSC Receive Port** (default 7001).
@@ -151,7 +151,7 @@ These actions use OSC only and do not require the REST API.
 
 #### OSC Transport
 These feedbacks require the OSC Listener to be enabled.
-* Countdown Warning — changes button color based on remaining time (green → orange ≤30s → red ≤10s)
+* Progress Bar — displays a horizontal progress bar that fills left-to-right as a clip plays, with configurable color changes for countdown warnings (green → orange → red)
 * Active Column — highlights when a specific column is the active composition column
 
 ---
@@ -212,8 +212,9 @@ Composition-level variables:
 * Opacity 0% / 100%
 * Jog -10s / +10s
 * Last 60s / 30s / 15s / 10s (countdown jumps)
-* TRT (duration + remaining with countdown colors)
+* TRT (duration + remaining with countdown progress bar)
 * Clip Name + Remaining
+* Progress Bar (remaining time with color-changing progress bar)
 
 #### OSC Transport / Group (per group 1–3)
 * Trigger / Previous / Next Column
