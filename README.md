@@ -24,6 +24,15 @@ The module status will show an error if the Rest API port is not responding (e.g
 you've misconfigured Resolume). There is no way to tell if the OSC port is connected
 so the module will always show an OK status if you only specify the OSC port.
 
+#### OSC Listener (Optional)
+Enable the OSC Listener to receive real-time feedback from Resolume over OSC. This provides transport variables (elapsed time, remaining time, duration, clip name), countdown warning feedbacks, and active column tracking — without requiring the REST API.
+
+To set up:
+1. In the module config, enable **Enable OSC Listener** and set the **OSC Receive Port** (default 7001).
+2. In Resolume Preferences > OSC, enable **OSC Output**, set the destination to your Companion machine's IP, and set the port to match the Receive Port above.
+
+The OSC listener works alongside or independently of the REST API. OSC transport actions (play, pause, trigger, etc.) are always available when the OSC send port is configured, even without the listener enabled.
+
 ---
 ### Available Actions
 
@@ -64,6 +73,46 @@ so the module will always show an OK status if you only specify the OSC port.
 
 #### Custom
 * Custom OSC Command
+
+#### OSC Transport
+These actions use OSC only and do not require the REST API.
+
+**Composition / Columns**
+* Trigger Column
+* Next / Previous Column
+* Clear All Layers (Stop All)
+* Select Column
+* Set Composition Opacity / Volume / Master / Speed / Tempo
+* Tempo Tap / Resync
+* Next / Previous / Select Deck
+
+**Clips**
+* Connect Clip (Play)
+* Select Clip
+* Clip Pause / Resume (with Play/Pause toggle)
+* Set Clip Speed / Opacity / Volume
+* Go to Position (Normalized) / Time (Seconds)
+* Jog Time (±Seconds)
+* Go to Seconds from End
+* Restart Clip on Layer
+
+**Layers**
+* Clear Layer (Stop)
+* Layer Next / Previous Clip
+* Set Layer Opacity / Volume / Master / Speed
+* Bypass Layer / Solo Layer / Select Layer
+* Layer Transition Duration
+
+**Groups**
+* Group Trigger / Next / Previous Column
+* Group Clear (Disconnect Layers)
+* Group Bypass / Solo / Select
+* Group Set Master / Opacity / Volume / Speed
+* Select Group Column
+
+**Utility**
+* Custom OSC Command
+* Re-Query Active Clip Info (manual refresh)
 
 ---
 
@@ -106,6 +155,26 @@ so the module will always show an OK status if you only specify the OSC port.
 * Layer Group Next Column Name
 * Layer Group Previous Column Name
 
+#### OSC Transport
+These feedbacks require the OSC Listener to be enabled.
+* Countdown Warning — changes button color based on remaining time (green → orange ≤30s → red ≤10s)
+* Active Column — highlights when a specific column is the active composition column
+
+---
+
+### Available Variables (OSC Listener)
+When the OSC Listener is enabled, the following variables are available for each layer (1–10 by default, auto-expands for additional layers):
+* `osc_layer_N_elapsed` — elapsed time (MM:SS or HH:MM:SS)
+* `osc_layer_N_duration` — total duration
+* `osc_layer_N_remaining` — remaining time
+* `osc_layer_N_remaining_seconds` — remaining time in whole seconds
+* `osc_layer_N_progress` — playback progress (0–100%)
+* `osc_layer_N_clip_name` — name of the active clip
+
+Composition-level variables:
+* `osc_active_column` — currently active column number
+* `osc_active_column_name` — active column name (rename columns in Resolume for custom names)
+
 ---
 
 ### Available Presets
@@ -139,6 +208,35 @@ so the module will always show an OK status if you only specify the OSC port.
 #### Tempo
 * Tap
 * Resync
+
+#### OSC Transport / Layer (per layer 1–10)
+* Trigger Clip
+* Previous / Next Clip
+* Clear
+* Reverse / Pause / Play / Restart
+* Bypass Off / On
+* Opacity 0% / 100%
+* Jog -10s / +10s
+* Last 60s / 30s / 15s / 10s (countdown jumps)
+* TRT (duration + remaining with countdown colors)
+* Clip Name + Remaining
+
+#### OSC Transport / Group (per group 1–3)
+* Trigger / Previous / Next Column
+* Clear
+* Reverse / Pause / Play
+* Bypass Off / On
+* Master 0% / 100%
+
+#### OSC Transport / Composition
+* Trigger / Previous / Next Column
+* Clear All
+* Reverse / Pause / Play
+* Master 0% / 100%
+* Previous / Next Deck
+* Tempo Tap
+* Refresh Clip Data
+* Active Column / Active Column Name
 
 ---
 ### Some Examples
