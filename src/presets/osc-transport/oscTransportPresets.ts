@@ -8,7 +8,7 @@ const red = combineRgb(255, 0, 0)
 const green = combineRgb(0, 200, 0)
 const blue = combineRgb(0, 100, 255)
 const orange = combineRgb(255, 140, 0)
-const yellow = combineRgb(255, 220, 0)
+const yellow = combineRgb(204, 204, 0)
 const purple = combineRgb(160, 60, 255)
 const darkGray = combineRgb(40, 40, 40)
 
@@ -80,17 +80,17 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
         [`${pfx}_TriggerClip`]: btn(cat, 'Trigger Clip', `${lp}Trigger\\nClip`, white, green, 'auto', [['oscConnectClip', { layer: L, column: '1' }]]),
 
         // 2. Navigation
-        [`${pfx}_PrevClip`]: btn(cat, 'Previous Clip', `${lp}Previous\\nClip`, white, darkGray, 'auto', [['oscLayerPrevClip', { layer: L }]]),
-        [`${pfx}_NextClip`]: btn(cat, 'Next Clip', `${lp}Next\\nClip`, white, darkGray, 'auto', [['oscLayerNextClip', { layer: L }]]),
+        [`${pfx}_PrevClip`]: btn(cat, 'Previous Clip', `${lp}◀ Prev\\nClip`, white, darkGray, 'auto', [['oscLayerPrevClip', { layer: L }]]),
+        [`${pfx}_NextClip`]: btn(cat, 'Next Clip', `${lp}Next\\nClip ▶`, white, darkGray, 'auto', [['oscLayerNextClip', { layer: L }]]),
 
         // 3. Clear
         [`${pfx}_Clear`]: btn(cat, 'Clear', `${lp}Clear`, white, red, 'auto', [['oscClearLayer', { layer: L }]]),
 
         // 4. Transport
-        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}Reverse`, white, blue, '18', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
-        [`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}Pause`, white, red, '18', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
-        [`${pfx}_Play`]: btn(cat, 'Play', `${lp}Play`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
-        [`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}Restart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
+        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}◀◀\\nReverse`, white, blue, '18', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
+        [`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}⏸ Pause`, white, red, 'auto', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
+        [`${pfx}_Play`]: btn(cat, 'Play', `${lp}▶ Play`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
+        [`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}⏮\\nRestart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
 
         // 5. Bypass
         [`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${lp}Bypass\\nOff`, white, green, 'auto', [['oscBypassLayer', { layer: L, bypass: 'off' }]]),
@@ -119,11 +119,11 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
                 size: 'auto',
                 text: `TRT\\n$(${moduleId}:osc_layer_${L}_duration)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
                 color: white,
-                bgcolor: green,
+                bgcolor: black,
             },
             steps: [{ down: [], up: [] }],
             feedbacks: [
-                { feedbackId: 'oscCountdownWarning', options: { layer: L, color_30: orange, color_10: red, text_color: white } },
+                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
             ],
         },
 
@@ -135,11 +135,11 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
                 size: 'auto',
                 text: `$(${moduleId}:osc_layer_${L}_clip_name)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
                 color: white,
-                bgcolor: green,
+                bgcolor: black,
             },
             steps: [{ down: [], up: [] }],
             feedbacks: [
-                { feedbackId: 'oscCountdownWarning', options: { layer: L, color_30: orange, color_10: red, text_color: white } },
+                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
             ],
         },
 
@@ -173,16 +173,16 @@ function getGroupPresets(group: number): CompanionPresetDefinitions {
         [`${pfx}_TriggerCol`]: btn(cat, 'Trigger Column', `${gp}Trigger\\nColumn`, white, green, 'auto', [['oscGroupTriggerColumn', { group: G, column: '1' }]]),
 
         // 2. Navigation
-        [`${pfx}_PrevCol`]: btn(cat, 'Previous Column', `${gp}Previous\\nColumn`, white, darkGray, 'auto', [['oscGroupPrevColumn', { group: G, lastColumn: '10' }]]),
-        [`${pfx}_NextCol`]: btn(cat, 'Next Column', `${gp}Next\\nColumn`, white, darkGray, 'auto', [['oscGroupNextColumn', { group: G, lastColumn: '10' }]]),
+        [`${pfx}_PrevCol`]: btn(cat, 'Previous Column', `${gp}◀ Prev\\nColumn`, white, darkGray, 'auto', [['oscGroupPrevColumn', { group: G, lastColumn: '10' }]]),
+        [`${pfx}_NextCol`]: btn(cat, 'Next Column', `${gp}Next\\nColumn ▶`, white, darkGray, 'auto', [['oscGroupNextColumn', { group: G, lastColumn: '10' }]]),
 
         // 3. Clear
         [`${pfx}_Clear`]: btn(cat, 'Clear', `${gp}Clear`, white, red, 'auto', [['oscGroupClear', { group: G }]]),
 
         // 4. Transport
-        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}Reverse`, white, blue, '18', [['oscCustomCommand', { customPath: `/composition/groups/${G}/backwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        [`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}Pause`, white, red, '18', [['oscCustomCommand', { customPath: `/composition/groups/${G}/paused`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        [`${pfx}_Play`]: btn(cat, 'Play', `${gp}Play`, white, green, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/forwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, '18', [['oscCustomCommand', { customPath: `/composition/groups/${G}/backwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        [`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸ Pause`, white, red, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/paused`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        [`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶ Play`, white, green, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/forwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
 
         // 5. Bypass
         [`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${gp}Bypass\\nOff`, white, green, 'auto', [['oscGroupBypass', { group: G, bypass: 'off' }]]),
@@ -203,16 +203,16 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
         oscComp_TriggerCol: btn(cat, 'Trigger Column', 'Trigger\\nColumn', white, green, 'auto', [['oscTriggerColumn', { column: '1' }]]),
 
         // 2. Navigation
-        oscComp_PrevCol: btn(cat, 'Previous Column', 'Previous\\nColumn', white, darkGray, 'auto', [['oscPrevColumn', {}]]),
-        oscComp_NextCol: btn(cat, 'Next Column', 'Next\\nColumn', white, darkGray, 'auto', [['oscNextColumn', {}]]),
+        oscComp_PrevCol: btn(cat, 'Previous Column', '◀ Prev\\nColumn', white, darkGray, 'auto', [['oscPrevColumn', {}]]),
+        oscComp_NextCol: btn(cat, 'Next Column', 'Next\\nColumn ▶', white, darkGray, 'auto', [['oscNextColumn', {}]]),
 
         // 3. Clear
         oscComp_ClearAll: btn(cat, 'Clear All', 'Clear\\nAll', white, red, 'auto', [['oscClearAllLayers', {}]]),
 
         // 4. Transport
-        oscComp_Reverse: btn(cat, 'Reverse', 'Reverse', white, blue, '18', [['oscCustomCommand', { customPath: '/composition/backwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        oscComp_Pause: btn(cat, 'Pause', 'Pause', white, red, '18', [['oscCustomCommand', { customPath: '/composition/paused', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        oscComp_Play: btn(cat, 'Play', 'Play', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/forwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, '18', [['oscCustomCommand', { customPath: '/composition/backwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        oscComp_Pause: btn(cat, 'Pause', '⏸ Pause', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/paused', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+        oscComp_Play: btn(cat, 'Play', '▶ Play', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/forwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
 
         // 5. (no bypass at composition level)
 
@@ -221,8 +221,8 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
         oscComp_Master100: btn(cat, 'Master 100%', 'Master\\n100%', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/master', oscType: 'f', customValue: '1.0', relativeType: 'n' }]]),
 
         // 10. Deck
-        oscComp_PrevDeck: btn(cat, 'Previous Deck', 'Previous\\nDeck', white, darkGray, 'auto', [['oscPrevDeck', {}]]),
-        oscComp_NextDeck: btn(cat, 'Next Deck', 'Next\\nDeck', white, darkGray, 'auto', [['oscNextDeck', {}]]),
+        oscComp_PrevDeck: btn(cat, 'Previous Deck', '◀ Prev\\nDeck', white, darkGray, 'auto', [['oscPrevDeck', {}]]),
+        oscComp_NextDeck: btn(cat, 'Next Deck', 'Next\\nDeck ▶', white, darkGray, 'auto', [['oscNextDeck', {}]]),
 
         // 11. Tempo
         oscComp_TempoTap: btn(cat, 'Tempo Tap', 'Tempo\\nTap', white, darkGray, 'auto', [['oscTempoTap', {}]]),

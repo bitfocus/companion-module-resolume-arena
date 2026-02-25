@@ -12,62 +12,6 @@ export function getOscTransportFeedbacks(
 	resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionFeedbackDefinitions {
 	return {
-        oscCountdownWarning: {
-            type: 'advanced',
-            name: 'OSC: Countdown Warning',
-            description: 'Orange under 30s, red under 10s. Set the button default color to green (or whatever you like).',
-            options: [
-                {
-                    id: 'layer',
-                    type: 'textinput',
-                    label: 'Layer',
-                    default: '1',
-                    useVariables: true,
-                },
-                {
-                    id: 'color_30',
-                    type: 'colorpicker',
-                    label: 'Background: ≤30s remaining',
-                    default: combineRgb(255, 140, 0),
-                    returnType: 'number',
-                },
-                {
-                    id: 'color_10',
-                    type: 'colorpicker',
-                    label: 'Background: ≤10s remaining',
-                    default: combineRgb(255, 0, 0),
-                    returnType: 'number',
-                },
-                {
-                    id: 'text_color',
-                    type: 'colorpicker',
-                    label: 'Text color (when warning active)',
-                    default: combineRgb(255, 255, 255),
-                    returnType: 'number',
-                },
-            ],
-            callback: async (feedback: any): Promise<CompanionAdvancedFeedbackResult> => {
-                const oscState = resolumeArenaInstance.getOscState();
-                if (!oscState) return {};
-
-                const layer = +await resolumeArenaInstance.parseVariablesInString(feedback.options.layer);
-                const remaining = oscState.getLayerRemainingSeconds(layer);
-                const duration = oscState.getLayerDurationSeconds(layer);
-
-                // No clip or no duration data — no override
-                if (duration <= 0) return {};
-
-                if (remaining <= 10 && remaining > 0) {
-                    return { bgcolor: feedback.options.color_10, color: feedback.options.text_color };
-                }
-                if (remaining <= 30) {
-                    return { bgcolor: feedback.options.color_30, color: feedback.options.text_color };
-                }
-
-                // Above 30s — no override, button keeps its own default color
-                return {};
-            },
-        },
         oscProgressBar: {
             type: 'advanced',
             name: 'OSC: Progress Bar',
@@ -88,19 +32,17 @@ export function getOscTransportFeedbacks(
                 },
                 {
                     id: 'orangeSeconds',
-                    type: 'number',
+                    type: 'textinput',
                     label: 'Change to orange at remaining seconds',
-                    default: 30,
-                    min: 0,
-                    max: 1000,
+                    default: '30',
+                    useVariables: true,
                 },
                 {
                     id: 'redSeconds',
-                    type: 'number',
+                    type: 'textinput',
                     label: 'Change to red at remaining seconds',
-                    default: 10,
-                    min: 0,
-                    max: 1000,
+                    default: '10',
+                    useVariables: true,
                 },
                 {
                     id: 'runningColor',
@@ -138,10 +80,15 @@ export function getOscTransportFeedbacks(
                 }
 
                 // Determine bar color: green → orange → red
+                const orangeResolved = await resolumeArenaInstance.parseVariablesInString(String(feedback.options.orangeSeconds ?? '30'))
+                const redResolved = await resolumeArenaInstance.parseVariablesInString(String(feedback.options.redSeconds ?? '10'))
+                const orangeThreshold = parseFloat(orangeResolved) || 30
+                const redThreshold = parseFloat(redResolved) || 10
+
                 let barColor: number
-                if (remaining <= +feedback.options.redSeconds) {
+                if (remaining <= redThreshold) {
                     barColor = +feedback.options.criticalColor
-                } else if (remaining <= +feedback.options.orangeSeconds) {
+                } else if (remaining <= orangeThreshold) {
                     barColor = +feedback.options.warningColor
                 } else {
                     barColor = +feedback.options.runningColor
