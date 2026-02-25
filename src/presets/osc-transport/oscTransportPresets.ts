@@ -142,6 +142,23 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
                 { feedbackId: 'oscCountdownWarning', options: { layer: L, color_30: orange, color_10: red, text_color: white } },
             ],
         },
+
+        // 10. Progress Bar
+        [`${pfx}_ProgressBar`]: {
+            type: 'button',
+            category: cat,
+            name: 'Progress Bar',
+            style: {
+                size: 'auto',
+                text: `$(${moduleId}:osc_layer_${L}_remaining)`,
+                color: white,
+                bgcolor: black,
+            },
+            steps: [{ down: [], up: [] }],
+            feedbacks: [
+                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 30, redSeconds: 10, runningColor: green, warningColor: orange, criticalColor: red } },
+            ],
+        },
     }
 }
 

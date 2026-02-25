@@ -605,6 +605,7 @@ export class OscState {
         if (this._lastRemainingInt.get(layer) !== remainingInt) {
             this._lastRemainingInt.set(layer, remainingInt);
             this.instance.checkFeedbacks('oscCountdownWarning');
+            this.instance.checkFeedbacks('oscProgressBar');
         }
     }
     // ──────────────────────────────────────────────────────────
