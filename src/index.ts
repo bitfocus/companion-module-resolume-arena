@@ -84,7 +84,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			Object.assign(presets, getApiPresets())
 		}
 		if (this.config?.useOscListener) {
-			Object.assign(presets, getOscTransportPresets(this.oscState.getRegisteredLayers()))
+			Object.assign(presets, getOscTransportPresets(this.label, this.oscState.getRegisteredLayers()))
 		}
 		this.setPresetDefinitions(presets)
 	}

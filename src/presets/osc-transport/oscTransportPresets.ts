@@ -12,8 +12,6 @@ const yellow = combineRgb(255, 220, 0)
 const purple = combineRgb(160, 60, 255)
 const darkGray = combineRgb(40, 40, 40)
 
-const moduleId = 'resolume-arena'
-
 // Color scheme (consistent across all preset groups):
 // green    = trigger / play / bypass off / master 100% / opacity 100%
 // red      = clear / pause / bypass on / master 0% / opacity 0%
@@ -57,20 +55,21 @@ function btn(
 	}
 }
 
-export function getOscTransportPresets(extraLayers?: Set<number>): CompanionPresetDefinitions {
+export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<number>): CompanionPresetDefinitions {
+    const moduleId = instanceLabel || 'resolume-arena'
     const presets: CompanionPresetDefinitions = {}
-    for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l));
+    for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l, moduleId));
     if (extraLayers) {
         for (const l of extraLayers) {
-            if (l > 10) Object.assign(presets, getLayerPresets(l));
+            if (l > 10) Object.assign(presets, getLayerPresets(l, moduleId));
         }
     }
     for (let g = 1; g <= 3; g++) Object.assign(presets, getGroupPresets(g));
-    Object.assign(presets, getCompositionPresets());
+    Object.assign(presets, getCompositionPresets(moduleId));
     return presets
 }
 
-function getLayerPresets(layer: number): CompanionPresetDefinitions {
+function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefinitions {
     const cat = `OSC Transport / Layer ${layer}`
     const L = `${layer}`
     const pfx = `oscL${L}`
@@ -179,7 +178,7 @@ function getGroupPresets(group: number): CompanionPresetDefinitions {
     }
 }
 
-function getCompositionPresets(): CompanionPresetDefinitions {
+function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
     const cat = 'OSC Transport / Composition'
 
     return {
