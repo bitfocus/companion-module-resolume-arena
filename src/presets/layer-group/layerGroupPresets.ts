@@ -14,7 +14,7 @@ import {connectLayerGroupColumnPreset} from './presets/connectLayerGroupColumnPr
 import {selectPreviousLayerGroupColumnPreset} from './presets/selectPreviousLayerGroupColumnPreset';
 import {connectNextLayerGroupColumnPreset} from './presets/connectNextLayerGroupColumnPreset';
 import {connectPreviousLayerGroupColumnPreset} from './presets/connectPreviousLayerGroupColumnPreset';
-import {connectedLayerGroupColumnNamePreset} from './presets/coonnectedLayerGroupColumnNamePreset';
+import {connectedLayerGroupColumnNamePreset} from './presets/connectedLayerGroupColumnNamePreset';
 
 export function getLayerGroupApiPresets(category: string): CompanionPresetDefinitions {
 	return {
