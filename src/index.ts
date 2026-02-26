@@ -119,6 +119,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			this.oscListener.destroy()
 			this.oscListener = null
 		}
+		if (this.websocketApi) {
+			await this.websocketApi.destroy()
+			this.websocketApi = null
+		}
 		this.oscState.clear()
 
 		if (config.webapiPort && config.useRest) {
@@ -146,6 +150,9 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			}
 		} else {
 			this.restApi = null
+			if (this.websocketApi as WebsocketApi | null) {
+				await this.websocketApi!.destroy()
+			}
 			this.websocketApi = null
 		}
 
@@ -178,7 +185,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		return this.config
 	}
 
-	getWebSocketSubscrivers(): Set<MessageSubscriber> {
+	getWebSocketSubscribers(): Set<MessageSubscriber> {
 		return this.websocketSubscribers
 	}
 
@@ -235,6 +242,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	}
 
 	async destroy(): Promise<void> {
+		if (this.websocketApi) {
+			await this.websocketApi.destroy()
+			this.websocketApi = null
+		}
 		this.restApi = null
 		this.oscApi = null
 		if (this.oscListener) {

@@ -12,7 +12,7 @@ export class WebsocketInstance {
 	private isInitialized = false;
 	private readonly wsRegex = '^wss?:\\/\\/([\\da-z\\.-]+)(:\\d{1,5})?(?:\\/(.*))?$';
 
-	private reconnect_timer: any;
+	private reconnect_timer: ReturnType<typeof setTimeout> | null = null;
 	private ws?: WebSocket;
 
 	constructor(private readonly resolumeArenaInstance: ResolumeArenaModuleInstance, private readonly config: ResolumeArenaConfig) {
@@ -132,7 +132,7 @@ export class WebsocketInstance {
 	}
 
 	private updateNeededSubscribers(message: {path: string; value: string | number | boolean}, isComposition: boolean) {
-		for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscrivers()) {
+		for (const websocketSubscriber of this.resolumeArenaInstance.getWebSocketSubscribers()) {
 			websocketSubscriber.messageUpdates(message, isComposition);
 		}
 	}
