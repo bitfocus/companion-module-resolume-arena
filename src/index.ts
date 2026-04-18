@@ -54,10 +54,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 		await this.restartApis()
 		this.subscribeFeedbacks()
-		this.setupFeedback()
-		this.setupVariables()
-		this.setActionDefinitions(getActions(this))
-		this.setupPresets()
 
 		this.websocketSubscribers.add(this.layerUtils)
 		this.websocketSubscribers.add(this.layerGroupUtils)
