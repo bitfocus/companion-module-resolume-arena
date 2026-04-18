@@ -52,9 +52,9 @@ export class OscState {
 	private registeredLayers: Set<number> = new Set()
 	/** Periodic refresh interval handle */
 	private refreshInterval: ReturnType<typeof setInterval> | null = null
-	private _quickRefreshTimer: ReturnType<typeof setTimeout> | null = null
-	private _lastRemainingInt: Map<number, number> = new Map()
-	private _lastQueryTime: Map<number, number> = new Map()
+	private quickRefreshTimer: ReturnType<typeof setTimeout> | null = null
+	private lastRemainingInt: Map<number, number> = new Map()
+	private lastQueryTime: Map<number, number> = new Map()
 	/** Currently active composition column */
 	public activeColumn: number = 0
 	/** Column names cache */
@@ -486,20 +486,6 @@ export class OscState {
 		return clip.position;
 	}
 	/**
-	 * Calculate the normalized position for "X seconds from end of clip"
-	 * on the given layer. This is the core function for "go to last N seconds".
-	 *
-	 * @returns normalized position (0-1) to send via OSC, or undefined if no clip data
-	 */
-	getPositionForSecondsFromEnd(layer: number, secondsFromEnd: number): number | undefined {
-		const clip = this.getActiveClip(layer);
-		if (!clip || clip.duration === 0)
-			return undefined;
-		const offsetNormalized = secondsFromEnd / this.maxRange;
-		const target = clip.duration - offsetNormalized;
-		return Math.max(0, Math.min(target, clip.duration));
-	}
-	/**
 	 * Get the active clip column number for a layer.
 	 * Needed for building the OSC address to send commands to.
 	 */
@@ -572,8 +558,8 @@ export class OscState {
 		}
 		// Check feedbacks only when remaining seconds integer changes (not every frame)
 		const remainingInt = Math.floor(remainingSec);
-		if (this._lastRemainingInt.get(layer) !== remainingInt) {
-			this._lastRemainingInt.set(layer, remainingInt);
+		if (this.lastRemainingInt.get(layer) !== remainingInt) {
+			this.lastRemainingInt.set(layer, remainingInt);
 			this.instance.checkFeedbacks('oscProgressBar');
 		}
 	}
@@ -598,11 +584,11 @@ export class OscState {
 		}
 		// Debounce: no more than one query per layer per second
 		const now = Date.now();
-		const lastQuery = this._lastQueryTime.get(layer) || 0;
+		const lastQuery = this.lastQueryTime.get(layer) || 0;
 		if (now - lastQuery < 1000) {
 			return;
 		}
-		this._lastQueryTime.set(layer, now);
+		this.lastQueryTime.set(layer, now);
 
 		const host = config.host;
 		const port = config.port;
@@ -680,9 +666,9 @@ export class OscState {
 	 * Debounced to 200ms to prevent flood.
 	 */
 	scheduleQuickRefresh(): void {
-		if (this._quickRefreshTimer) return; // already scheduled
-		this._quickRefreshTimer = setTimeout(() => {
-			this._quickRefreshTimer = null;
+		if (this.quickRefreshTimer) return; // already scheduled
+		this.quickRefreshTimer = setTimeout(() => {
+			this.quickRefreshTimer = null;
 			const listener = this.instance.getOscListener();
 			const config = this.instance.getConfig();
 			if (!listener) return;
@@ -713,9 +699,9 @@ export class OscState {
 	}
 	destroy(): void {
 		this.stopPeriodicRefresh();
-		if (this._quickRefreshTimer) {
-			clearTimeout(this._quickRefreshTimer);
-			this._quickRefreshTimer = null;
+		if (this.quickRefreshTimer) {
+			clearTimeout(this.quickRefreshTimer);
+			this.quickRefreshTimer = null;
 		}
 		this.clear();
 	}
