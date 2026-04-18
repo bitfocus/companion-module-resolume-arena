@@ -46,208 +46,208 @@ function btn(
 	feedbacks?: Array<{feedbackId: string; options: CompanionOptionValues}>
 ): CompanionButtonPresetDefinition {
 	return {
-        type: 'button',
-        category,
-        name,
-        style: { size: (size || 'auto') as any, text, color: color || white, bgcolor: bgcolor || darkGray },
-        steps: [{ down: actions.map(a => ({ actionId: a[0], options: a[1] })), up: [] }],
+		type: 'button',
+		category,
+		name,
+		style: { size: (size || 'auto') as any, text, color: color || white, bgcolor: bgcolor || darkGray },
+		steps: [{ down: actions.map(a => ({ actionId: a[0], options: a[1] })), up: [] }],
 		feedbacks: (feedbacks || []) as CompanionPresetFeedback[],
 	}
 }
 
 export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<number>): CompanionPresetDefinitions {
-    const moduleId = instanceLabel || 'resolume-arena'
-    const presets: CompanionPresetDefinitions = {}
-    for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l, moduleId));
-    if (extraLayers) {
-        for (const l of extraLayers) {
-            if (l > 10) Object.assign(presets, getLayerPresets(l, moduleId));
-        }
-    }
-    for (let g = 1; g <= 3; g++) Object.assign(presets, getGroupPresets(g));
-    Object.assign(presets, getCompositionPresets(moduleId));
-    return presets
+	const moduleId = instanceLabel || 'resolume-arena'
+	const presets: CompanionPresetDefinitions = {}
+	for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l, moduleId));
+	if (extraLayers) {
+		for (const l of extraLayers) {
+			if (l > 10) Object.assign(presets, getLayerPresets(l, moduleId));
+		}
+	}
+	for (let g = 1; g <= 3; g++) Object.assign(presets, getGroupPresets(g));
+	Object.assign(presets, getCompositionPresets(moduleId));
+	return presets
 }
 
 function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefinitions {
-    const cat = `OSC Transport / Layer ${layer}`
-    const L = `${layer}`
-    const pfx = `oscL${L}`
-    const lp = `Layer ${layer}\\n`
+	const cat = `OSC Transport / Layer ${layer}`
+	const L = `${layer}`
+	const pfx = `oscL${L}`
+	const lp = `Layer ${layer}\\n`
 
-    return {
-        // 1. Trigger
-        [`${pfx}_TriggerClip`]: btn(cat, 'Trigger Clip', `${lp}Trigger\\nClip`, white, green, 'auto', [['oscConnectClip', { layer: L, column: '1' }]]),
+	return {
+		// 1. Trigger
+		[`${pfx}_TriggerClip`]: btn(cat, 'Trigger Clip', `${lp}Trigger\\nClip`, white, green, 'auto', [['oscConnectClip', { layer: L, column: '1' }]]),
 
-        // 2. Navigation
-        [`${pfx}_PrevClip`]: btn(cat, 'Previous Clip', `${lp}◀\\nPrevious\\nClip`, white, darkGray, 'auto', [['oscLayerPrevClip', { layer: L }]]),
-        [`${pfx}_NextClip`]: btn(cat, 'Next Clip', `${lp}▶\\nNext\\nClip`, white, darkGray, 'auto', [['oscLayerNextClip', { layer: L }]]),
+		// 2. Navigation
+		[`${pfx}_PrevClip`]: btn(cat, 'Previous Clip', `${lp}◀\\nPrevious\\nClip`, white, darkGray, 'auto', [['oscLayerPrevClip', { layer: L }]]),
+		[`${pfx}_NextClip`]: btn(cat, 'Next Clip', `${lp}▶\\nNext\\nClip`, white, darkGray, 'auto', [['oscLayerNextClip', { layer: L }]]),
 
-        // 3. Clear
-        [`${pfx}_Clear`]: btn(cat, 'Clear', `${lp}Clear`, white, red, 'auto', [['oscClearLayer', { layer: L }]]),
+		// 3. Clear
+		[`${pfx}_Clear`]: btn(cat, 'Clear', `${lp}Clear`, white, red, 'auto', [['oscClearLayer', { layer: L }]]),
 
-        // 4. Transport
-        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}◀◀\\nReverse`, white, blue, 'auto', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
-        [`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}⏸\\nPause`, white, red, 'auto', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
-        [`${pfx}_Play`]: btn(cat, 'Play', `${lp}▶\\nPlay`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
-        [`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}⏮\\nRestart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
+		// 4. Transport
+		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}◀◀\\nReverse`, white, blue, 'auto', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
+		[`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}⏸\\nPause`, white, red, 'auto', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
+		[`${pfx}_Play`]: btn(cat, 'Play', `${lp}▶\\nPlay`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
+		[`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}⏮\\nRestart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
 
-        // 5. Bypass
-        [`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${lp}Bypass\\nOff`, white, green, 'auto', [['oscBypassLayer', { layer: L, bypass: 'off' }]]),
-        [`${pfx}_BypassOn`]: btn(cat, 'Bypass On', `${lp}Bypass\\nOn`, white, red, 'auto', [['oscBypassLayer', { layer: L, bypass: 'on' }]]),
+		// 5. Bypass
+		[`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${lp}Bypass\\nOff`, white, green, 'auto', [['oscBypassLayer', { layer: L, bypass: 'off' }]]),
+		[`${pfx}_BypassOn`]: btn(cat, 'Bypass On', `${lp}Bypass\\nOn`, white, red, 'auto', [['oscBypassLayer', { layer: L, bypass: 'on' }]]),
 
-        // 6. Opacity
-        [`${pfx}_Opacity0`]: btn(cat, 'Opacity 0%', `${lp}Opacity\\n0%`, white, red, 'auto', [['oscSetLayerOpacity', { layer: L, value: '0.0' }]]),
-        [`${pfx}_Opacity100`]: btn(cat, 'Opacity 100%', `${lp}Opacity\\n100%`, white, green, 'auto', [['oscSetLayerOpacity', { layer: L, value: '1.0' }]]),
+		// 6. Opacity
+		[`${pfx}_Opacity0`]: btn(cat, 'Opacity 0%', `${lp}Opacity\\n0%`, white, red, 'auto', [['oscSetLayerOpacity', { layer: L, value: '0.0' }]]),
+		[`${pfx}_Opacity100`]: btn(cat, 'Opacity 100%', `${lp}Opacity\\n100%`, white, green, 'auto', [['oscSetLayerOpacity', { layer: L, value: '1.0' }]]),
 
-        // 7. Jog
-        [`${pfx}_JogBack`]: btn(cat, 'Jog -10s', `${lp}◀◀\\n10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '-10' }]]),
-        [`${pfx}_JogFwd`]: btn(cat, 'Jog +10s', `${lp}▶▶\\n10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '10' }]]),
+		// 7. Jog
+		[`${pfx}_JogBack`]: btn(cat, 'Jog -10s', `${lp}◀◀\\n10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '-10' }]]),
+		[`${pfx}_JogFwd`]: btn(cat, 'Jog +10s', `${lp}▶▶\\n10s`, white, blue, 'auto', [['oscClipJogTime', { layer: L, time: '10' }]]),
 
-        // 8. Countdown Jumps
-        [`${pfx}_GoToLast60`]: btn(cat, 'Last 60s', `${lp}Last 60s`, white, purple, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '60' }]]),
-        [`${pfx}_GoToLast30`]: btn(cat, 'Last 30s', `${lp}Last 30s`, white, orange, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '30' }]]),
-        [`${pfx}_GoToLast15`]: btn(cat, 'Last 15s', `${lp}Last 15s`, black, yellow, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '15' }]]),
-        [`${pfx}_GoToLast10`]: btn(cat, 'Last 10s', `${lp}Last 10s`, white, red, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '10' }]]),
+		// 8. Countdown Jumps
+		[`${pfx}_GoToLast60`]: btn(cat, 'Last 60s', `${lp}Last 60s`, white, purple, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '60' }]]),
+		[`${pfx}_GoToLast30`]: btn(cat, 'Last 30s', `${lp}Last 30s`, white, orange, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '30' }]]),
+		[`${pfx}_GoToLast15`]: btn(cat, 'Last 15s', `${lp}Last 15s`, black, yellow, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '15' }]]),
+		[`${pfx}_GoToLast10`]: btn(cat, 'Last 10s', `${lp}Last 10s`, white, red, 'auto', [['oscClipGoToSecondsFromEnd', { layer: L, seconds: '10' }]]),
 
-        // 9. Timer Displays
-        [`${pfx}_TRT`]: {
-            type: 'button',
-            category: cat,
-            name: 'TRT',
-            style: {
-                size: '14',
-                text: `TRT\\n$(${moduleId}:osc_layer_${L}_duration)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
-                color: white,
-                bgcolor: black,
-            },
-            steps: [{ down: [], up: [] }],
-            feedbacks: [
-                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
-            ],
-        },
+		// 9. Timer Displays
+		[`${pfx}_TRT`]: {
+			type: 'button',
+			category: cat,
+			name: 'TRT',
+			style: {
+				size: '14',
+				text: `TRT\\n$(${moduleId}:osc_layer_${L}_duration)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
+				color: white,
+				bgcolor: black,
+			},
+			steps: [{ down: [], up: [] }],
+			feedbacks: [
+				{ feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
+			],
+		},
 
-        [`${pfx}_ClipNameRemaining`]: {
-            type: 'button',
-            category: cat,
-            name: 'Clip Name + Remaining',
-            style: {
-                size: 'auto',
-                text: `$(${moduleId}:osc_layer_${L}_clip_name)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
-                color: white,
-                bgcolor: black,
-            },
-            steps: [{ down: [], up: [] }],
-            feedbacks: [
-                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
-            ],
-        },
+		[`${pfx}_ClipNameRemaining`]: {
+			type: 'button',
+			category: cat,
+			name: 'Clip Name + Remaining',
+			style: {
+				size: 'auto',
+				text: `$(${moduleId}:osc_layer_${L}_clip_name)\\n$(${moduleId}:osc_layer_${L}_remaining)`,
+				color: white,
+				bgcolor: black,
+			},
+			steps: [{ down: [], up: [] }],
+			feedbacks: [
+				{ feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 15, redSeconds: 10, runningColor: green, warningColor: yellow, criticalColor: red } },
+			],
+		},
 
-        // 10. Progress Bar
-        [`${pfx}_ProgressBar`]: {
-            type: 'button',
-            category: cat,
-            name: 'Progress Bar',
-            style: {
-                size: '18',
-                text: `$(${moduleId}:osc_layer_${L}_remaining)`,
-                color: white,
-                bgcolor: black,
-            },
-            steps: [{ down: [], up: [] }],
-            feedbacks: [
-                { feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 30, redSeconds: 10, runningColor: green, warningColor: orange, criticalColor: red } },
-            ],
-        },
-    }
+		// 10. Progress Bar
+		[`${pfx}_ProgressBar`]: {
+			type: 'button',
+			category: cat,
+			name: 'Progress Bar',
+			style: {
+				size: '18',
+				text: `$(${moduleId}:osc_layer_${L}_remaining)`,
+				color: white,
+				bgcolor: black,
+			},
+			steps: [{ down: [], up: [] }],
+			feedbacks: [
+				{ feedbackId: 'oscProgressBar', options: { layer: L, hideWhenNotRunning: true, orangeSeconds: 30, redSeconds: 10, runningColor: green, warningColor: orange, criticalColor: red } },
+			],
+		},
+	}
 }
 
 function getGroupPresets(group: number): CompanionPresetDefinitions {
-    const cat = `OSC Transport / Group ${group}`
-    const G = `${group}`
-    const pfx = `oscG${G}`
-    const gp = `Group ${group}\\n`
+	const cat = `OSC Transport / Group ${group}`
+	const G = `${group}`
+	const pfx = `oscG${G}`
+	const gp = `Group ${group}\\n`
 
-    return {
-        // 1. Trigger
-        [`${pfx}_TriggerCol`]: btn(cat, 'Trigger Column', `${gp}Trigger\\nColumn`, white, green, 'auto', [['oscGroupTriggerColumn', { group: G, column: '1' }]]),
+	return {
+		// 1. Trigger
+		[`${pfx}_TriggerCol`]: btn(cat, 'Trigger Column', `${gp}Trigger\\nColumn`, white, green, 'auto', [['oscGroupTriggerColumn', { group: G, column: '1' }]]),
 
-        // 2. Navigation
-        [`${pfx}_PrevCol`]: btn(cat, 'Previous Column', `${gp}◀\\nPrevious\\nColumn`, white, darkGray, 'auto', [['oscGroupPrevColumn', { group: G, lastColumn: '10' }]]),
-        [`${pfx}_NextCol`]: btn(cat, 'Next Column', `${gp}▶\\nNext\\nColumn`, white, darkGray, 'auto', [['oscGroupNextColumn', { group: G, lastColumn: '10' }]]),
+		// 2. Navigation
+		[`${pfx}_PrevCol`]: btn(cat, 'Previous Column', `${gp}◀\\nPrevious\\nColumn`, white, darkGray, 'auto', [['oscGroupPrevColumn', { group: G, lastColumn: '10' }]]),
+		[`${pfx}_NextCol`]: btn(cat, 'Next Column', `${gp}▶\\nNext\\nColumn`, white, darkGray, 'auto', [['oscGroupNextColumn', { group: G, lastColumn: '10' }]]),
 
-        // 3. Clear
-        [`${pfx}_Clear`]: btn(cat, 'Clear', `${gp}Clear`, white, red, 'auto', [['oscGroupClear', { group: G }]]),
+		// 3. Clear
+		[`${pfx}_Clear`]: btn(cat, 'Clear', `${gp}Clear`, white, red, 'auto', [['oscGroupClear', { group: G }]]),
 
-        // 4. Transport
-        [`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/backwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        [`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸\\nPause`, white, red, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/paused`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        [`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶\\nPlay`, white, green, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/forwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		// 4. Transport
+		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/backwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		[`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸\\nPause`, white, red, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/paused`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		[`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶\\nPlay`, white, green, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/forwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
 
-        // 5. Bypass
-        [`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${gp}Bypass\\nOff`, white, green, 'auto', [['oscGroupBypass', { group: G, bypass: 'off' }]]),
-        [`${pfx}_BypassOn`]: btn(cat, 'Bypass On', `${gp}Bypass\\nOn`, white, red, 'auto', [['oscGroupBypass', { group: G, bypass: 'on' }]]),
+		// 5. Bypass
+		[`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${gp}Bypass\\nOff`, white, green, 'auto', [['oscGroupBypass', { group: G, bypass: 'off' }]]),
+		[`${pfx}_BypassOn`]: btn(cat, 'Bypass On', `${gp}Bypass\\nOn`, white, red, 'auto', [['oscGroupBypass', { group: G, bypass: 'on' }]]),
 
-        // 6. Master
-        [`${pfx}_Master0`]: btn(cat, 'Master 0%', `${gp}Master\\n0%`, white, red, 'auto', [['oscGroupSetMaster', { group: G, value: '0.0' }]]),
-        [`${pfx}_Master100`]: btn(cat, 'Master 100%', `${gp}Master\\n100%`, white, green, 'auto', [['oscGroupSetMaster', { group: G, value: '1.0' }]]),
+		// 6. Master
+		[`${pfx}_Master0`]: btn(cat, 'Master 0%', `${gp}Master\\n0%`, white, red, 'auto', [['oscGroupSetMaster', { group: G, value: '0.0' }]]),
+		[`${pfx}_Master100`]: btn(cat, 'Master 100%', `${gp}Master\\n100%`, white, green, 'auto', [['oscGroupSetMaster', { group: G, value: '1.0' }]]),
 
-    }
+	}
 }
 
 function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
-    const cat = 'OSC Transport / Composition'
+	const cat = 'OSC Transport / Composition'
 
-    return {
-        // 1. Trigger
-        oscComp_TriggerCol: btn(cat, 'Trigger Column', 'Trigger\\nColumn', white, green, 'auto', [['oscTriggerColumn', { column: '1' }]]),
+	return {
+		// 1. Trigger
+		oscComp_TriggerCol: btn(cat, 'Trigger Column', 'Trigger\\nColumn', white, green, 'auto', [['oscTriggerColumn', { column: '1' }]]),
 
-        // 2. Navigation
-        oscComp_PrevCol: btn(cat, 'Previous Column', '◀\\nPrevious\\nColumn', white, darkGray, 'auto', [['oscPrevColumn', {}]]),
-        oscComp_NextCol: btn(cat, 'Next Column', '▶\\nNext\\nColumn', white, darkGray, 'auto', [['oscNextColumn', {}]]),
+		// 2. Navigation
+		oscComp_PrevCol: btn(cat, 'Previous Column', '◀\\nPrevious\\nColumn', white, darkGray, 'auto', [['oscPrevColumn', {}]]),
+		oscComp_NextCol: btn(cat, 'Next Column', '▶\\nNext\\nColumn', white, darkGray, 'auto', [['oscNextColumn', {}]]),
 
-        // 3. Clear
-        oscComp_ClearAll: btn(cat, 'Clear All', 'Clear\\nAll', white, red, 'auto', [['oscClearAllLayers', {}]]),
+		// 3. Clear
+		oscComp_ClearAll: btn(cat, 'Clear All', 'Clear\\nAll', white, red, 'auto', [['oscClearAllLayers', {}]]),
 
-        // 4. Transport
-        oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, 'auto', [['oscCustomCommand', { customPath: '/composition/backwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        oscComp_Pause: btn(cat, 'Pause', '⏸\\nPause', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/paused', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-        oscComp_Play: btn(cat, 'Play', '▶\\nPlay', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/forwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		// 4. Transport
+		oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, 'auto', [['oscCustomCommand', { customPath: '/composition/backwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		oscComp_Pause: btn(cat, 'Pause', '⏸\\nPause', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/paused', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		oscComp_Play: btn(cat, 'Play', '▶\\nPlay', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/forwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
 
-        // 5. (no bypass at composition level)
+		// 5. (no bypass at composition level)
 
-        // 6. Master
-        oscComp_Master0: btn(cat, 'Master 0%', 'Master\\n0%', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/master', oscType: 'f', customValue: '0.0', relativeType: 'n' }]]),
-        oscComp_Master100: btn(cat, 'Master 100%', 'Master\\n100%', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/master', oscType: 'f', customValue: '1.0', relativeType: 'n' }]]),
+		// 6. Master
+		oscComp_Master0: btn(cat, 'Master 0%', 'Master\\n0%', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/master', oscType: 'f', customValue: '0.0', relativeType: 'n' }]]),
+		oscComp_Master100: btn(cat, 'Master 100%', 'Master\\n100%', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/master', oscType: 'f', customValue: '1.0', relativeType: 'n' }]]),
 
-        // 10. Deck
-        oscComp_PrevDeck: btn(cat, 'Previous Deck', '◀\\nPrevious\\nDeck', white, darkGray, 'auto', [['oscPrevDeck', {}]]),
-        oscComp_NextDeck: btn(cat, 'Next Deck', '▶\\nNext\\nDeck', white, darkGray, 'auto', [['oscNextDeck', {}]]),
+		// 10. Deck
+		oscComp_PrevDeck: btn(cat, 'Previous Deck', '◀\\nPrevious\\nDeck', white, darkGray, 'auto', [['oscPrevDeck', {}]]),
+		oscComp_NextDeck: btn(cat, 'Next Deck', '▶\\nNext\\nDeck', white, darkGray, 'auto', [['oscNextDeck', {}]]),
 
-        // 11. Tempo
-        oscComp_TempoTap: btn(cat, 'Tempo Tap', 'Tempo\\nTap', white, darkGray, 'auto', [['oscTempoTap', {}]]),
+		// 11. Tempo
+		oscComp_TempoTap: btn(cat, 'Tempo Tap', 'Tempo\\nTap', white, darkGray, 'auto', [['oscTempoTap', {}]]),
 
-        // 12. Utility
-        oscComp_ReQuery: btn(cat, 'Refresh Clip Data', 'Refresh\\nClip Data', white, darkGray, 'auto', [['oscReQueryClip', {}]]),
+		// 12. Utility
+		oscComp_ReQuery: btn(cat, 'Refresh Clip Data', 'Refresh\\nClip Data', white, darkGray, 'auto', [['oscReQueryClip', {}]]),
 
-        // Info
-        oscComp_ActiveColumn: {
-            type: 'button',
-            category: cat,
-            name: 'Active Column',
-            style: { size: 'auto', text: `Column\\n$(${moduleId}:osc_active_column)`, color: white, bgcolor: darkGray },
-            steps: [{ down: [], up: [] }],
-            feedbacks: [],
-        },
+		// Info
+		oscComp_ActiveColumn: {
+			type: 'button',
+			category: cat,
+			name: 'Active Column',
+			style: { size: 'auto', text: `Column\\n$(${moduleId}:osc_active_column)`, color: white, bgcolor: darkGray },
+			steps: [{ down: [], up: [] }],
+			feedbacks: [],
+		},
 
-        oscComp_ActiveColumnName: {
-            type: 'button',
-            category: cat,
-            name: 'Active Column Name',
-            style: { size: 'auto', text: `$(${moduleId}:osc_active_column_name)`, color: white, bgcolor: darkGray },
-            steps: [{ down: [], up: [] }],
-            feedbacks: [],
-        },
+		oscComp_ActiveColumnName: {
+			type: 'button',
+			category: cat,
+			name: 'Active Column Name',
+			style: { size: 'auto', text: `$(${moduleId}:osc_active_column_name)`, color: white, bgcolor: darkGray },
+			steps: [{ down: [], up: [] }],
+			feedbacks: [],
+		},
 
-    };
+	};
 }
