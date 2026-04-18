@@ -6,7 +6,6 @@ import {getCompositionActions} from './actions/composition/compositionActions';
 import {getDeckActions} from './actions/deck/deckActions';
 import {getLayerActions} from './actions/layer/layerActions';
 import {getLayerGroupActions} from './actions/layer-group/layerGroupActions';
-import {getCustomActions} from './actions/custom/customActions';
 import {getOscTransportActions} from './actions/osc-transport/oscTransportActions';
 
 export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
@@ -20,7 +19,6 @@ export function getActions(resolumeArenaModuleInstance: ResolumeArenaModuleInsta
 		...getDeckActions(resolumeArenaModuleInstance),
 		...getLayerActions(resolumeArenaModuleInstance),
 		...getLayerGroupActions(resolumeArenaModuleInstance),
-		...getCustomActions(resolumeArenaModuleInstance),
 		...oscTransportActions,
 	};
 }

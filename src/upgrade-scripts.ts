@@ -5,6 +5,7 @@ import {upgrade_v3_0_1} from './upgrade-scripts/upgrade_v3_0_1';
 import {upgrade_v3_5_2} from './upgrade-scripts/upgrade_v3_5_2';
 import {upgrade_v3_7_0} from './upgrade-scripts/upgrade_v3_7_0';
 import {upgrade_v3_10_0} from './upgrade-scripts/upgrade_v3_10_0';
+import {upgrade_v3_13_0} from './upgrade-scripts/upgrade_v3_13_0';
 
 export function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaConfig>[] {
 	return [
@@ -12,6 +13,7 @@ export function getUpgradeScripts(): CompanionStaticUpgradeScript<ResolumeArenaC
 		upgrade_v3_0_1,
 		upgrade_v3_5_2,
 		upgrade_v3_7_0,
-		upgrade_v3_10_0
+		upgrade_v3_10_0,
+		upgrade_v3_13_0,
 	];
 }
