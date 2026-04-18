@@ -64,6 +64,7 @@ export class ArenaOscListener {
 				}
 			})
 			this.udpPort.on('ready', () => {
+				if (!this.udpPort) return
 				this.isOpen = true
 				this.instance.log('info', `OSC Listener active on port ${this.port}`)
 				// If no REST API is configured, OSC listener being ready means we're good
@@ -108,7 +109,6 @@ export class ArenaOscListener {
 		}
 		try {
 			this.udpPort.send({ address, args }, host, port)
-			this.instance.log('debug', `OSC Listener: Sent to ${host}:${port} → ${address}`)
 		} catch (err: unknown) {
 			this.instance.log('error', `OSC Listener send error: ${(err as Error).message}`)
 		}
