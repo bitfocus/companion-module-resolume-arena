@@ -95,11 +95,11 @@ export class ArenaOscListener {
 	isActive(): boolean {
 		return this.isOpen
 	}
-    /**
-     * Send an OSC message FROM this listener's port.
-     * This is critical for ? queries — Resolume responds to the sender's port,
-     * so we must send from the same port we're listening on.
-     */
+	/**
+	 * Send an OSC message FROM this listener's port.
+	 * This is critical for ? queries — Resolume responds to the sender's port,
+	 * so we must send from the same port we're listening on.
+	 */
 	send(address: string, args: OscArg[], host: string, port: number): void {
 		if (!this.udpPort || !this.isOpen) {
 			this.instance.log('warn', 'OSC Listener: Cannot send, port not open')

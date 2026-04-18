@@ -72,6 +72,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			Object.assign(feedbacks, getApiFeedbacks(this))
 		}
+		// OSC transport feedbacks (progress bar, active column) require the listener
 		if (this.config?.useOscListener) {
 			Object.assign(feedbacks, getOscTransportFeedbacks(this))
 		}
@@ -83,7 +84,8 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			Object.assign(presets, getApiPresets())
 		}
-		if (this.config?.useOscListener) {
+		// OSC transport presets only need the OSC send port, not the listener
+		if (this.config?.port) {
 			Object.assign(presets, getOscTransportPresets(this.label, this.oscState.getRegisteredLayers()))
 		}
 		this.setPresetDefinitions(presets)
@@ -94,6 +96,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			variables.push(...getApiVariables())
 		}
+		// OSC variables require the listener to populate them
 		if (this.config?.useOscListener) {
 			variables.push(...getAllOscVariables(this.oscState.getRegisteredLayers()))
 		}
@@ -150,10 +153,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			}
 		} else {
 			this.restApi = null
-			if (this.websocketApi as WebsocketApi | null) {
-				await this.websocketApi!.destroy()
-			}
-			this.websocketApi = null
 		}
 
 		if (config.port) {
