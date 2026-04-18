@@ -126,6 +126,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 			await this.websocketApi.destroy()
 			this.websocketApi = null
 		}
+		this.oscState.stopPeriodicRefresh()
 		this.oscState.clear()
 
 		if (config.webapiPort && config.useRest) {

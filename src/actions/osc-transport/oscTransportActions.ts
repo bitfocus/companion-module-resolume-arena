@@ -196,8 +196,8 @@ export function getOscTransportActions(
 				const path = `/composition/layers/${layer}/direction`;
 				const state = options.state as string
 				if (state === 'toggle') {
-					const state = oscState();
-					const layerData = state?.getLayer(layer);
+					const oscSt = oscState();
+					const layerData = oscSt?.getLayer(layer);
 					if (layerData && layerData.direction === 1) {
 						api.send(path, { type: 'i', value: 2 }); // was paused → play
 					} else {

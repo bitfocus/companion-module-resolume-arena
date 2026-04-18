@@ -1,5 +1,6 @@
 import {InstanceStatus} from '@companion-module/base'
 import type {ResolumeArenaModuleInstance} from './index'
+// No @types/osc package exists; require() with manual interface is the only option
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
 	UDPPort: new (options: {localAddress: string; localPort: number; metadata: boolean}) => OscUDPPort
