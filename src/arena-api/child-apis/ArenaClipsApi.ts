@@ -29,6 +29,7 @@ export class ArenaClipsApi {
 		await this.arenaFetch('post', url, 'ok', connect);
 	}
 
+	// this clears the content of the clip, it does not only 'unconnect' the clip from the layer
 	async clear(clipId: ClipId) {
 		var url = `composition/layers/${clipId.getLayer()}/clips/${clipId.getColumn()}/clear`;
 		await this.arenaFetch('post', url, 'bool');

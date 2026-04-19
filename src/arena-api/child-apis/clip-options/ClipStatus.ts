@@ -7,12 +7,18 @@ export interface ClipStatus {
   name: CommonOptionsPropertyString,
   connected: CommonOptionsPropertyChoice
   audio?: {
-    volume: CommonOptionsPropertyRange
+    volume: CommonOptionsPropertyRange,
+    fileinfo?: {
+      path?: CommonOptionsPropertyString
+    }
   }
   video?:{
     opacity: CommonOptionsPropertyRange
     sourceparams?: {
       Text?: CommonOptionsPropertyString
+    }
+    fileinfo?: {
+      path?: CommonOptionsPropertyString
     }
   },
   transport?:{
