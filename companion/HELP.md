@@ -156,6 +156,34 @@ These feedbacks require the OSC Listener to be enabled.
 
 ---
 
+### Available Variables (REST API)
+These variables require the REST API to be configured and are updated in real-time via the WebSocket connection.
+
+#### Clip selection
+* `selectedClip` — JSON object with `layer`, `column`, and `clipName` of the currently selected clip
+* `selectedClipLayer` — layer number of the selected clip
+* `selectedClipColumn` — column number of the selected clip
+* `selectedClipName` — name of the selected clip
+
+#### Clip preview
+* `previewedClip` — JSON object with `layer`, `column`, and `clipName` of the currently previewed clip
+* `previewedClipLayer` — layer number of the previewed clip
+* `previewedClipColumn` — column number of the previewed clip
+* `previewedClipName` — name of the previewed clip
+
+#### Clip name by grid position
+Variables for the name of the clip at a fixed layer/column coordinate. These are registered automatically based on your composition size and update live as clip names change in Resolume.
+
+* `clip_name_l{layer}_c{column}` — name of the clip at the given grid position (e.g. `clip_name_l1_c3` for layer 1, column 3)
+
+Note: these variables do not update when clips are drag-swapped inside Resolume (Resolume API limitation).
+
+#### Columns
+* `selectedColumn` — column number of the currently selected column
+* `connectedColumn` — column number of the currently connected (triggered) column
+
+---
+
 ### Available Variables (OSC Listener)
 When the OSC Listener is enabled, the following variables are available for each layer (1–10 by default, auto-expands for additional layers):
 * `osc_layer_N_elapsed` — elapsed time (MM:SS or HH:MM:SS)

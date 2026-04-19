@@ -136,7 +136,7 @@ The OSC transport actions in `oscTransportActions.ts` use `parseIntParam`/`parse
 
 ## Phase 2 — Integration Tests (Resolume Arena must be running on local PC)
 
-**Status: ✅ done** — 28 tests passing across 4 test files
+**Status: ✅ done** — tests across 17 test files
 
 **Prerequisites:**
 - Resolume Arena running on `127.0.0.1` (use explicit IP, not `localhost` — Node may resolve it as IPv6)
@@ -293,6 +293,79 @@ Added to: `test/integration/layer-group-extended.test.ts`
 | Layer group volume write via REST | `PUT /layergroups/N` with `audio.volume.value=0.5` | GET confirms `≈ 0.5` | ✅ |
 | Layer group select via REST | `api.LayerGroups.select(N)` | GET `selected.value === true` or alive | ✅ |
 | Select layer group column via OSC | send `/groups/N/columns/M/select` with 1 | REST group responds | ✅ |
+
+### 2.13 Feedback data contracts — ✅ done
+
+File: `test/integration/feedback-data-contract.test.ts`
+
+Feedback callbacks are bound to the live Companion module instance and cannot be called in isolation. This file tests whether Resolume's REST API returns the field shapes and value types that each feedback callback reads. If these contracts break, feedbacks silently return defaults — the kind of regression only this level of test catches.
+
+| Feedback | Data source | What is verified | Status |
+|----------|-------------|-----------------|--------|
+| `clipInfo` | `clip.name.value` | Type is string when media loaded; absent/empty for empty clip | ✅ |
+| `clipTransportPosition` | `clip.transport.position` | Structure present when clip is playing | ✅ |
+| `clipSpeed` | `clip.transport.controls.speed.value` | Non-negative number when clip is playing | ✅ |
+| `clipOpacity` | `clip.video.opacity.value` | Number in [0, 1] | ✅ |
+| `clipVolume` | `clip.audio.volume.value` | Number when audio present | ✅ |
+| `connectedClip` | `clip.connected.value` | Valid string enum; becomes `Connected` after connect | ✅ |
+| `selectedClip` | `clip.selected.value` | Boolean or `"Selected"` after OSC `selectClip` | ✅ |
+| `tempo` | `composition.tempoController.tempo.value` | Number in (20, 300) BPM | ✅ |
+| `deckSelected` | `deck.selected.value` | Boolean; exactly one deck selected at a time | ✅ |
+| `layerGroupSelected` | `group.selected.value` | Truthy after `LayerGroups.select()` | ✅ |
+| `layerGroupActive` | group layer clips | Connected clip exists after trigger; none after clear | ✅ |
+| `columnConnected` | `column.connected.value` | Valid string enum; transitions correctly on trigger/clear | ✅ |
+| `columnSelected` | `column.selected.value` | Boolean or `"Selected"` after OSC column select | ✅ |
+
+### 2.14 Column variables data pipeline — ✅ done
+
+File: `test/integration/column-variables.test.ts`
+
+The Companion variables `selectedColumn` and `connectedColumn` are driven by websocket messages in `ColumnUtils.messageUpdates()`. The Companion runtime is not available in integration tests, so variable values cannot be asserted directly. Instead, these tests assert the Resolume REST state that the websocket carries — if these pass, the variable update logic has valid input.
+
+| Variable | Trigger | REST state verified | Status |
+|----------|---------|---------------------|--------|
+| `connectedColumn` | `triggerColumn(N)` | `column.connected.value === 'Connected'` | ✅ (requires media) |
+| `connectedColumn` | `clearAllLayers()` | `column.connected.value !== 'Connected'` | ✅ |
+| `connectedColumn` | trigger column 2 | column 2 is Connected, TEST_COLUMN is not | ✅ (requires media) |
+| `selectedColumn` | OSC `/columns/N/select` with 1 | `column.selected.value === true` or `"Selected"` | ✅ |
+| `selectedColumn` | select column 2 | column 2 selected; column ids are distinct | ✅ |
+| (name feedbacks) | REST name update | Name round-trips; can be restored | ✅ |
+
+### 2.15 Deck select by index — ✅ done
+
+Added to: `test/integration/deck-column.test.ts`
+
+The `selectDeck` action sends `/composition/decks/{n}/select` via the websocket `triggerPath`. This is tested via raw OSC to confirm that deck-by-index selection works and the REST API reflects the change.
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| Select deck 1 by index | OSC `/composition/decks/1/select` with 1 | `deck.selected.value === true` | ✅ |
+| Switch to deck 2 by index | OSC `/composition/decks/2/select` with 1 | deck 2 `selected.value === true`; restore deck 1 | ✅ |
+| Exactly one deck selected | OSC select deck 1 | Only 1 deck in composition has `selected.value === true` | ✅ |
+
+---
+
+## Integration test coverage summary
+
+| File | Suites | Key area |
+|------|--------|----------|
+| `rest-api.test.ts` | 7 | REST API fundamentals |
+| `composition.test.ts` | 9 | Composition structure, layer solo, navigation |
+| `composition-parameters.test.ts` | 5 | Composition parameter read/write |
+| `clip-parameters.test.ts` | 4 | Clip parameter write (opacity, volume, speed) |
+| `clip-thumbnail.test.ts` | 2 | Clip thumbnail fetch |
+| `deck-column.test.ts` | 10 | Deck structure/navigation, column state, deck-by-index select |
+| `layer-parameters.test.ts` | 12 | Layer parameters, multi-layer/column, OSC solo/select |
+| `layer-group.test.ts` | 5 | Layer group basic operations |
+| `layer-group-columns.test.ts` | 2 | Layer group column API |
+| `layer-group-extended.test.ts` | 10 | Layer group full parameter coverage |
+| `osc.test.ts` | 5 | Core OSC operations |
+| `osc-navigation.test.ts` | 4 | Column/clip navigation via OSC |
+| `osc-custom.test.ts` | 4 | Custom OSC action |
+| `osc-state-loop.test.ts` | 3 | OscState active clip tracking |
+| `osc-variables.test.ts` | 4 | OSC-driven Companion variables |
+| `feedback-data-contract.test.ts` | 10 | REST data contracts for all feedback types |
+| `column-variables.test.ts` | 3 | Data pipeline for column variables |
 
 ---
 

@@ -15,6 +15,7 @@ function makeMockModule() {
 		checkFeedbacks: vi.fn(),
 		checkFeedbacksById: vi.fn(),
 		setVariableValues: vi.fn(),
+		setupVariables: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		getConfig: vi.fn().mockReturnValue({ useCroppedThumbs: false }),
@@ -71,6 +72,133 @@ describe('ClipUtils.messageUpdates — path matching', () => {
 		const cu = new ClipUtils(mod)
 		cu.messageUpdates({ path: '/composition/layers/1/clips/2/select', value: false }, false)
 		expect(mod.setVariableValues).not.toHaveBeenCalled()
+	})
+})
+
+describe('ClipUtils.messageUpdates — clip name variable', () => {
+	it('sets clip_name_l{layer}_c{column} when a name path message arrives', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		cu.messageUpdates({ path: '/composition/layers/2/clips/3/name', value: 'MyClip' }, false)
+		expect(mod.setVariableValues).toHaveBeenCalledWith({ clip_name_l2_c3: 'MyClip' })
+	})
+
+	it('does not call setVariableValues for clip name when path does not match', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		cu.messageUpdates({ path: '/composition/layers/1/clips/1/connect', value: 'Connected' }, false)
+		expect(mod.setVariableValues).not.toHaveBeenCalledWith(expect.objectContaining({ clip_name_l1_c1: expect.anything() }))
+	})
+
+	it('still calls checkFeedbacks("clipInfo") alongside the variable update', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		cu.messageUpdates({ path: '/composition/layers/1/clips/1/name', value: 'Test' }, false)
+		expect(mod.checkFeedbacks).toHaveBeenCalledWith('clipInfo')
+	})
+})
+
+describe('ClipUtils.getClipNameVariableDefinitions', () => {
+	it('returns empty array before composition is loaded', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		expect(cu.getClipNameVariableDefinitions()).toHaveLength(0)
+	})
+
+	it('returns one definition per grid cell after initComposition', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [
+				{ clips: [{ name: { value: 'A' } }, { name: { value: 'B' } }] },
+				{ clips: [{ name: { value: 'C' } }, { name: { value: 'D' } }] },
+			]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+		const defs = cu.getClipNameVariableDefinitions()
+		expect(defs).toHaveLength(4)
+		const ids = defs.map((d) => d.variableId)
+		expect(ids).toContain('clip_name_l1_c1')
+		expect(ids).toContain('clip_name_l1_c2')
+		expect(ids).toContain('clip_name_l2_c1')
+		expect(ids).toContain('clip_name_l2_c2')
+	})
+
+	it('handles asymmetric grids — uses max column count across all layers', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [
+				{ clips: [{ name: { value: 'A' } }] },
+				{ clips: [{ name: { value: 'B' } }, { name: { value: 'C' } }, { name: { value: 'D' } }] },
+			]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+		const defs = cu.getClipNameVariableDefinitions()
+		// 2 layers × 3 columns (max)
+		expect(defs).toHaveLength(6)
+	})
+})
+
+describe('ClipUtils.initComposition — clip name subscriptions and initial values', () => {
+	it('subscribes to all clip name paths on init', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [
+				{ clips: [{ name: { value: 'Clip1' } }, { name: { value: 'Clip2' } }] },
+			]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+		const ws = mod._wsApi
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/1/clips/1/name')
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/1/clips/2/name')
+	})
+
+	it('sets initial variable values from composition state on init', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [
+				{ clips: [{ name: { value: 'Alpha' } }, { name: { value: 'Beta' } }] },
+			]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+		expect(mod.setVariableValues).toHaveBeenCalledWith(
+			expect.objectContaining({ clip_name_l1_c1: 'Alpha', clip_name_l1_c2: 'Beta' })
+		)
+	})
+
+	it('calls setupVariables() to register the dynamic definitions', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [{ clips: [{ name: { value: 'X' } }] }]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+		expect(mod.setupVariables).toHaveBeenCalled()
+	})
+
+	it('unsubscribes old paths and resubscribes on composition reload', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set({
+			layers: [{ clips: [{ name: { value: 'Old' } }] }]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+
+		const ws = mod._wsApi
+		ws.subscribePath.mockClear()
+		ws.unsubscribePath.mockClear()
+
+		compositionState.set({
+			layers: [{ clips: [{ name: { value: 'New' } }, { name: { value: 'New2' } }] }]
+		} as any)
+		cu.messageUpdates({ path: '', value: '' }, true)
+
+		expect(ws.unsubscribePath).toHaveBeenCalledWith('/composition/layers/1/clips/1/name')
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/1/clips/1/name')
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/1/clips/2/name')
 	})
 })
 

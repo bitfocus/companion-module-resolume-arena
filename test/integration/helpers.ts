@@ -1,4 +1,4 @@
-import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config'
+import { TEST_HOST, REST_PORT } from './config'
 
 /**
  * Returns true if Resolume's REST API is reachable.
@@ -17,24 +17,6 @@ export async function isResolumeReachable(): Promise<boolean> {
 	}
 }
 
-/**
- * Returns true if the test clip (TEST_LAYER / TEST_COLUMN) has media loaded.
- * 'Empty' means no media; 'Disconnected' or 'Connected' means media is present.
- */
-export async function testClipHasMedia(): Promise<boolean> {
-	try {
-		const { default: fetch } = await import('node-fetch')
-		const res = await fetch(
-			`http://${TEST_HOST}:${REST_PORT}/api/v1/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}`,
-			{ timeout: 1500 } as any
-		)
-		if (!res.ok) return false
-		const data = (await res.json()) as any
-		return data?.connected?.value !== 'Empty'
-	} catch {
-		return false
-	}
-}
 
 export function pause(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))

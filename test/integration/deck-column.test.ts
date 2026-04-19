@@ -204,6 +204,62 @@ describe.skipIf(!resolume)('REST read — deck count from composition', () => {
 	})
 })
 
+// ── Deck select by index via OSC ─────────────────────────────────────────────
+//
+// The selectDeck action sends /composition/decks/{n}/select via the websocket
+// triggerPath. We can test the equivalent via raw OSC to confirm Resolume
+// handles deck-by-index selection and the REST API reflects the change.
+
+describe.skipIf(!resolume)('OSC — deck select by index', () => {
+	it('selecting deck 1 by index makes deck 1 selected', async () => {
+		oscApi.send('/composition/decks/1/select', [{ type: 'i', value: 1 }])
+		await pause(300)
+		const { default: fetch } = await import('node-fetch')
+		const res = await fetch(`http://${TEST_HOST}:${REST_PORT}/api/v1/composition/decks/1`, {
+			timeout: 3000,
+		} as any)
+		const deck = (await res.json()) as any
+		expect(deck).toHaveProperty('selected')
+		expect(deck.selected.value).toBe(true)
+	})
+
+	it('selecting a different deck by index changes which deck is selected', async () => {
+		const { default: fetch } = await import('node-fetch')
+		// Get composition to find deck count
+		const compRes = await fetch(`http://${TEST_HOST}:${REST_PORT}/api/v1/composition`, {
+			timeout: 3000,
+		} as any)
+		const comp = (await compRes.json()) as any
+		if ((comp?.decks?.length ?? 0) < 2) return // skip if only one deck
+
+		oscApi.send('/composition/decks/2/select', [{ type: 'i', value: 1 }])
+		await pause(300)
+		const res = await fetch(`http://${TEST_HOST}:${REST_PORT}/api/v1/composition/decks/2`, {
+			timeout: 3000,
+		} as any)
+		const deck2 = (await res.json()) as any
+		expect(deck2.selected.value).toBe(true)
+
+		// Restore deck 1
+		oscApi.send('/composition/decks/1/select', [{ type: 'i', value: 1 }])
+		await pause(300)
+	})
+
+	it('only one deck is selected after a select-by-index OSC message', async () => {
+		oscApi.send('/composition/decks/1/select', [{ type: 'i', value: 1 }])
+		await pause(300)
+		const { default: fetch } = await import('node-fetch')
+		const compRes = await fetch(`http://${TEST_HOST}:${REST_PORT}/api/v1/composition`, {
+			timeout: 3000,
+		} as any)
+		const comp = (await compRes.json()) as any
+		const decks: any[] = comp?.decks ?? []
+		if (decks.length === 0) return
+		const selectedCount = decks.filter((d: any) => d.selected?.value === true).length
+		expect(selectedCount).toBe(1)
+	})
+})
+
 // ── Column select via OSC (section 2.10) ──────────────────────────────────────
 
 describe.skipIf(!resolume)('OSC — column select', () => {
