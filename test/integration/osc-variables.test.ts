@@ -27,10 +27,9 @@ import {
 	TEST_LAYER,
 	TEST_COLUMN,
 } from './config'
-import { isResolumeReachable, testClipHasMedia, pause, waitFor } from './helpers'
+import { isResolumeReachable, pause, waitFor } from './helpers'
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 let rest: ArenaRestApi
 let oscState: OscState
@@ -99,7 +98,7 @@ async function queryAndWait(path: string, condition: () => boolean, timeoutMs = 
 
 // ── Active column variable ─────────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState — osc_active_column variable (requires media)', () => {
+describe.skipIf(!resolume)('OscState — osc_active_column variable (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)
@@ -125,7 +124,7 @@ describe.skipIf(!resolume || !hasMedia)('OscState — osc_active_column variable
 
 // ── Layer clip name variable ───────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState — osc_layer_N_clip_name variable (requires media)', () => {
+describe.skipIf(!resolume)('OscState — osc_layer_N_clip_name variable (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)
@@ -167,7 +166,7 @@ describe.skipIf(!resolume || !hasMedia)('OscState — osc_layer_N_clip_name vari
 
 // ── Layer duration and progress variables ─────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState — duration/progress variables (requires media)', () => {
+describe.skipIf(!resolume)('OscState — duration/progress variables (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)
@@ -245,7 +244,7 @@ describe.skipIf(!resolume)('OscState — secondsToTimecode formatting', () => {
 
 // ── OscState transport variables (section 2.11) ───────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState — elapsed/remaining/progress variables (requires media)', () => {
+describe.skipIf(!resolume)('OscState — elapsed/remaining/progress variables (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)

@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_GROUP, TEST_GROUP_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -14,7 +14,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 
@@ -96,7 +95,7 @@ describe.skipIf(!resolume)('OSC — bypass layer group and verify via REST', () 
 
 // ── OSC — layer group trigger column ─────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — layer group trigger column (requires media)', () => {
+describe.skipIf(!resolume)('OSC — layer group trigger column (requires media)', () => {
 	afterAll(async () => {
 		oscApi.clearLayerGroup(TEST_GROUP)
 		await pause(400)
@@ -113,7 +112,7 @@ describe.skipIf(!resolume || !hasMedia)('OSC — layer group trigger column (req
 
 // ── OSC — layer group clear ───────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — layer group clear (requires media)', () => {
+describe.skipIf(!resolume)('OSC — layer group clear (requires media)', () => {
 	beforeAll(async () => {
 		// First connect something so there is something to clear
 		oscApi.triggerlayerGroupColumn(TEST_GROUP, TEST_COLUMN)

@@ -17,7 +17,7 @@ import {
 	TEST_COLUMN,
 	TEST_GROUP,
 } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -25,7 +25,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 let oscApi: ArenaOscApi
@@ -105,7 +104,7 @@ describe.skipIf(!resolume)('REST read — clip API', () => {
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('REST read — clip with media', () => {
+describe.skipIf(!resolume)('REST read — clip with media', () => {
 	it('connected clip has transport structure', async () => {
 		await api.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
 		await pause(400)
@@ -198,7 +197,7 @@ describe.skipIf(!resolume)('OSC — layer column navigation', () => {
 
 // ── Clip speed via REST+OSC ───────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('REST+OSC — clip opacity (requires media)', () => {
+describe.skipIf(!resolume)('REST+OSC — clip opacity (requires media)', () => {
 	afterAll(async () => {
 		await api.Layers.clear(TEST_LAYER)
 		await pause(300)

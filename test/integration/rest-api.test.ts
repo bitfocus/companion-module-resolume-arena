@@ -2,10 +2,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import ArenaRestApi from '../../src/arena-api/rest'
 import { ClipId } from '../../src/domain/clip/clip-id'
 import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 
@@ -62,7 +61,7 @@ describe.skipIf(!resolume)('REST write — POST connect endpoint', () => {
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('REST write — connect + clear with media (requires media in TEST slot)', () => {
+describe.skipIf(!resolume)('REST write — connect + clear with media (requires media in TEST slot)', () => {
 	beforeAll(async () => {
 		await api.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
 		await pause(400)

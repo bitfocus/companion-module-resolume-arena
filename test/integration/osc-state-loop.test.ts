@@ -17,10 +17,9 @@ import { ArenaOscListener } from '../../src/osc-listener'
 import { OscState } from '../../src/osc-state'
 import { ClipId } from '../../src/domain/clip/clip-id'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, OSC_LISTEN_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause, waitFor } from './helpers'
+import { isResolumeReachable, pause, waitFor } from './helpers'
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 let rest: ArenaRestApi
 let oscState: OscState
@@ -99,7 +98,7 @@ async function queryConnectedAndWait(condition: () => boolean, timeoutMs = 2000)
 
 // ── 2.4 OSC state loop ────────────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState loop — clip connect (requires media in TEST slot)', () => {
+describe.skipIf(!resolume)('OscState loop — clip connect (requires media in TEST slot)', () => {
 	it('REST connect clip → OSC query → getActiveClipColumn returns TEST_COLUMN', async () => {
 		await rest.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
 		await pause(300)
@@ -124,7 +123,7 @@ describe.skipIf(!resolume || !hasMedia)('OscState loop — clip connect (require
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('OscState loop — duration after connect (requires media)', () => {
+describe.skipIf(!resolume)('OscState loop — duration after connect (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)
@@ -149,7 +148,7 @@ describe.skipIf(!resolume || !hasMedia)('OscState loop — duration after connec
 
 // ── 2.5 Feedback verification ─────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OscState — active clip feedback (requires media)', () => {
+describe.skipIf(!resolume)('OscState — active clip feedback (requires media)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)
@@ -191,7 +190,7 @@ describe.skipIf(!resolume)('OscState — direct message injection', () => {
 
 	it('handleMessage /select does not throw', () => {
 		expect(() => {
-			oscState.handleMessage(`/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/select`, true)
+			oscState.handleMessage(`/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/select`, 1)
 		}).not.toThrow()
 	})
 })

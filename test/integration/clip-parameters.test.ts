@@ -9,7 +9,7 @@ import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { ClipId } from '../../src/domain/clip/clip-id'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -17,7 +17,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 const clipUrl = `http://${TEST_HOST}:${REST_PORT}/api/v1/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}`
@@ -53,7 +52,7 @@ afterAll(() => {
 
 // ── Clip opacity write via REST ───────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('REST write — clip video opacity (requires media)', () => {
+describe.skipIf(!resolume)('REST write — clip video opacity (requires media)', () => {
 	let originalOpacity: number | undefined
 
 	beforeAll(async () => {
@@ -92,7 +91,7 @@ describe.skipIf(!resolume || !hasMedia)('REST write — clip video opacity (requ
 
 // ── Clip volume write via REST ────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('REST write — clip audio volume (requires media)', () => {
+describe.skipIf(!resolume)('REST write — clip audio volume (requires media)', () => {
 	let originalVolume: number | undefined
 
 	beforeAll(async () => {
@@ -122,7 +121,7 @@ describe.skipIf(!resolume || !hasMedia)('REST write — clip audio volume (requi
 
 // ── Clip speed write via REST ─────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('REST write — clip transport speed (requires media)', () => {
+describe.skipIf(!resolume)('REST write — clip transport speed (requires media)', () => {
 	let originalSpeed: number | undefined
 
 	beforeAll(async () => {
@@ -152,7 +151,7 @@ describe.skipIf(!resolume || !hasMedia)('REST write — clip transport speed (re
 
 // ── Clip opacity change via OSC ───────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — clip video opacity change (requires media)', () => {
+describe.skipIf(!resolume)('OSC — clip video opacity change (requires media)', () => {
 	afterAll(async () => {
 		await api.Layers.clear(TEST_LAYER)
 		await pause(300)
