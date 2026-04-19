@@ -22,7 +22,8 @@
 		"postinstall": "yarn build && husky",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"test:integration": "vitest run --config vitest.integration.config.ts"
 	},
 	"license": "MIT",
 	"authors": [

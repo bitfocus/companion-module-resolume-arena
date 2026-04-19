@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getSpeedValue } from '../../src/defaults'
+import { getSpeedValue, getDeckOption, getLayerOption, getColumnOption, getClipOption, getLayerGroupOption } from '../../src/defaults'
 
 // getSpeedValue maps a percentage input to Resolume's internal speed scale.
 // 100% → ~4.0 (Resolume's "normal speed" value on the OSC interface).
@@ -29,5 +29,49 @@ describe('getSpeedValue', () => {
 
 	it('200 produces a value greater than 4 (faster than normal)', () => {
 		expect(getSpeedValue(200)).toBeGreaterThan(4.0)
+	})
+})
+
+describe('option builders', () => {
+	it('getDeckOption returns a single textinput with id "deck"', () => {
+		const opts = getDeckOption()
+		expect(opts).toHaveLength(1)
+		expect(opts[0].id).toBe('deck')
+		expect(opts[0].type).toBe('textinput')
+		expect(opts[0].default).toBe('1')
+		expect(opts[0].useVariables).toBe(true)
+	})
+
+	it('getLayerOption returns a single textinput with id "layer"', () => {
+		const opts = getLayerOption()
+		expect(opts).toHaveLength(1)
+		expect(opts[0].id).toBe('layer')
+		expect(opts[0].type).toBe('textinput')
+		expect(opts[0].default).toBe('1')
+		expect(opts[0].useVariables).toBe(true)
+	})
+
+	it('getColumnOption returns a single textinput with id "column"', () => {
+		const opts = getColumnOption()
+		expect(opts).toHaveLength(1)
+		expect(opts[0].id).toBe('column')
+		expect(opts[0].type).toBe('textinput')
+		expect(opts[0].default).toBe('1')
+		expect(opts[0].useVariables).toBe(true)
+	})
+
+	it('getClipOption returns layer + column fields', () => {
+		const opts = getClipOption()
+		expect(opts).toHaveLength(2)
+		expect(opts.map((o) => o.id)).toEqual(['layer', 'column'])
+	})
+
+	it('getLayerGroupOption returns a single textinput with id "layerGroup"', () => {
+		const opts = getLayerGroupOption()
+		expect(opts).toHaveLength(1)
+		expect(opts[0].id).toBe('layerGroup')
+		expect(opts[0].type).toBe('textinput')
+		expect(opts[0].default).toBe('1')
+		expect(opts[0].useVariables).toBe(true)
 	})
 })

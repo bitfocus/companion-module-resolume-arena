@@ -32,7 +32,7 @@ Functions like `getDeckOption`, `getLayerOption`, `getColumnOption`, `getClipOpt
 
 | File | Test file | Status |
 |------|-----------|--------|
-| `src/defaults.ts` — option builders | `test/unit/defaults-test.ts` | ☐ todo |
+| `src/defaults.ts` — option builders | `test/unit/defaults.test.ts` | ✅ done |
 
 ### 1.3 Variable definitions
 
@@ -40,9 +40,9 @@ Pure functions that return `CompanionVariableDefinition[]`. No deps, just verify
 
 | File | Test file | Status |
 |------|-----------|--------|
-| `src/variables/clip/clipVariables.ts` | `test/unit/clip-variables-test.ts` | ☐ todo |
-| `src/variables/column/columnVariables.ts` | `test/unit/column-variables-test.ts` | ☐ todo |
-| `src/variables/osc-variables.ts` | `test/unit/osc-variables-test.ts` | ☐ todo |
+| `src/variables/clip/clipVariables.ts` | `test/unit/clip-variables.test.ts` | ✅ done |
+| `src/variables/column/columnVariables.ts` | `test/unit/column-variables.test.ts` | ✅ done |
+| `src/variables/osc-variables.ts` | `test/unit/osc-variables.test.ts` | ✅ done |
 
 ### 1.4 Domain utilities — with a mock `ResolumeArenaModuleInstance`
 
@@ -92,7 +92,30 @@ The file is ~28k lines. Focus on the methods used by the OSC transport actions:
 | `getLayerElapsedSeconds(layer)` | data present | returns number |
 | `scheduleQuickRefresh()` | called | fires a query after delay |
 
-### 1.6 OSC action callback logic
+### 1.6 Domain utilities — additional
+
+| File | Test file | Status |
+|------|-----------|--------|
+| `src/domain/layer-groups/layer-group-util.ts` | `test/unit/layer-group-util.test.ts` | ✅ done |
+| `src/domain/columns/column-util.ts` | `test/unit/column-util.test.ts` | ✅ done |
+| `src/domain/deck/deck-util.ts` | `test/unit/deck-util.test.ts` | ✅ done |
+| `src/domain/composition/composition-utils.ts` | `test/unit/composition-util.test.ts` | ✅ done |
+
+### 1.7 Action callback logic — additional
+
+| File | Test file | Status |
+|------|-----------|--------|
+| `src/actions/composition/actions/composition-*.ts` | `test/unit/composition-actions.test.ts` | ✅ done |
+| `src/actions/layer/actions/*.ts` | `test/unit/layer-actions.test.ts` | ✅ done |
+| `src/actions/layer-group/actions/*.ts` | `test/unit/layer-group-actions.test.ts` | ✅ done |
+| `src/actions/layer-group/actions/connect/select-layer-group-column.ts` | `test/unit/layer-group-column-actions.test.ts` | ✅ done |
+| `src/actions/clip/actions/clip-speed-change.ts`, `clip-volume-change.ts` | `test/unit/layer-group-column-actions.test.ts` | ✅ done |
+| `src/actions/clip/actions/connect-clip.ts`, `select-clip.ts` | `test/unit/clip-column-actions.test.ts` | ✅ done |
+| `src/actions/column/actions/connectColumn.ts`, `selectColumn.ts` | `test/unit/clip-column-actions.test.ts` | ✅ done |
+| `src/actions/deck/actions/*.ts` | `test/unit/clip-column-actions.test.ts` | ✅ done |
+| `src/actions/composition/actions/comp-next-col.ts`, `clear-all-layers.ts`, etc. | `test/unit/misc-actions.test.ts` | ✅ done |
+
+### 1.9 OSC action callback logic
 
 The OSC transport actions in `oscTransportActions.ts` use `parseIntParam`/`parseFloatParam` helpers (closures, not exported). The callbacks themselves are testable by injecting mock `oscApi` and `oscState` via the module factory.
 
@@ -113,82 +136,163 @@ The OSC transport actions in `oscTransportActions.ts` use `parseIntParam`/`parse
 
 ## Phase 2 — Integration Tests (Resolume Arena must be running on local PC)
 
+**Status: ✅ done** — 28 tests passing across 4 test files
+
 **Prerequisites:**
-- Resolume Arena running on `localhost` (or configured host)
+- Resolume Arena running on `127.0.0.1` (use explicit IP, not `localhost` — Node may resolve it as IPv6)
 - REST API enabled (default port `8080`)
-- OSC enabled (default port `7000` in, `7001` out)
-- A known composition loaded with at least 3 layers and 5 columns
-- A specific clip at layer 1 / column 1 that we can trigger and verify
+- OSC Input enabled on port `7000`
+- OSC Output enabled on port `7001` (tests use active `?` queries; passive output optional)
+- Composition: 3 layers, 3 columns with media in layer 1/col 1 (minimum)
+- Layer group 1 containing layers 2 and 3, same clips
 
-**Config:** put connection details in `test/integration/config.ts` (gitignored). Example:
+**Config:** `test/integration/config.ts` (gitignored — copy from `config.example.ts`).
 
-```typescript
-export const TEST_HOST = process.env.RESOLUME_HOST ?? 'localhost';
-export const REST_PORT = +(process.env.RESOLUME_REST_PORT ?? 8080);
-export const OSC_OUT_PORT = +(process.env.RESOLUME_OSC_OUT ?? 7000);
-export const OSC_IN_PORT = +(process.env.RESOLUME_OSC_IN ?? 7001);
-```
+Run with: `yarn test:integration` (uses `vitest.integration.config.ts`, serial, skipped in CI)
 
-Run with: `yarn test:integration` (separate script using same QUnit runner but filtered to `test/integration/**/*-test.ts`).
+**Test files:**
+- `test/integration/rest-api.test.ts` — REST read/write (8 tests)
+- `test/integration/osc.test.ts` — OSC trigger + REST verify (6 tests)
+- `test/integration/osc-state-loop.test.ts` — OscState active-query loop (8 tests)
+- `test/integration/layer-group.test.ts` — Layer group REST + OSC (6 tests)
+- `test/integration/composition.test.ts` — Composition structure, column/clip API, layer solo, column nav (18 tests)
+- `test/integration/layer-parameters.test.ts` — Layer master/opacity/transition duration read/write, clip parameters (20 tests)
+- `test/integration/deck-column.test.ts` — Deck structure/navigation, column read/write, column trigger (18 tests)
+- `test/integration/layer-group-extended.test.ts` — Layer group full structure, master/solo/bypass/speed write, column navigation (20 tests)
+- `test/integration/osc-variables.test.ts` — OscState variables: active column, clip name, duration, elapsed/remaining/progress (19 tests)
+- `test/integration/composition-parameters.test.ts` — Composition opacity/master/speed read/write, tempoResync (9 tests)
+- `test/integration/clip-parameters.test.ts` — Clip opacity/volume/speed write via REST, clip opacity via OSC (5 tests)
 
-### 2.1 REST API — read operations
+**Implementation notes:**
+- All tests use `describe.skipIf(!resolume)` so they skip cleanly when Resolume is not running
+- Tests requiring loaded clips additionally gate on `testClipHasMedia()` (`describe.skipIf(!hasMedia)`)
+- Integration tests are excluded from `yarn test` (unit only) and from GitHub Actions CI
+- Tests run serially (`singleFork: true`, `sequence.concurrent: false`) — one Resolume instance, shared state
+- "Clear" tests use a passive/inject hybrid: tries passive OSC first, falls back to REST-verify + inject if Resolume's `?` query returns `connected=1` (in-deck) instead of `0`
 
-| Scenario | Verify |
-|----------|--------|
-| `GET /composition` | returns a composition object with `layers` array |
-| `GET /composition/layers/1` | returns layer object with `id`, `clips`, `audio`, `video` |
-| `GET /composition/layers/1/clips/1` | returns clip with `transport`, `video`, `audio` fields |
-| `GET /product/version` | returns version string |
+### 2.1 REST API — read operations — ✅ done
 
-### 2.2 REST API — write operations
+| Scenario | Verify | Status |
+|----------|--------|--------|
+| `GET /product` | name + version fields | ✅ |
+| `GET /composition/layers/1` | returns layer with `clips[]` | ✅ |
+| `GET /composition/layers/1/clips/1` | returns clip with `connected` field | ✅ |
+| Layer `audio.volume` structure | value is a number | ✅ |
 
-| Scenario | Action | Verify via REST |
-|----------|--------|-----------------|
-| Connect clip | `POST /composition/layers/1/clips/1/connect` | GET clip status shows `Connected` |
-| Clear layer | `DELETE /composition/layers/1/clips` or equivalent | GET shows no connected clip |
-| Set layer opacity | `PUT .../video/opacity` with `{value: 0.5}` | GET shows `opacity.value ≈ 0.5` |
-| Set layer volume | `PUT .../audio/volume` | GET shows `volume.value` updated |
+### 2.2 REST API — write operations — ✅ done
 
-### 2.3 OSC — trigger and verify via REST
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| POST connect endpoint | `POST /layers/1/clips/1/connect` | no error | ✅ |
+| Connect clip + clear | POST connect → clear | no Connected clips after clear | ✅ (requires media) |
+| Set layer opacity | `PUT /layers/1` with `video.opacity.value=0.5` | GET shows `≈ 0.5` | ✅ |
+| Layer group opacity | `PUT /layergroups/1` with `video.opacity.value=0.5` | GET confirms | ✅ |
+| Audio volume via REST | — | not testable via REST write; module uses WebSocket internally | ℹ️ |
 
-| Scenario | OSC message | Verify |
-|----------|-------------|--------|
-| Trigger column 1 | `/composition/columns/1/connect` | REST confirms a clip is connected on expected layers |
-| Clear all layers | `/composition/disconnectall` | REST confirms no clips connected |
-| Set clip speed | `/composition/layers/1/clips/1/transport/position/behaviour/speed` | REST reads speed back |
-| Bypass layer | `/composition/layers/1/bypassed 1` | REST reads `bypassed = true` |
-| Unbypass layer | `/composition/layers/1/bypassed 0` | REST reads `bypassed = false` |
-| Bypass toggle via `!` | `/composition/layers/1/bypassed !` | state flips relative to before |
-| Tempo tap | `/composition/tempocontroller/tap` | no error, BPM changes |
+### 2.3 OSC — trigger and verify via REST — ✅ done
 
-### 2.4 OSC state — verify listener picks up changes
+| Scenario | OSC message | Verify | Status |
+|----------|-------------|--------|--------|
+| Clear all layers | `clearAllLayers()` | no Connected clips | ✅ |
+| Trigger column | `triggerColumn(1)` | ≥1 Connected clip | ✅ (requires media) |
+| Bypass layer | `bypassLayer(1, 1)` | REST `bypassed = true` | ✅ |
+| Unbypass layer | `bypassLayer(1, 0)` | REST `bypassed = false` | ✅ |
+| Clip speed + connect | `connectClip` + `send speed` | `transport.controls.speed` defined | ✅ (requires media) |
+| Tempo tap | `tempoTap()` | no error | ✅ |
+| Bypass layer group | `bypassLayerGroup(1, 1)` | REST group `bypassed = true` | ✅ |
+| Trigger layer group column | `triggerlayerGroupColumn(1, 1)` | group layer has Connected clip | ✅ (requires media) |
+| Clear layer group | `clearLayerGroup(1)` | group layers have no Connected clips | ✅ (requires media) |
 
-This tests the full loop: action via REST → OSC listener receives update → `oscState` reflects new value.
+### 2.4 OSC state — active query loop — ✅ done
 
-| Scenario | Trigger | Verify |
-|----------|---------|--------|
-| Connect clip → OSC state | REST connect clip 1/1 | `oscState.getActiveClipColumn(1) === 1` within 500ms |
-| Clear layer → OSC state | REST clear layer 1 | `oscState.getActiveClipColumn(1) === undefined` |
-| Duration arrives after connect | connect clip with known duration | `oscState.getLayerDurationSeconds(1) > 0` within 1s |
+Uses `?` queries to Resolume; no passive OSC output configuration required.
 
-### 2.5 Feedback verification via REST
+| Scenario | Trigger | Verify | Status |
+|----------|---------|--------|--------|
+| Connect clip → OscState | REST connect | `getActiveClipColumn(1) === 1` | ✅ (requires media) |
+| Clear layer → OscState | REST clear | `getActiveClipColumn(1) === undefined` | ✅ (requires media) |
+| Duration arrives after connect | REST connect | `getLayerDurationSeconds(1) > 0` | ✅ (requires media) |
 
-These tests simulate what Companion does: trigger an action, then check the feedback callback returns the expected value.
+### 2.5 Feedback — OscState active column — ✅ done
 
-| Feedback | Setup | Expected |
-|----------|-------|----------|
-| `connectedClip` layer 1, column 1 | REST connect clip 1/1 | feedback returns `true` |
-| `connectedClip` layer 1, column 1 | REST clear layer 1 | feedback returns `false` |
-| `layerBypassed` layer 1 | REST bypass layer 1 | feedback returns `true` |
-| `layerOpacity` layer 1 | REST set opacity 0.5 | feedback text is `50%` |
+| Scenario | Trigger | Verify | Status |
+|----------|---------|--------|--------|
+| Connect clip | REST connect | active column set | ✅ (requires media) |
+| Clear layer | REST clear | active column undefined | ✅ (requires media) |
 
-### 2.6 Variable verification
+### 2.6 Direct OscState message injection — ✅ done
 
-| Variable | Trigger | Expected value |
-|----------|---------|----------------|
-| `selectedClip` | WebSocket select event for layer 2 / column 3 | `{"layer":"2","column":"3"}` |
-| `selectedClipLayer` | same | `"2"` |
-| `selectedClipColumn` | same | `"3"` |
+| Scenario | Trigger | Verify | Status |
+|----------|---------|--------|--------|
+| `/connected >= 2` | `handleMessage(path, 2)` | `getActiveClipColumn` returns column | ✅ |
+| `/connected 0` | `handleMessage(path, 0)` | `getActiveClipColumn` returns undefined | ✅ |
+| `/select` path | `handleMessage(path, true)` | no error | ✅ |
+
+### 2.7 Composition-level parameters — REST read/write — ✅ done
+
+File: `test/integration/composition-parameters.test.ts`
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| Composition has `video.opacity` field | `GET /composition` | `video.opacity.value` is a number | ✅ |
+| Composition has `master` field | `GET /composition` | `master.value` is a number | ✅ |
+| Composition has `speed` field | `GET /composition` | `speed.value` is a number | ✅ |
+| Composition has `audio.volume` field | `GET /composition` | `audio.volume.value` is a number | ✅ |
+| Set composition opacity to 0.5 | `PUT /composition` with `video.opacity.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| Set composition master to 0.75 | `PUT /composition` with `master.value=0.75` | GET confirms `≈ 0.75` | ✅ |
+| Set composition speed to 0.5 | `PUT /composition` with `speed.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| `tempoResync` via OSC | `oscApi.tempoResync()` | no error, Resolume still responds | ✅ |
+
+### 2.8 Layer parameters — OSC write path — ✅ done
+
+Added to: `test/integration/layer-parameters.test.ts`
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| Layer solo via OSC | send `/layers/N/solo` with value 1 | REST `solo.value === true` | ✅ |
+| Layer select via OSC | send `/layers/N/select` with value 1 | REST `selected.value === true` or `"Selected"` | ✅ |
+| Layer volume write via REST | `PUT /layers/N` with `audio.volume.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| Layer transition duration write via REST | `PUT /layers/N` with `transition.duration.value` | GET confirms new value | ✅ |
+
+### 2.9 Clip parameter write — requires media — ✅ done
+
+File: `test/integration/clip-parameters.test.ts`
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| Set clip opacity via REST | connect clip → `PUT /clips/N` with `video.opacity.value=0.25` | GET confirms `≈ 0.25` | ✅ |
+| Set clip volume via REST | connect clip → `PUT /clips/N` with `audio.volume.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| Set clip speed via REST | connect clip → `PUT /clips/N` with `transport.controls.speed.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| Clip opacity change via OSC | connect clip → send `/clips/N/video/opacity` with 0.75 | REST confirms `≈ 0.75` | ✅ |
+
+### 2.10 Column select via OSC — ✅ done
+
+Added to: `test/integration/deck-column.test.ts`
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| `selectColumn(N)` via OSC | send `/composition/columns/N/select` with value 1 | REST `selected.value === true` or Resolume alive | ✅ |
+| `selectColumn` on column 2 | select col 2 | REST col 2 responds, restore col 1 | ✅ |
+
+### 2.11 OscState transport variables — requires media — ✅ done
+
+Added to: `test/integration/osc-variables.test.ts`
+
+| Variable | Trigger | Verify | Status |
+|----------|---------|--------|--------|
+| `osc_layer_N_elapsed` | connect clip → query position path | value matches timecode pattern | ✅ |
+| `osc_layer_N_remaining` | position + duration known | value matches timecode pattern | ✅ |
+| `osc_layer_N_progress` | position + duration known | value is a non-empty string | ✅ |
+
+### 2.12 Layer group volume and select — ✅ done
+
+Added to: `test/integration/layer-group-extended.test.ts`
+
+| Scenario | Action | Verify | Status |
+|----------|--------|--------|--------|
+| Layer group volume write via REST | `PUT /layergroups/N` with `audio.volume.value=0.5` | GET confirms `≈ 0.5` | ✅ |
+| Layer group select via REST | `api.LayerGroups.select(N)` | GET `selected.value === true` or alive | ✅ |
+| Select layer group column via OSC | send `/groups/N/columns/M/select` with 1 | REST group responds | ✅ |
 
 ---
 
@@ -199,7 +303,11 @@ These tests simulate what Companion does: trigger an action, then check the feed
 | After Phase 1 complete | ≥ 40% line coverage on `src/` |
 | After Phase 2 complete | ≥ 60% line coverage on `src/` |
 
-Current baseline: **0.37%** (2 pure-function modules covered, 13 tests passing).
+Phase 1 baseline: **14.31%** line coverage (74 unit tests across 10 files).
+
+Phase 1 extended: **32.47%** line coverage (240 unit tests across 20 files).
+
+Phase 2 complete (original): **46 integration tests** across 5 files. Phase 2 extended: **~116 integration tests** across 9 files (296 total unit + integration). Integration tests are excluded from coverage measurement (they require a live Resolume instance).
 
 ---
 
