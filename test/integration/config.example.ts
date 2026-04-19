@@ -10,9 +10,10 @@ export const REST_PORT = +(process.env.RESOLUME_REST_PORT ?? 8080)
 export const OSC_SEND_PORT = +(process.env.RESOLUME_OSC_SEND_PORT ?? 7000)
 
 // Local port the integration test listens on for Resolume's OSC output.
-// Resolume must be configured to output OSC to TEST_HOST:OSC_LISTEN_PORT.
 export const OSC_LISTEN_PORT = +(process.env.RESOLUME_OSC_LISTEN_PORT ?? 9001)
 
 // Layer / column used for write/trigger tests. Must exist and have a clip loaded.
 export const TEST_LAYER = +(process.env.RESOLUME_TEST_LAYER ?? 1)
 export const TEST_COLUMN = +(process.env.RESOLUME_TEST_COLUMN ?? 1)
+export const TEST_GROUP = +(process.env.RESOLUME_TEST_GROUP ?? 1)
+export const TEST_GROUP_LAYER = +(process.env.RESOLUME_TEST_GROUP_LAYER ?? 2)
