@@ -10,3 +10,5 @@ package-lock.json
 .DS_Store
 
 coverage/
+
+test/integration/config.ts
