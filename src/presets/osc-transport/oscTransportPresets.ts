@@ -90,6 +90,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${lp}◀◀\\nReverse`, white, blue, 'auto', [['oscClipPauseResume', { layer: L, state: 'backward' }]]),
 		[`${pfx}_Pause`]: btn(cat, 'Pause', `${lp}⏸\\nPause`, white, red, 'auto', [['oscClipPauseResume', { layer: L, state: 'pause' }]]),
 		[`${pfx}_Play`]: btn(cat, 'Play', `${lp}▶\\nPlay`, white, green, 'auto', [['oscClipPauseResume', { layer: L, state: 'forward' }]]),
+		[`${pfx}_Toggle`]: btn(cat, 'Play/Pause Toggle', `${lp}⏯\\nToggle`, white, orange, 'auto', [['oscClipPauseResume', { layer: L, state: 'toggle' }]]),
 		[`${pfx}_Restart`]: btn(cat, 'Restart', `${lp}⏮\\nRestart`, white, green, '18', [['oscClipRestartMedia', { layer: L }]]),
 
 		// 5. Bypass
@@ -180,9 +181,9 @@ function getGroupPresets(group: number): CompanionPresetDefinitions {
 		[`${pfx}_Clear`]: btn(cat, 'Clear', `${gp}Clear`, white, red, 'auto', [['oscGroupClear', { group: G }]]),
 
 		// 4. Transport
-		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/backwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-		[`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸\\nPause`, white, red, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/paused`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-		[`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶\\nPlay`, white, green, 'auto', [['oscCustomCommand', { customPath: `/composition/groups/${G}/forwards`, oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, 'auto', [['oscGroupDirection', { group: G, state: 'backward' }]]),
+		[`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸\\nPause`, white, red, 'auto', [['oscGroupDirection', { group: G, state: 'pause' }]]),
+		[`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶\\nPlay`, white, green, 'auto', [['oscGroupDirection', { group: G, state: 'forward' }]]),
 
 		// 5. Bypass
 		[`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${gp}Bypass\\nOff`, white, green, 'auto', [['oscGroupBypass', { group: G, bypass: 'off' }]]),
@@ -210,9 +211,9 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 		oscComp_ClearAll: btn(cat, 'Clear All', 'Clear\\nAll', white, red, 'auto', [['oscClearAllLayers', {}]]),
 
 		// 4. Transport
-		oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, 'auto', [['oscCustomCommand', { customPath: '/composition/backwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-		oscComp_Pause: btn(cat, 'Pause', '⏸\\nPause', white, red, 'auto', [['oscCustomCommand', { customPath: '/composition/paused', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
-		oscComp_Play: btn(cat, 'Play', '▶\\nPlay', white, green, 'auto', [['oscCustomCommand', { customPath: '/composition/forwards', oscType: 'i', customValue: '1', relativeType: 'n' }]]),
+		oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, 'auto', [['oscCompositionDirection', { state: 'backward' }]]),
+		oscComp_Pause: btn(cat, 'Pause', '⏸\\nPause', white, red, 'auto', [['oscCompositionDirection', { state: 'pause' }]]),
+		oscComp_Play: btn(cat, 'Play', '▶\\nPlay', white, green, 'auto', [['oscCompositionDirection', { state: 'forward' }]]),
 
 		// 5. (no bypass at composition level)
 

@@ -453,6 +453,113 @@ export function getOscTransportActions(
 			},
 		},
 
+		oscClipDirection: {
+			name: 'OSC: Clip Direction (specific clip)',
+			description: 'Set playback direction on a specific clip. Backward (0), Pause (1), Play Forward (2), or Toggle.',
+			options: [
+				layerOption,
+				columnOption,
+				{
+					id: 'state',
+					type: 'dropdown',
+					label: 'Direction',
+					choices: [
+						{ id: 'backward', label: 'Play Backward' },
+						{ id: 'pause', label: 'Pause' },
+						{ id: 'forward', label: 'Play Forward' },
+						{ id: 'toggle', label: 'Play / Pause Toggle' },
+					],
+					default: 'pause',
+				},
+			],
+			callback: async ({options}: {options: Record<string, any>}) => {
+				const layer = await parseIntParam(options.layer);
+				if (layer === undefined) return;
+				const column = await parseIntParam(options.column);
+				if (column === undefined) return;
+				const api = oscApi();
+				if (!api) return;
+				const path = `/composition/layers/${layer}/clips/${column}/transport/position/behaviour/direction`;
+				const state = options.state as string;
+				if (state === 'toggle') {
+					// No per-clip direction state — default to send '!' toggle modifier
+					api.send(path, [{ type: 's', value: '!' }]);
+				} else {
+					const dirMap: Record<string, number> = { backward: 0, pause: 1, forward: 2 };
+					api.send(path, { type: 'i', value: dirMap[state] });
+				}
+			},
+		},
+
+		oscCompositionDirection: {
+			name: 'OSC: Composition Direction',
+			description: 'Set the playback direction for the whole composition.',
+			options: [
+				{
+					id: 'state',
+					type: 'dropdown',
+					label: 'Direction',
+					choices: [
+						{ id: 'backward', label: 'Play Backward' },
+						{ id: 'pause', label: 'Pause' },
+						{ id: 'forward', label: 'Play Forward' },
+					],
+					default: 'forward',
+				},
+			],
+			callback: async ({options}: {options: Record<string, any>}) => {
+				const api = oscApi();
+				if (!api) return;
+				const state = options.state as string;
+				if (state === 'backward') {
+					api.send('/composition/backwards', { type: 'i', value: 1 });
+				} else if (state === 'pause') {
+					api.send('/composition/paused', { type: 'i', value: 1 });
+				} else {
+					api.send('/composition/forwards', { type: 'i', value: 1 });
+				}
+			},
+		},
+
+		oscGroupDirection: {
+			name: 'OSC: Group Direction',
+			description: 'Set the playback direction for a layer group.',
+			options: [
+				{
+					id: 'group',
+					type: 'textinput',
+					label: 'Group',
+					default: '1',
+					useVariables: true,
+				},
+				{
+					id: 'state',
+					type: 'dropdown',
+					label: 'Direction',
+					choices: [
+						{ id: 'backward', label: 'Play Backward' },
+						{ id: 'pause', label: 'Pause' },
+						{ id: 'forward', label: 'Play Forward' },
+					],
+					default: 'forward',
+				},
+			],
+			callback: async ({options}: {options: Record<string, any>}) => {
+				const group = await parseIntParam(options.group);
+				if (group === undefined) return;
+				const api = oscApi();
+				if (!api) return;
+				const state = options.state as string;
+				if (state === 'backward') {
+					api.send(`/composition/groups/${group}/backwards`, { type: 'i', value: 1 });
+				} else if (state === 'pause') {
+					api.send(`/composition/groups/${group}/paused`, { type: 'i', value: 1 });
+				} else {
+					api.send(`/composition/groups/${group}/forwards`, { type: 'i', value: 1 });
+				}
+			},
+		},
+
 		// ══════════════════════════════════════════════════════════
 		//  COMPOSITION / MASTER CONTROLS
 		// ══════════════════════════════════════════════════════════
