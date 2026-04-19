@@ -18,7 +18,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_GROUP, TEST_GROUP_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -26,7 +26,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 let oscApi: ArenaOscApi
@@ -75,7 +74,7 @@ describe.skipIf(!resolume)('REST read — layer group column settings', () => {
 
 // ── Layer group REST connect column ──────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('REST write — layer group connectColumn (requires media)', () => {
+describe.skipIf(!resolume)('REST write — layer group connectColumn (requires media)', () => {
 	afterAll(async () => {
 		oscApi.clearLayerGroup(TEST_GROUP)
 		await pause(400)

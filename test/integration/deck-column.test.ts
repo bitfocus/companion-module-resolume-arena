@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -18,7 +18,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 let oscApi: ArenaOscApi
@@ -122,7 +121,7 @@ describe.skipIf(!resolume)('REST read — column 1 full structure', () => {
 
 // ── Column trigger and verify ─────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — column trigger and verify (requires media)', () => {
+describe.skipIf(!resolume)('OSC — column trigger and verify (requires media)', () => {
 	afterAll(async () => {
 		oscApi.clearAllLayers()
 		await pause(400)
@@ -136,7 +135,7 @@ describe.skipIf(!resolume || !hasMedia)('OSC — column trigger and verify (requ
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('OSC — clearAllLayers → all columns Disconnected', () => {
+describe.skipIf(!resolume)('OSC — clearAllLayers → all columns Disconnected', () => {
 	beforeAll(async () => {
 		oscApi.triggerColumn(TEST_COLUMN)
 		await pause(500)

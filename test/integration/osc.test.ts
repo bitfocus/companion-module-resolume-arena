@@ -3,7 +3,7 @@ import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { ClipId } from '../../src/domain/clip/clip-id'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // No @types/osc exists — require with inline interface
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -19,7 +19,6 @@ interface OscUDPPort {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 let rest: ArenaRestApi
 let oscApi: ArenaOscApi
@@ -61,7 +60,7 @@ describe.skipIf(!resolume)('OSC — clear all layers via OSC', () => {
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('OSC — trigger column (requires media in TEST slot)', () => {
+describe.skipIf(!resolume)('OSC — trigger column (requires media in TEST slot)', () => {
 	it('triggerColumn → REST confirms a clip is Connected', async () => {
 		oscApi.triggerColumn(TEST_COLUMN)
 		await pause(600)
@@ -97,7 +96,7 @@ describe.skipIf(!resolume)('OSC — bypass layer and verify via REST', () => {
 	})
 })
 
-describe.skipIf(!resolume || !hasMedia)('OSC — clip speed (requires media in TEST slot)', () => {
+describe.skipIf(!resolume)('OSC — clip speed (requires media in TEST slot)', () => {
 	afterAll(async () => {
 		await rest.Layers.clear(TEST_LAYER)
 		await pause(300)

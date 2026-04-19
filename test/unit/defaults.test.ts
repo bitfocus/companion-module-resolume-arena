@@ -38,8 +38,8 @@ describe('option builders', () => {
 		expect(opts).toHaveLength(1)
 		expect(opts[0].id).toBe('deck')
 		expect(opts[0].type).toBe('textinput')
-		expect(opts[0].default).toBe('1')
-		expect(opts[0].useVariables).toBe(true)
+		expect((opts[0] as any).default).toBe('1')
+		expect((opts[0] as any).useVariables).toBe(true)
 	})
 
 	it('getLayerOption returns a single textinput with id "layer"', () => {
@@ -47,8 +47,8 @@ describe('option builders', () => {
 		expect(opts).toHaveLength(1)
 		expect(opts[0].id).toBe('layer')
 		expect(opts[0].type).toBe('textinput')
-		expect(opts[0].default).toBe('1')
-		expect(opts[0].useVariables).toBe(true)
+		expect((opts[0] as any).default).toBe('1')
+		expect((opts[0] as any).useVariables).toBe(true)
 	})
 
 	it('getColumnOption returns a single textinput with id "column"', () => {
@@ -56,8 +56,8 @@ describe('option builders', () => {
 		expect(opts).toHaveLength(1)
 		expect(opts[0].id).toBe('column')
 		expect(opts[0].type).toBe('textinput')
-		expect(opts[0].default).toBe('1')
-		expect(opts[0].useVariables).toBe(true)
+		expect((opts[0] as any).default).toBe('1')
+		expect((opts[0] as any).useVariables).toBe(true)
 	})
 
 	it('getClipOption returns layer + column fields', () => {
@@ -71,7 +71,7 @@ describe('option builders', () => {
 		expect(opts).toHaveLength(1)
 		expect(opts[0].id).toBe('layerGroup')
 		expect(opts[0].type).toBe('textinput')
-		expect(opts[0].default).toBe('1')
-		expect(opts[0].useVariables).toBe(true)
+		expect((opts[0] as any).default).toBe('1')
+		expect((opts[0] as any).useVariables).toBe(true)
 	})
 })

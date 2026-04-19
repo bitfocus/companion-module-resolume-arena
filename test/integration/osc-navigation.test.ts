@@ -9,7 +9,7 @@ import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { ClipId } from '../../src/domain/clip/clip-id'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -17,7 +17,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 let oscApi: ArenaOscApi
@@ -71,7 +70,7 @@ describe.skipIf(!resolume)('OSC — composition column navigation', () => {
 
 // ── Layer clip navigation ─────────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — layer clip navigation (requires media)', () => {
+describe.skipIf(!resolume)('OSC — layer clip navigation (requires media)', () => {
 	beforeAll(async () => {
 		await api.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
 		await pause(400)
@@ -101,7 +100,7 @@ describe.skipIf(!resolume || !hasMedia)('OSC — layer clip navigation (requires
 
 // ── Next/prev column navigation round-trip ────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — column navigation round-trip (requires media)', () => {
+describe.skipIf(!resolume)('OSC — column navigation round-trip (requires media)', () => {
 	afterAll(async () => {
 		oscApi.clearAllLayers()
 		await pause(400)

@@ -11,7 +11,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import ArenaRestApi from '../../src/arena-api/rest'
 import ArenaOscApi from '../../src/arena-api/osc'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_GROUP, TEST_GROUP_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, testClipHasMedia, pause } from './helpers'
+import { isResolumeReachable, pause } from './helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const osc = require('osc') as {
@@ -19,7 +19,6 @@ const osc = require('osc') as {
 }
 
 const resolume = await isResolumeReachable()
-const hasMedia = resolume && (await testClipHasMedia())
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 let oscApi: ArenaOscApi
@@ -175,7 +174,7 @@ describe.skipIf(!resolume)('REST write — layer group bypass (REST path)', () =
 
 // ── Layer group column trigger ─────────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — layer group column trigger (extended)', () => {
+describe.skipIf(!resolume)('OSC — layer group column trigger (extended)', () => {
 	afterAll(async () => {
 		oscApi.clearLayerGroup(TEST_GROUP)
 		await pause(400)
@@ -200,7 +199,7 @@ describe.skipIf(!resolume || !hasMedia)('OSC — layer group column trigger (ext
 
 // ── Layer group next/prev column ──────────────────────────────────────────────
 
-describe.skipIf(!resolume || !hasMedia)('OSC — layer group column navigation (requires media)', () => {
+describe.skipIf(!resolume)('OSC — layer group column navigation (requires media)', () => {
 	afterAll(async () => {
 		oscApi.clearLayerGroup(TEST_GROUP)
 		await pause(400)
