@@ -545,6 +545,7 @@ export class OscState {
 		const remainingSec = durationSec > 0 ? Math.max(0, (1 - clip.position) * durationSec) : 0;
 		const variables: Record<string, string> = {}
 		variables[`${prefix}_elapsed`] = this.secondsToTimecode(elapsedSec);
+		variables[`${prefix}_elapsed_seconds`] = Math.round(elapsedSec).toString();
 		variables[`${prefix}_duration`] = this.secondsToTimecode(durationSec);
 		variables[`${prefix}_remaining`] = this.secondsToTimecode(remainingSec);
 		variables[`${prefix}_remaining_seconds`] = Math.round(remainingSec).toString();

@@ -9,6 +9,7 @@ export function getOscLayerVariables(layer: number): CompanionVariableDefinition
 	const prefix = `osc_layer_${layer}`
 	return [
 		{ variableId: `${prefix}_elapsed`, name: `OSC Layer ${layer} / Elapsed Time` },
+		{ variableId: `${prefix}_elapsed_seconds`, name: `OSC Layer ${layer} / Elapsed (seconds)` },
 		{ variableId: `${prefix}_duration`, name: `OSC Layer ${layer} / Duration` },
 		{ variableId: `${prefix}_remaining`, name: `OSC Layer ${layer} / Remaining Time` },
 		{ variableId: `${prefix}_remaining_seconds`, name: `OSC Layer ${layer} / Remaining (seconds)` },
