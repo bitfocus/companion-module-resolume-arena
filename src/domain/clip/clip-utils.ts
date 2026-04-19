@@ -1,4 +1,4 @@
-import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
+import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, CompanionVariableDefinition} from '@companion-module/base';
 import {drawPercentage, drawThumb, drawVolume} from '../../image-utils';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
@@ -23,6 +23,10 @@ export class ClipUtils implements MessageSubscriber {
 	private clipSpeedIds: Set<number> = new Set<number>();
 	private clipVolumeIds: Set<number> = new Set<number>();
 	private clipOpacityIds: Set<number> = new Set<number>();
+
+	private clipNameSubscribedPaths: Set<string> = new Set<string>();
+	private clipNameLayerCount = 0;
+	private clipNameColumnCount = 0;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -58,6 +62,12 @@ export class ClipUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/name/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
+				const nameMatch = data.path.match(/\/composition\/layers\/(\d+)\/clips\/(\d+)\/name/);
+				if (nameMatch) {
+					this.resolumeArenaInstance.setVariableValues({
+						[`clip_name_l${nameMatch[1]}_c${nameMatch[2]}`]: data.value as string
+					});
+				}
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position\/behaviour\/speed/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipSpeed');
@@ -79,6 +89,50 @@ export class ClipUtils implements MessageSubscriber {
 		this.initConnectedFromComposition();
 		this.initSelectedFromComposition();
 		this.initSpeedFromComposition();
+		this.initClipNameVariables();
+	}
+
+	private initClipNameVariables() {
+		const layers = compositionState.get()?.layers;
+		if (!layers) return;
+
+		for (const path of this.clipNameSubscribedPaths) {
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(path);
+		}
+		this.clipNameSubscribedPaths.clear();
+
+		this.clipNameLayerCount = layers.length;
+		this.clipNameColumnCount = layers.reduce((max, layer) => Math.max(max, layer.clips?.length ?? 0), 0);
+
+		const values: Record<string, string> = {};
+		for (const [layerIdx, layerObject] of layers.entries()) {
+			const layer = layerIdx + 1;
+			const clips = layerObject.clips;
+			if (!clips) continue;
+			for (const [clipIdx, clipObject] of clips.entries()) {
+				const column = clipIdx + 1;
+				const path = `/composition/layers/${layer}/clips/${column}/name`;
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(path);
+				this.clipNameSubscribedPaths.add(path);
+				values[`clip_name_l${layer}_c${column}`] = clipObject.name?.value ?? '';
+			}
+		}
+
+		this.resolumeArenaInstance.setupVariables();
+		this.resolumeArenaInstance.setVariableValues(values);
+	}
+
+	public getClipNameVariableDefinitions(): CompanionVariableDefinition[] {
+		const defs: CompanionVariableDefinition[] = [];
+		for (let layer = 1; layer <= this.clipNameLayerCount; layer++) {
+			for (let column = 1; column <= this.clipNameColumnCount; column++) {
+				defs.push({
+					variableId: `clip_name_l${layer}_c${column}`,
+					name: `Clip name Layer ${layer} Column ${column}`
+				});
+			}
+		}
+		return defs;
 	}
 
 	initConnectedFromComposition() {

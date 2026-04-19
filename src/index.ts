@@ -29,7 +29,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private oscListener: ArenaOscListener | null = null
 	private oscState: OscState
 
-	private clipUtils: ClipUtils
+	public clipUtils: ClipUtils
 	private layerUtils: LayerUtils
 	private layerGroupUtils: LayerGroupUtils
 	private columnUtils: ColumnUtils
@@ -91,6 +91,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		const variables = []
 		if (this.restApi) {
 			variables.push(...getApiVariables())
+			variables.push(...this.clipUtils.getClipNameVariableDefinitions())
 		}
 		// OSC variables require the listener to populate them
 		if (this.config?.useOscListener) {
