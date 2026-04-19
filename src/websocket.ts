@@ -138,7 +138,7 @@ export class WebsocketInstance {
 	}
 
 	async sendMessage(data: any) {
-		if (this.ws?.readyState !== this.ws?.OPEN) {
+		if (this.ws?.readyState !== WebSocket.OPEN) {
 			try {
 				await this.waitForOpenConnection(this.ws);
 				this.sendMessageIfOpen(data);
@@ -164,7 +164,7 @@ export class WebsocketInstance {
 				if (currentAttempt > maxNumberOfAttempts - 1) {
 					clearInterval(interval);
 					reject(new Error('Maximum number of attempts exceeded'));
-				} else if (socket?.readyState === socket?.OPEN) {
+				} else if (socket?.readyState === WebSocket.OPEN) {
 					clearInterval(interval);
 					resolve();
 				}
