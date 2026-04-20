@@ -61,8 +61,12 @@ export function compositionVolumeChange(
 						break;
 				}
 				if (value != undefined) {
-					let paramId = compositionState.get()!.audio!.volume!.id!+''
-					websocketApi()?.setParam(paramId, value);
+					const id = compositionState.get()?.audio?.volume?.id;
+					if (id !== undefined) {
+						websocketApi()?.setParam(String(id), value);
+					} else {
+						resolumeArenaInstance.log('warn', 'compositionVolumeChange: paramId should not be undefined');
+					}
 				}
 			}
 		}

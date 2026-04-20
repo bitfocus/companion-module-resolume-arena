@@ -4,6 +4,7 @@ import { soloLayerGroup } from '../../src/actions/layer-group/actions/solo-layer
 import { clearLayerGroup } from '../../src/actions/layer-group/actions/clear-layer-group'
 import { layerGroupMasterChange } from '../../src/actions/layer-group/actions/layer-group-master-change'
 import { layerGroupOpacityChange } from '../../src/actions/layer-group/actions/layer-group-opacity-change'
+import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change'
 import { parameterStates, compositionState } from '../../src/state'
 
 function makeWsApi() {
@@ -247,5 +248,77 @@ describe('layerGroupOpacityChange', () => {
 		)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
+	})
+
+	it('does not call setParam when layer group is not in composition state (#140)', async () => {
+		const ws = makeWsApi()
+		const layerGroupUtils = {
+			getLayerGroupFromCompositionState: vi.fn().mockReturnValue(undefined),
+		}
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('50'),
+		} as any
+		const action = layerGroupOpacityChange(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => layerGroupUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
+		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
+	})
+})
+
+// ── layerGroupVolumeChange ─────────────────────────────────────────────────────
+
+describe('layerGroupVolumeChange', () => {
+	it('set — calls setParam with the volume id', async () => {
+		const ws = makeWsApi()
+		const layerGroupUtils = {
+			getLayerGroupFromCompositionState: vi.fn().mockReturnValue({ audio: { volume: { id: 55 } } }),
+		}
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('-6'),
+		} as any
+		const action = layerGroupVolumeChange(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => layerGroupUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '-6' } })
+		expect(ws.setParam).toHaveBeenCalledWith('55', -6)
+	})
+
+	it('does not call setParam when layer group has no volume id (#140)', async () => {
+		const ws = makeWsApi()
+		const layerGroupUtils = {
+			getLayerGroupFromCompositionState: vi.fn().mockReturnValue(undefined),
+		}
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('-6'),
+		} as any
+		const action = layerGroupVolumeChange(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => layerGroupUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '-6' } })
+		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })

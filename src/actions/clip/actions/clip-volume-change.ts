@@ -71,9 +71,13 @@ export function clipVolumeChange(
 					}
 					if (value != undefined) {
 						const layer = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
-						let paramId = layer?.audio!.volume!.id! + '';
-						await websocketApi()?.subscribeParam(+paramId);
-						await websocketApi()?.setParam(paramId, value);
+						const id = layer?.audio?.volume?.id;
+						if (id !== undefined) {
+							await websocketApi()?.subscribeParam(id);
+							await websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'clipVolumeChange: paramId should not be undefined');
+						}
 					}
 				}
 			}

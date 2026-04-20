@@ -69,9 +69,13 @@ export function layerVolumeChange(
 					}
 					if (value != undefined) {
 						const layerObject = theLayerUtils.getLayerFromCompositionState(layer);
-						let paramId = layerObject?.audio!.volume!.id! + '';
-						websocketApi()?.subscribeParam(+paramId);
-						websocketApi()?.setParam(paramId, value);
+						const id = layerObject?.audio?.volume?.id;
+						if (id !== undefined) {
+							websocketApi()?.subscribeParam(id);
+							websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'layerVolumeChange: paramId should not be undefined');
+						}
 					}
 				}
 			}
