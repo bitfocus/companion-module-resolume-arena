@@ -1,5 +1,5 @@
 import {SomeCompanionFeedbackInputField, Regex, CompanionOptionValues} from '@companion-module/base';
-import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE, MANUAL_PARAM_CHOICE} from '../../domain/effects/effect-utils';
+import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE} from '../../domain/effects/effect-utils';
 
 /**
  * Builds options for an effect action or feedback for the given scope.
@@ -25,8 +25,9 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		});
 	}
 
+	// IMPORTANT: isVisible is serialized via .toString() — do NOT reference imported constants.
 	const isManual = showDropdown
-		? (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE
+		? (opts: CompanionOptionValues) => opts['effectChoice'] === '__manual__'
 		: () => true;
 
 	if (showDropdown) {
@@ -106,18 +107,49 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 }
 
 /**
- * Builds a parameter-name dropdown (deduplicated from compositionState) plus
- * a manual textinput shown when the manual sentinel is selected.
+ * Builds the two-level parameter picker:
+ *   1. Collection dropdown (params / mixer / effect) — always visible
+ *   2. Per-collection parameter dropdown — visible for the matching collection
+ *   3. Manual text input — visible when the active param dropdown is set to Manual
+ *
+ * IMPORTANT: isVisible callbacks are serialized via .toString() — do NOT use imported constants.
  */
 export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInputField[] {
-	const choices = eu.buildParamChoices();
 	return [
 		{
-			id: 'paramChoice',
+			id: 'collection',
 			type: 'dropdown',
-			label: 'Parameter — select a known parameter or choose Manual to type one',
-			choices,
-			default: MANUAL_PARAM_CHOICE,
+			label: 'Collection',
+			choices: [
+				{id: 'params', label: 'params — effect controls (most common)'},
+				{id: 'mixer', label: 'mixer — mix/blend parameters'},
+				{id: 'effect', label: 'effect — effect-level flags'},
+			],
+			default: 'params',
+		},
+		{
+			id: 'paramChoice_params',
+			type: 'dropdown',
+			label: 'Parameter',
+			choices: eu.buildParamChoicesForCollection('params'),
+			default: '__manual_param__',
+			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'params',
+		},
+		{
+			id: 'paramChoice_mixer',
+			type: 'dropdown',
+			label: 'Parameter',
+			choices: eu.buildParamChoicesForCollection('mixer'),
+			default: '__manual_param__',
+			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'mixer',
+		},
+		{
+			id: 'paramChoice_effect',
+			type: 'dropdown',
+			label: 'Parameter',
+			choices: eu.buildParamChoicesForCollection('effect'),
+			default: '__manual_param__',
+			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'effect',
 		},
 		{
 			id: 'paramName',
@@ -125,7 +157,10 @@ export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInp
 			label: 'Parameter name (manual, supports variables)',
 			default: '',
 			useVariables: true,
-			isVisible: (opts: CompanionOptionValues) => opts['paramChoice'] === MANUAL_PARAM_CHOICE,
+			isVisible: (opts: CompanionOptionValues) =>
+				(opts['collection'] === 'params' && opts['paramChoice_params'] === '__manual_param__') ||
+				(opts['collection'] === 'mixer' && opts['paramChoice_mixer'] === '__manual_param__') ||
+				(opts['collection'] === 'effect' && opts['paramChoice_effect'] === '__manual_param__'),
 		},
 	];
 }

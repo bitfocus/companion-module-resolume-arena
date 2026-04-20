@@ -48,6 +48,7 @@ function makeLayerComposition(paramId = 301) {
 }
 
 function makeFeedback(layer: string, effectIdx: string, collection: string, paramName: string, id = 'fb1') {
+	// paramName goes to the manual textinput; paramChoice_* is left undefined → falls back to manual
 	return {id, options: {layer, effectIdx, collection, paramName}} as any;
 }
 
@@ -206,58 +207,58 @@ describe('coerceValue (via effectParameterSet action)', () => {
 
 	beforeEach(() => { compositionState.set(makeLayerComposition(301)); });
 
+	const BASE_MANUAL = {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice_params: '__manual_param__'};
+
 	it('coerces "true" to boolean true', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'true'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'active', value: 'true'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('302', true);
 	});
 
 	it('coerces "false" to boolean false', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'false'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'active', value: 'false'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('302', false);
 	});
 
 	it('coerces numeric string to number', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0.5'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'speed', value: '0.5'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', 0.5);
 	});
 
 	it('passes non-numeric, non-boolean string through', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', value: 'My Look'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'look', value: 'My Look'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('303', 'My Look');
 	});
 
 	it('coerces "0" to number 0, not boolean false', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'speed', value: '0'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', 0);
 		expect(typeof mod._wsApi.setParam.mock.calls[0][1]).toBe('number');
 	});
 
-	it('uses valueChoice when not manual sentinel', async () => {
+	it('uses valueChoice_params when not manual sentinel', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', mode: 'set', valueChoice: 'Warm', value: ''}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'look', mode: 'set', valueChoice_params: 'Warm', value: ''}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('303', 'Warm');
 	});
 
-	it('finds param in mixer collection even when collection selector says params', async () => {
+	it('targets mixer collection directly via collection + paramChoice_mixer', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		// paramChoice is NOT manual → uses findEffectParam (all-collection search)
-		// 'Blend Mode' is in mixer, but collection dropdown says 'params'
 		await (action.callback as Function)({options: {
 			effectChoice: '__manual__', layer: '1', effectIdx: '1',
-			collection: 'params', paramChoice: 'Blend Mode', value: 'Add',
-			mode: 'set', valueChoice: '__manual_value__',
+			collection: 'mixer', paramChoice_mixer: 'Blend Mode',
+			mode: 'set', valueChoice_mixer: '__manual_value__', value: 'Add',
 		}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('400', 'Add');
 	});
@@ -265,7 +266,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 	it('logs warning when param not found in compositionState', async () => {
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'nonexistent', value: '1'}});
+		await (action.callback as Function)({options: {...BASE_MANUAL, paramName: 'nonexistent', value: '1'}});
 		expect(mod.log).toHaveBeenCalledWith('warn', expect.stringContaining('nonexistent'));
 		expect(mod._wsApi.setParam).not.toHaveBeenCalled();
 	});
@@ -274,7 +275,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getEffectUtils: () => new EffectUtils(mod as any)} as any, 'layer');
-		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
+		await expect((action.callback as Function)({options: {...BASE_MANUAL, paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
 });
 
@@ -290,7 +291,7 @@ describe('effectParameterSet — relative modes', () => {
 		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
 	}
 
-	const BASE_OPTS = {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', valueChoice: '__manual_value__'};
+	const BASE_OPTS = {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice_params: '__manual_param__', paramName: 'speed', valueChoice_params: '__manual_value__'};
 
 	it('increase adds delta to current numeric value from parameterStates', async () => {
 		parameterStates.set({'/parameter/by-id/301': {value: 0.3} as any});
@@ -314,6 +315,17 @@ describe('effectParameterSet — relative modes', () => {
 		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.1'}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', expect.closeTo(0.6, 10));
+	});
+
+	it('writes back new value to parameterStates so repeated presses accumulate', async () => {
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		// First press: base = compositionState value (0.5), result = 0.4
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'decrease', value: '0.1'}});
+		expect(mod._wsApi.setParam).toHaveBeenLastCalledWith('301', expect.closeTo(0.4, 10));
+		// Second press: base = 0.4 from parameterStates cache, result = 0.3
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'decrease', value: '0.1'}});
+		expect(mod._wsApi.setParam).toHaveBeenLastCalledWith('301', expect.closeTo(0.3, 10));
 	});
 
 	it('toggle flips boolean using parameterStates value', async () => {

@@ -230,15 +230,18 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	/**
-	 * Returns a deduplicated list of all known parameter names across the entire
-	 * composition (all scopes, all effects, all three collections).
+	 * Returns a deduplicated list of parameter names for a single collection across the entire composition.
 	 * Prefixed with the manual sentinel so the user can still type freely.
 	 */
-	buildParamChoices(): DropdownChoice[] {
+	buildParamChoicesForCollection(collection: EffectCollection): DropdownChoice[] {
 		const choices: DropdownChoice[] = [{id: MANUAL_PARAM_CHOICE, label: 'Manual (type below)'}];
 		const seen = new Set<string>();
 
-		const addFromCollection = (coll: ParameterCollection | undefined) => {
+		const state = compositionState.get();
+		if (!state) return choices;
+
+		const addFromEffect = (eff: VideoEffect) => {
+			const coll = eff[collection] as ParameterCollection | undefined;
 			if (!coll) return;
 			for (const name of Object.keys(coll)) {
 				if (!seen.has(name)) {
@@ -248,10 +251,37 @@ export class EffectUtils implements MessageSubscriber {
 			}
 		};
 
+		(state.video?.effects ?? []).forEach(addFromEffect);
+		(state.layergroups ?? []).forEach((g) => (g.video?.effects ?? []).forEach(addFromEffect));
+		(state.layers ?? []).forEach((l) => {
+			(l.video?.effects ?? []).forEach(addFromEffect);
+			(l.clips ?? []).forEach((c) => (c.video?.effects ?? []).forEach(addFromEffect));
+		});
+
+		return choices;
+	}
+
+	/**
+	 * Returns deduplicated ChoiceParameter option strings for a single collection.
+	 * Used to build per-collection value choice dropdowns.
+	 */
+	buildValueChoicesForCollection(collection: EffectCollection): DropdownChoice[] {
+		const choices: DropdownChoice[] = [{id: MANUAL_VALUE_CHOICE, label: 'Manual (type below)'}];
+		const seen = new Set<string>();
+
 		const addFromEffect = (eff: VideoEffect) => {
-			addFromCollection(eff.params);
-			addFromCollection(eff.mixer);
-			addFromCollection(eff.effect);
+			const coll = eff[collection] as ParameterCollection | undefined;
+			if (!coll) return;
+			for (const param of Object.values(coll)) {
+				if (param.valuetype === 'ParamChoice' || param.valuetype === 'ParamState') {
+					for (const opt of (param as ChoiceParameter).options ?? []) {
+						if (!seen.has(opt)) {
+							seen.add(opt);
+							choices.push({id: opt, label: opt});
+						}
+					}
+				}
+			}
 		};
 
 		const state = compositionState.get();
@@ -386,7 +416,8 @@ export class EffectUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	private async resolveParamName(options: Record<string, any>, context: CompanionCommonCallbackContext): Promise<string> {
-		const rawChoice = options.paramChoice as string | undefined;
+		const collection = options.collection as EffectCollection;
+		const rawChoice = options[`paramChoice_${collection}`] as string | undefined;
 		if (rawChoice && rawChoice !== MANUAL_PARAM_CHOICE) return rawChoice;
 		return context.parseVariablesInString(options.paramName as string ?? '');
 	}
@@ -398,12 +429,6 @@ export class EffectUtils implements MessageSubscriber {
 		effectIdx: number,
 		paramName: string
 	): (ParameterCollection[string] & {id?: number; value?: any}) | undefined {
-		const rawChoice = options.paramChoice as string | undefined;
-		// Known param from dropdown: search all collections so the collection selector is irrelevant
-		if (rawChoice && rawChoice !== MANUAL_PARAM_CHOICE) {
-			return this.findEffectParam(scope, location, effectIdx, paramName);
-		}
-		// Manual param: honour the collection selector
 		return this.getEffectParam(scope, location, effectIdx, options.collection as EffectCollection, paramName);
 	}
 

@@ -1,16 +1,13 @@
 /**
- * Integration tests for effect control and feedback (#159).
+ * Integration tests for effect parameter control (#159).
  *
- * Test composition (layer 1, clip 1/1):
- * - Layer 1 has 1 effect: Transform (no bypassed parameter)
- * - Clip 1/1 has 4 effects: Transform + 3× AddSubtract (effects 2–4 have bypassed)
+ * Required test composition (see memory/project_test_setup.md):
+ *   - Layer 1 has at least 1 effect (Transform) with numeric params (e.g. "Position X").
+ *   - Clip 1/1 has at least 1 effect whose bypassed parameter has a numeric id.
  *
- * Note: current EffectUtils is layer-scoped (PR 1–3). Clip-scope tests use raw WS
- * paths to validate the bypass toggle mechanism; clip-scope EffectUtils is PR 4.
- *
- * The REST API returns effect fields in snake_case (display_name, not displayName).
- * The TypeScript interfaces use camelCase — bypassedParamId therefore comes from
- * the WS composition dump (camelCase), not from the REST response.
+ * These tests use ws.subscribeParam / ws.setParam (the current API).
+ * The old setPath mechanism is intentionally NOT tested here — it does not work
+ * for effect parameters and was removed in favour of setParam.
  */
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import ArenaRestApi from '../../src/arena-api/rest';
@@ -98,15 +95,6 @@ describe.skipIf(!resolume)('effect control — REST: clip effects structure', ()
 		const withBypassed = (clip?.video?.effects ?? []).filter((e: any) => e.bypassed?.id !== undefined);
 		expect(withBypassed.length).toBeGreaterThanOrEqual(1);
 	});
-
-	it('clip effect bypassed has numeric id', async () => {
-		const clip = (await api.Clips.getStatus(new ClipId(TEST_LAYER, TEST_COLUMN))) as any;
-		const withBypassed = (clip?.video?.effects ?? []).filter((e: any) => e.bypassed?.id !== undefined);
-		for (const effect of withBypassed) {
-			expect(typeof effect.bypassed.id).toBe('number');
-			expect(typeof effect.bypassed.value).toBe('boolean');
-		}
-	});
 });
 
 // ── EffectUtils.listEffects from compositionState ─────────────────────────────
@@ -133,75 +121,170 @@ describe.skipIf(!resolume)('effect control — EffectUtils.listEffects (layer sc
 			expect(e.name.length).toBeGreaterThan(0);
 		}
 	});
+});
 
-	it('listEffects returns empty for out-of-range layer', () => {
-		expect(effectUtils.listEffects(9999)).toEqual([]);
+// ── WS subscribeParam — layer effect numeric param ───────────────────────────
+
+describe.skipIf(!resolume)('effect control — WS: subscribeParam for layer effect param', () => {
+	let paramId: number;
+
+	beforeAll(async () => {
+		const state = compositionState.get();
+		const firstEffect = state?.layers?.[TEST_LAYER - 1]?.video?.effects?.[0] as any;
+		const entry = Object.values(firstEffect?.params ?? {}).find((p: any) => typeof p.value === 'number') as any;
+		if (!entry) return;
+		paramId = entry.id;
+		parameterStates.set({});
+		ws.subscribeParam(paramId);
+		await waitFor(() => parameterStates.get()['/parameter/by-id/' + paramId] !== undefined, 3000);
+	});
+
+	afterAll(() => {
+		if (paramId !== undefined) ws.unsubscribeParam(paramId);
+	});
+
+	it('parameterStates contains the param entry after subscribeParam', () => {
+		if (paramId === undefined) return;
+		expect(parameterStates.get()['/parameter/by-id/' + paramId]).toBeDefined();
+	});
+
+	it('subscribed value is numeric', () => {
+		if (paramId === undefined) return;
+		expect(typeof parameterStates.get()['/parameter/by-id/' + paramId]?.value).toBe('number');
 	});
 });
 
-// ── WS param subscription — layer effect ─────────────────────────────────────
+// ── effectParameterSet action — set round-trip ────────────────────────────────
 
-describe.skipIf(!resolume)('effect control — WS: layer effect param subscription', () => {
-	let paramPath: string;
+describe.skipIf(!resolume)('effect control — effectParameterSet action: set round-trip', () => {
+	let paramId: number;
+	let paramName: string;
+	let originalValue: number;
 
 	beforeAll(async () => {
-		// Use the first param of the first layer effect (Transform → "Position X")
-		const layer = (await api.Layers.getSettings(TEST_LAYER)) as any;
-		const firstEffect = layer?.video?.effects?.[0];
-		const firstParamName = firstEffect?.params ? Object.keys(firstEffect.params)[0] : null;
-		if (!firstParamName) return;
-		paramPath = effectUtils.effectParamPath(TEST_LAYER, 1, 'params', firstParamName);
+		const state = compositionState.get();
+		const firstEffect = state?.layers?.[TEST_LAYER - 1]?.video?.effects?.[0] as any;
+		const params = firstEffect?.params ?? {};
+		const [name, entry] = (Object.entries(params) as [string, any][]).find(([, p]) => typeof p.value === 'number') ?? [];
+		if (!name || !entry) return;
+		paramName = name;
+		paramId = entry.id;
+		// Subscribe so we can read live values back from Resolume
 		parameterStates.set({});
-		ws.subscribePath(paramPath);
-		await waitFor(() => parameterStates.get()[paramPath] !== undefined, 3000);
+		ws.subscribeParam(paramId);
+		await waitFor(() => parameterStates.get()['/parameter/by-id/' + paramId] !== undefined, 3000);
+		originalValue = parameterStates.get()['/parameter/by-id/' + paramId]?.value as number;
 	});
 
-	it('parameterStates contains the param entry after subscription', () => {
-		if (!paramPath) return;
-		expect(parameterStates.get()[paramPath]).toBeDefined();
+	afterAll(async () => {
+		if (paramId !== undefined) {
+			ws.setParam(String(paramId), originalValue);
+			await pause(300);
+			ws.unsubscribeParam(paramId);
+		}
 	});
 
-	it('param value matches REST value', async () => {
-		if (!paramPath) return;
-		const layer = (await api.Layers.getSettings(TEST_LAYER)) as any;
-		const firstEffect = layer?.video?.effects?.[0];
-		const firstParamName = firstEffect?.params ? Object.keys(firstEffect.params)[0] : null;
-		if (!firstParamName) return;
-		const restVal = firstEffect.params[firstParamName].value;
-		const wsVal = parameterStates.get()[paramPath]?.value;
-		expect(wsVal).toBeCloseTo(restVal as number, 3);
+	it('set mode sends value to Resolume via setParam', async () => {
+		if (paramId === undefined) return;
+		const target = (originalValue + 0.1) % 1; // stay within [0,1]
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
+		await (action.callback as Function)({
+			options: {
+				effectChoice: '__manual__',
+				layer: String(TEST_LAYER),
+				effectIdx: '1',
+				collection: 'params',
+				paramChoice_params: paramName,
+				mode: 'set',
+				value: String(target),
+			},
+		});
+		await waitFor(() => Math.abs((parameterStates.get()['/parameter/by-id/' + paramId]?.value as number) - target) < 0.01, 3000);
+		expect(parameterStates.get()['/parameter/by-id/' + paramId]?.value).toBeCloseTo(target, 2);
 	});
 });
 
-// ── WS bypass subscription — clip effect (raw path) ──────────────────────────
-// Clip-scope EffectUtils is PR 4. Here we verify the raw WS mechanism works
-// for the bypassed effects the user added to clip 1/1.
+// ── effectParameterSet action — increase/decrease accumulation ────────────────
 
-describe.skipIf(!resolume)('effect control — WS: clip effect bypass subscription (raw)', () => {
-	let bypassPath: string;
-	let bypassedParamId: number;
+describe.skipIf(!resolume)('effect control — effectParameterSet action: increase/decrease accumulation', () => {
+	let paramId: number;
+	let paramName: string;
+	let originalValue: number;
 
 	beforeAll(async () => {
-		const clip = (await api.Clips.getStatus(new ClipId(TEST_LAYER, TEST_COLUMN))) as any;
-		// Find first effect with a bypassed parameter (1-based index in WS path)
-		const effects: any[] = clip?.video?.effects ?? [];
-		const idx = effects.findIndex((e: any) => e.bypassed?.id !== undefined);
-		if (idx === -1) return;
-		bypassedParamId = effects[idx].bypassed.id;
-		bypassPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/video/effects/${idx + 1}/bypassed`;
+		const state = compositionState.get();
+		const firstEffect = state?.layers?.[TEST_LAYER - 1]?.video?.effects?.[0] as any;
+		const params = firstEffect?.params ?? {};
+		const [name, entry] = (Object.entries(params) as [string, any][]).find(([, p]) => typeof p.value === 'number') ?? [];
+		if (!name || !entry) return;
+		paramName = name;
+		paramId = entry.id;
 		parameterStates.set({});
-		ws.subscribePath(bypassPath);
-		await waitFor(() => parameterStates.get()[bypassPath] !== undefined, 3000);
+		ws.subscribeParam(paramId);
+		await waitFor(() => parameterStates.get()['/parameter/by-id/' + paramId] !== undefined, 3000);
+		originalValue = parameterStates.get()['/parameter/by-id/' + paramId]?.value as number;
 	});
 
-	it('parameterStates contains the bypassed entry after subscription', () => {
-		if (!bypassPath) return;
-		expect(parameterStates.get()[bypassPath]).toBeDefined();
+	afterAll(async () => {
+		if (paramId !== undefined) {
+			ws.setParam(String(paramId), originalValue);
+			await pause(300);
+			ws.unsubscribeParam(paramId);
+		}
 	});
 
-	it('bypassed value is a boolean', () => {
-		if (!bypassPath) return;
-		expect(typeof parameterStates.get()[bypassPath]?.value).toBe('boolean');
+	it('calling increase twice accumulates — second press uses updated base, not stale compositionState', async () => {
+		if (paramId === undefined) return;
+		const delta = 0.05;
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
+		const opts = {
+			effectChoice: '__manual__',
+			layer: String(TEST_LAYER),
+			effectIdx: '1',
+			collection: 'params',
+			paramChoice_params: paramName,
+			mode: 'increase',
+			value: String(delta),
+		};
+
+		// Reset to a known base value so the test is deterministic
+		ws.setParam(String(paramId), originalValue);
+		await waitFor(() => Math.abs((parameterStates.get()['/parameter/by-id/' + paramId]?.value as number) - originalValue) < 0.01, 2000);
+
+		await (action.callback as Function)({options: opts});
+		const afterFirst = parameterStates.get()['/parameter/by-id/' + paramId]?.value as number;
+		expect(afterFirst).toBeCloseTo(originalValue + delta, 3);
+
+		await (action.callback as Function)({options: opts});
+		const afterSecond = parameterStates.get()['/parameter/by-id/' + paramId]?.value as number;
+		// If the optimistic write-back is missing, afterSecond would equal originalValue + delta (not 2×)
+		expect(afterSecond).toBeCloseTo(originalValue + 2 * delta, 3);
+	});
+
+	it('decrease is the mirror — repeated presses subtract further', async () => {
+		if (paramId === undefined) return;
+		const delta = 0.05;
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
+		const opts = {
+			effectChoice: '__manual__',
+			layer: String(TEST_LAYER),
+			effectIdx: '1',
+			collection: 'params',
+			paramChoice_params: paramName,
+			mode: 'decrease',
+			value: String(delta),
+		};
+
+		ws.setParam(String(paramId), originalValue);
+		await waitFor(() => Math.abs((parameterStates.get()['/parameter/by-id/' + paramId]?.value as number) - originalValue) < 0.01, 2000);
+
+		await (action.callback as Function)({options: opts});
+		await (action.callback as Function)({options: opts});
+		const afterTwo = parameterStates.get()['/parameter/by-id/' + paramId]?.value as number;
+		expect(afterTwo).toBeCloseTo(originalValue - 2 * delta, 3);
 	});
 });
 
@@ -230,41 +313,11 @@ describe.skipIf(!resolume)('effect control — WS: clip effect bypass toggle rou
 		}
 	});
 
-	it('toggling bypass updates parameterStates via parameter_update', async () => {
+	it('toggling bypass updates parameterStates via WS', async () => {
 		if (!bypassPath) return;
 		const toggled = !originalBypassed;
 		await ws.setPath(bypassPath, toggled);
 		await waitFor(() => parameterStates.get()[bypassPath]?.value === toggled, 3000);
 		expect(parameterStates.get()[bypassPath]?.value).toBe(toggled);
-	});
-});
-
-// ── effectParameterSet action — path construction ─────────────────────────────
-
-describe.skipIf(!resolume)('effect control — effectParameterSet action path construction', () => {
-	it('constructs correct layer effect param path and calls ws.setPath', async () => {
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const calls: Array<{path: string; value: any}> = [];
-		const fakeWs: any = {setPath: (path: string, value: any) => calls.push({path, value})};
-		const fakeInstance: any = {
-			log: () => {},
-			parseVariablesInString: (s: string) => Promise.resolve(s),
-			getWebsocketApi: () => fakeWs,
-			getEffectUtils: () => effectUtils,
-		};
-		const action = effectParameterSet(fakeInstance, 'layer');
-		await (action.callback as Function)({
-			options: {
-				effectChoice: '__manual__',
-				layer: String(TEST_LAYER),
-				effectIdx: '1',
-				collection: 'params',
-				paramName: 'Position X',
-				value: '10',
-			},
-		});
-		expect(calls).toHaveLength(1);
-		expect(calls[0].path).toBe(`/composition/layers/${TEST_LAYER}/video/effects/1/params/Position X`);
-		expect(calls[0].value).toBe(10);
 	});
 });

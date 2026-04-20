@@ -333,7 +333,7 @@ describe('EffectUtils.effectsUpdated', () => {
 	});
 });
 
-describe('EffectUtils.buildParamChoices', () => {
+describe('EffectUtils.buildParamChoicesForCollection', () => {
 	function makeParamComposition() {
 		return {
 			video: {effects: [{id: 1, name: 'comp-fx', displayName: 'CompFX', bypassed: {id: 10}, params: {brightness: {id: 100, value: 0}}, mixer: {opacity: {id: 101, value: 1}}}]},
@@ -355,23 +355,31 @@ describe('EffectUtils.buildParamChoices', () => {
 
 	it('always includes the manual sentinel as first choice', () => {
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.buildParamChoices()[0].id).toBe('__manual_param__');
+		expect(eu.buildParamChoicesForCollection('params')[0].id).toBe('__manual_param__');
 	});
 
 	it('returns only manual sentinel when composition is empty', () => {
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.buildParamChoices()).toHaveLength(1);
+		expect(eu.buildParamChoicesForCollection('params')).toHaveLength(1);
 	});
 
-	it('aggregates param names from all scopes (composition, layergroup, layer, clip)', () => {
+	it('aggregates param names for params collection from all scopes', () => {
 		compositionState.set(makeParamComposition());
 		const eu = new EffectUtils(makeMockModule());
-		const ids = eu.buildParamChoices().map((c) => c.id);
-		expect(ids).toContain('brightness');  // composition effect param
-		expect(ids).toContain('opacity');     // composition effect mixer
-		expect(ids).toContain('speed');       // layergroup effect param
-		expect(ids).toContain('amount');      // layer effect param
-		expect(ids).toContain('size');        // clip effect param
+		const ids = eu.buildParamChoicesForCollection('params').map((c) => c.id);
+		expect(ids).toContain('brightness');  // composition effect
+		expect(ids).toContain('speed');       // layergroup effect
+		expect(ids).toContain('amount');      // layer effect
+		expect(ids).toContain('size');        // clip effect
+		expect(ids).not.toContain('opacity'); // mixer collection, not params
+	});
+
+	it('aggregates param names for mixer collection only', () => {
+		compositionState.set(makeParamComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoicesForCollection('mixer').map((c) => c.id);
+		expect(ids).toContain('opacity');
+		expect(ids).not.toContain('brightness'); // params collection
 	});
 
 	it('deduplicates param names across all effects and scopes', () => {
@@ -389,7 +397,7 @@ describe('EffectUtils.buildParamChoices', () => {
 			columns: [],
 		} as any);
 		const eu = new EffectUtils(makeMockModule());
-		const ids = eu.buildParamChoices().map((c) => c.id);
+		const ids = eu.buildParamChoicesForCollection('params').map((c) => c.id);
 		expect(ids.filter((id) => id === 'speed')).toHaveLength(1);
 		expect(ids).toContain('amount');
 	});

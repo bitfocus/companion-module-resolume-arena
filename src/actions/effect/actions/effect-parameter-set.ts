@@ -1,6 +1,6 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope, EffectParamMode, MANUAL_PARAM_CHOICE, MANUAL_VALUE_CHOICE} from '../../../domain/effects/effect-utils';
+import {EffectScope, EffectParamMode, EffectCollection, MANUAL_PARAM_CHOICE, MANUAL_VALUE_CHOICE} from '../../../domain/effects/effect-utils';
 import {buildScopedEffectOptions, buildParamNameOptions} from '../effect-action-options';
 import {parameterStates} from '../../../state';
 
@@ -27,24 +27,8 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 		name: `Set Effect Parameter (${SCOPE_LABELS[scope]}${nameSuffix})`,
 		options: [
 			...buildScopedEffectOptions(eu, scope, withClipList),
-			{
-				id: '_hint_collection',
-				type: 'static-text',
-				label: '',
-				value: 'Collection: "params" covers most effect controls. Use "mixer" for mix/blend parameters, "effect" for effect-level flags.',
-			},
-			{
-				id: 'collection',
-				type: 'dropdown',
-				label: 'Collection',
-				choices: [
-					{id: 'params', label: 'params — effect controls (most common)'},
-					{id: 'mixer', label: 'mixer — mix/blend parameters'},
-					{id: 'effect', label: 'effect — effect-level flags'},
-				],
-				default: 'params',
-			},
 			...buildParamNameOptions(eu),
+			// Mode and value — IMPORTANT: isVisible serialized via .toString(), no imported constants.
 			{
 				id: 'mode',
 				type: 'dropdown',
@@ -58,12 +42,28 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				default: 'set',
 			},
 			{
-				id: 'valueChoice',
+				id: 'valueChoice_params',
 				type: 'dropdown',
-				label: 'Value — select a known option or choose Manual to type',
-				choices: eu.buildValueChoices(),
-				default: MANUAL_VALUE_CHOICE,
-				isVisible: (opts) => opts['mode'] === 'set',
+				label: 'Value — known options',
+				choices: eu.buildValueChoicesForCollection('params'),
+				default: '__manual_value__',
+				isVisible: (opts) => opts['mode'] === 'set' && opts['collection'] === 'params',
+			},
+			{
+				id: 'valueChoice_mixer',
+				type: 'dropdown',
+				label: 'Value — known options',
+				choices: eu.buildValueChoicesForCollection('mixer'),
+				default: '__manual_value__',
+				isVisible: (opts) => opts['mode'] === 'set' && opts['collection'] === 'mixer',
+			},
+			{
+				id: 'valueChoice_effect',
+				type: 'dropdown',
+				label: 'Value — known options',
+				choices: eu.buildValueChoicesForCollection('effect'),
+				default: '__manual_value__',
+				isVisible: (opts) => opts['mode'] === 'set' && opts['collection'] === 'effect',
 			},
 			{
 				id: 'value',
@@ -74,8 +74,10 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				isVisible: (opts) => {
 					const mode = opts['mode'] as string;
 					if (mode === 'toggle') return false;
-					if (mode === 'set') return opts['valueChoice'] === MANUAL_VALUE_CHOICE;
-					return true; // increase / decrease always show the delta field
+					if (mode !== 'set') return true; // increase/decrease always show delta
+					const coll = (opts['collection'] as string) ?? 'params';
+					const vc = opts[`valueChoice_${coll}`] as string | undefined;
+					return !vc || vc === '__manual_value__';
 				},
 			},
 		],
@@ -83,20 +85,19 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
 			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
-			const rawParamChoice = options.paramChoice as string;
-			const paramName = rawParamChoice === MANUAL_PARAM_CHOICE
+
+			const collection = options.collection as EffectCollection;
+			const rawParamChoice = options[`paramChoice_${collection}`] as string | undefined;
+			const paramName = (!rawParamChoice || rawParamChoice === MANUAL_PARAM_CHOICE)
 				? await resolumeArenaInstance.parseVariablesInString(options.paramName as string)
 				: rawParamChoice;
+
 			if (!resolved.effectIdx || !paramName) {
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');
 				return;
 			}
-			// For known params (selected from dropdown), search all collections —
-			// the user shouldn't need to know which collection a param lives in.
-			// For manually typed params, honour the collection selector.
-			const param = rawParamChoice !== MANUAL_PARAM_CHOICE
-				? eu.findEffectParam(resolved.scope, resolved.location, resolved.effectIdx, paramName)
-				: eu.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
+
+			const param = eu.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 			if (param?.id === undefined) {
 				resolumeArenaInstance.log('warn', `effectParameterSet: param '${paramName}' not found in composition state`);
 				return;
@@ -104,25 +105,32 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			const paramId = param.id;
 			const mode = (options.mode as EffectParamMode | undefined) ?? 'set';
 
+			const paramKey = '/parameter/by-id/' + paramId;
+
 			if (mode === 'toggle') {
-				const current = parameterStates.get()['/parameter/by-id/' + paramId]?.value ?? param.value;
-				ws.setParam(String(paramId), !current);
+				const current = parameterStates.get()[paramKey]?.value ?? param.value;
+				const next = !current;
+				ws.setParam(String(paramId), next);
+				parameterStates.set({...parameterStates.get(), [paramKey]: {path: paramKey, value: next} as any});
 				return;
 			}
 
-			const rawValueChoice = options.valueChoice as string | undefined;
+			if (mode === 'increase' || mode === 'decrease') {
+				// Always read delta from the value textinput — value choice dropdowns are for 'set' only
+				const delta = parseFloat(await resolumeArenaInstance.parseVariablesInString(options.value as string)) || 0;
+				const current = parameterStates.get()[paramKey]?.value ?? param.value;
+				const base = typeof current === 'number' ? current : 0;
+				const next = mode === 'increase' ? base + delta : base - delta;
+				ws.setParam(String(paramId), next);
+				// Write back so the next press uses the updated value, not the stale compositionState snapshot
+				parameterStates.set({...parameterStates.get(), [paramKey]: {path: paramKey, value: next} as any});
+				return;
+			}
+
+			const rawValueChoice = options[`valueChoice_${collection}`] as string | undefined;
 			const rawValue = rawValueChoice && rawValueChoice !== MANUAL_VALUE_CHOICE
 				? rawValueChoice
 				: await resolumeArenaInstance.parseVariablesInString(options.value as string);
-
-			if (mode === 'increase' || mode === 'decrease') {
-				const current = parameterStates.get()['/parameter/by-id/' + paramId]?.value ?? param.value;
-				const base = typeof current === 'number' ? current : 0;
-				const delta = parseFloat(rawValue) || 0;
-				ws.setParam(String(paramId), mode === 'increase' ? base + delta : base - delta);
-				return;
-			}
-
 			ws.setParam(String(paramId), coerceValue(rawValue));
 		},
 	};
