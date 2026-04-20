@@ -54,6 +54,13 @@ export class EffectUtils implements MessageSubscriber {
 			this.checkAllBypassFeedbacks();
 		} else if (data.path?.match(/\/video\/effects\/\d+\/(params|mixer|effect)\//)) {
 			this.checkAllParameterFeedbacks();
+		} else if (data.path?.startsWith('/parameter/by-id/')) {
+			if (this.effectBypassedSubscriptions.has(data.path)) {
+				this.checkAllBypassFeedbacks();
+			}
+			if (this.effectParameterSubscriptions.has(data.path)) {
+				this.checkAllParameterFeedbacks();
+			}
 		}
 	}
 
@@ -304,11 +311,21 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	getEffectParamId(scope: EffectScope, location: EffectLocation, effectIdx: number, collection: EffectCollection, paramName: string): number | undefined {
+		return this.getEffectParam(scope, location, effectIdx, collection, paramName)?.id;
+	}
+
+	getEffectParam(
+		scope: EffectScope,
+		location: EffectLocation,
+		effectIdx: number,
+		collection: EffectCollection,
+		paramName: string
+	): (ParameterCollection[string] & {id?: number; value?: any}) | undefined {
 		const effects = this.getEffectsArray(scope, location);
 		if (!effects) return undefined;
 		const eff = effects[effectIdx - 1];
 		if (!eff) return undefined;
-		return (eff[collection] as ParameterCollection | undefined)?.[paramName]?.id;
+		return (eff[collection] as ParameterCollection | undefined)?.[paramName];
 	}
 
 	/////////////////////////////////////////////////
@@ -362,8 +379,9 @@ export class EffectUtils implements MessageSubscriber {
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return {text: '?'};
-		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
-		const current = parameterStates.get()[path]?.value;
+		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (param?.id === undefined) return {text: '?'};
+		const current = parameterStates.get()['/parameter/by-id/' + param.id]?.value;
 		if (current === undefined) return {text: '?'};
 		return {text: String(current)};
 	}
@@ -373,12 +391,14 @@ export class EffectUtils implements MessageSubscriber {
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return;
-		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
-		if (!this.effectParameterSubscriptions.has(path)) {
-			this.effectParameterSubscriptions.set(path, new Set());
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(path);
+		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (param?.id === undefined) return;
+		const key = '/parameter/by-id/' + param.id;
+		if (!this.effectParameterSubscriptions.has(key)) {
+			this.effectParameterSubscriptions.set(key, new Set());
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(param.id);
 		}
-		this.effectParameterSubscriptions.get(path)!.add(feedback.id);
+		this.effectParameterSubscriptions.get(key)!.add(feedback.id);
 	}
 
 	async effectParameterFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
@@ -386,13 +406,15 @@ export class EffectUtils implements MessageSubscriber {
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return;
-		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
-		const subs = this.effectParameterSubscriptions.get(path);
+		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (param?.id === undefined) return;
+		const key = '/parameter/by-id/' + param.id;
+		const subs = this.effectParameterSubscriptions.get(key);
 		if (!subs) return;
 		subs.delete(feedback.id);
 		if (subs.size === 0) {
-			this.effectParameterSubscriptions.delete(path);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(path);
+			this.effectParameterSubscriptions.delete(key);
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(param.id);
 		}
 	}
 

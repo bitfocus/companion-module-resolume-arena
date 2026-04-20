@@ -10,7 +10,10 @@ function makeMockModule() {
 	const wsApi = {
 		subscribePath: vi.fn(),
 		unsubscribePath: vi.fn(),
+		subscribeParam: vi.fn(),
+		unsubscribeParam: vi.fn(),
 		setPath: vi.fn(),
+		setParam: vi.fn(),
 	};
 	const mod: any = {
 		checkFeedbacks: vi.fn(),
@@ -22,6 +25,23 @@ function makeMockModule() {
 	};
 	mod.getEffectUtils = vi.fn().mockImplementation(() => makeEffectUtils(mod));
 	return mod;
+}
+
+function makeLayerComposition(paramId = 301) {
+	return {
+		layers: [{
+			video: {effects: [{
+				id: 100, name: 'stageflow', bypassed: {id: 200},
+				params: {
+					speed: {id: paramId, value: 0.5, valuetype: 'ParamRange'},
+					active: {id: 302, value: false, valuetype: 'ParamBoolean'},
+					look: {id: 303, value: 'Warm', valuetype: 'ParamChoice', options: ['Warm', 'Cool']},
+				},
+			}]},
+			clips: [],
+		}],
+		columns: [],
+	} as any;
 }
 
 function makeFeedback(layer: string, effectIdx: string, collection: string, paramName: string, id = 'fb1') {
@@ -43,50 +63,63 @@ beforeEach(() => {
 });
 
 describe('EffectUtils — effectParameter subscribe / unsubscribe', () => {
-	it('subscribes to WS path on first subscribe call', async () => {
+	it('subscribes by param ID on first subscribe call', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed');
-		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1);
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(301);
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledTimes(1);
 	});
 
-	it('does not subscribe twice for same path', async () => {
+	it('does not subscribe twice for same param id', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'), makeCtx('1', '1', 'speed'));
-		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1);
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledTimes(1);
 	});
 
-	it('unsubscribes when last feedback unsubscribes', async () => {
+	it('unsubscribes by param ID when last feedback unsubscribes', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
 		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		expect(mod._wsApi.unsubscribePath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed');
+		expect(mod._wsApi.unsubscribeParam).toHaveBeenCalledWith(301);
 	});
 
 	it('keeps subscription while another feedback still subscribes', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'), makeCtx('1', '1', 'speed'));
 		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		expect(mod._wsApi.unsubscribePath).not.toHaveBeenCalled();
+		expect(mod._wsApi.unsubscribeParam).not.toHaveBeenCalled();
 	});
 });
 
 describe('EffectUtils — effectParameterFeedbackCallback', () => {
-	it('returns current value as text string', async () => {
-		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: 0.75} as any});
+	it('returns current value from /parameter/by-id/{id} in parameterStates', async () => {
+		compositionState.set(makeLayerComposition(301));
+		parameterStates.set({'/parameter/by-id/301': {value: 0.75} as any});
 		const eu = new EffectUtils(makeMockModule());
 		const ctx = makeCtx('1', '1', 'speed');
 		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
 		expect(result).toMatchObject({text: '0.75'});
 	});
 
-	it('returns "?" when path not in parameterStates', async () => {
+	it('returns "?" when param not in parameterStates', async () => {
+		compositionState.set(makeLayerComposition(301));
+		const eu = new EffectUtils(makeMockModule());
+		const ctx = makeCtx('1', '1', 'speed');
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
+		expect(result).toMatchObject({text: '?'});
+	});
+
+	it('returns "?" when param not found in compositionState', async () => {
 		const eu = new EffectUtils(makeMockModule());
 		const ctx = makeCtx('1', '1', 'speed');
 		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
@@ -94,6 +127,7 @@ describe('EffectUtils — effectParameterFeedbackCallback', () => {
 	});
 
 	it('returns "?" when layer is 0', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const eu = new EffectUtils(makeMockModule());
 		const ctx = makeCtx('0', '1', 'speed');
 		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('0', '1', 'params', 'speed'), ctx);
@@ -101,6 +135,7 @@ describe('EffectUtils — effectParameterFeedbackCallback', () => {
 	});
 
 	it('returns "?" when paramName is empty', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const eu = new EffectUtils(makeMockModule());
 		const ctx = makeCtx('1', '1', '');
 		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', ''), ctx);
@@ -110,17 +145,26 @@ describe('EffectUtils — effectParameterFeedbackCallback', () => {
 
 describe('EffectUtils — effectParameterFeedbackSubscribe guard', () => {
 	it('does not subscribe when layer is 0', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('0', '1', 'params', 'speed', 'a'), makeCtx('0', '1', 'speed'));
-		expect(mod._wsApi.subscribePath).not.toHaveBeenCalled();
+		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
 	});
 
 	it('does not subscribe when effectIdx is 0', async () => {
+		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '0', 'params', 'speed', 'a'), makeCtx('1', '0', 'speed'));
-		expect(mod._wsApi.subscribePath).not.toHaveBeenCalled();
+		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
+	});
+
+	it('does not subscribe when param not in compositionState', async () => {
+		const mod = makeMockModule();
+		const eu = new EffectUtils(mod);
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
+		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
 	});
 });
 
@@ -151,72 +195,76 @@ describe('EffectUtils.messageUpdates — effectParameter path', () => {
 });
 
 describe('coerceValue (via effectParameterSet action)', () => {
-	it('coerces "true" to boolean true', async () => {
-		const mod = makeMockModule();
+	async function makeAction(mod: any) {
 		const eu = new EffectUtils(mod);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+	}
+
+	beforeEach(() => { compositionState.set(makeLayerComposition(301)); });
+
+	it('coerces "true" to boolean true', async () => {
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'true'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/active', true);
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('302', true);
 	});
 
 	it('coerces "false" to boolean false', async () => {
 		const mod = makeMockModule();
-		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'false'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/active', false);
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('302', false);
 	});
 
 	it('coerces numeric string to number', async () => {
 		const mod = makeMockModule();
-		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0.5'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0.5);
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', 0.5);
 	});
 
 	it('passes non-numeric, non-boolean string through', async () => {
 		const mod = makeMockModule();
-		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', value: 'My Look'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/look', 'My Look');
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('303', 'My Look');
 	});
 
 	it('coerces "0" to number 0, not boolean false', async () => {
 		const mod = makeMockModule();
-		const eu = new EffectUtils(mod as any);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0);
-		expect(typeof mod._wsApi.setPath.mock.calls[0][1]).toBe('number');
-	});
-
-	it('does nothing when ws is null', async () => {
-		const mod = {...makeMockModule(), getWebsocketApi: () => null};
-		const eu = new EffectUtils(mod as any);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getEffectUtils: () => eu} as any, 'layer');
-		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', 0);
+		expect(typeof mod._wsApi.setParam.mock.calls[0][1]).toBe('number');
 	});
 
 	it('uses valueChoice when not manual sentinel', async () => {
 		const mod = makeMockModule();
-		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
-		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', mode: 'set', valueChoice: 'Warm', value: ''}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/look', 'Warm');
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('303', 'Warm');
+	});
+
+	it('logs warning when param not found in compositionState', async () => {
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'nonexistent', value: '1'}});
+		expect(mod.log).toHaveBeenCalledWith('warn', expect.stringContaining('nonexistent'));
+		expect(mod._wsApi.setParam).not.toHaveBeenCalled();
+	});
+
+	it('does nothing when ws is null', async () => {
+		const mod = {...makeMockModule(), getWebsocketApi: () => null};
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const action = effectParameterSet({...mod, getEffectUtils: () => new EffectUtils(mod as any)} as any, 'layer');
+		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
 });
 
 describe('effectParameterSet — relative modes', () => {
 	beforeEach(() => {
+		compositionState.set(makeLayerComposition(301));
 		parameterStates.set({});
 	});
 
@@ -228,42 +276,44 @@ describe('effectParameterSet — relative modes', () => {
 
 	const BASE_OPTS = {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', valueChoice: '__manual_value__'};
 
-	it('increase adds delta to current numeric value', async () => {
-		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: 0.3} as any});
+	it('increase adds delta to current numeric value from parameterStates', async () => {
+		parameterStates.set({'/parameter/by-id/301': {value: 0.3} as any});
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.1'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', expect.closeTo(0.4, 10));
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', expect.closeTo(0.4, 10));
 	});
 
-	it('decrease subtracts delta from current numeric value', async () => {
-		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: 0.5} as any});
+	it('decrease subtracts delta from current numeric value from parameterStates', async () => {
+		parameterStates.set({'/parameter/by-id/301': {value: 0.5} as any});
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'decrease', value: '0.2'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', expect.closeTo(0.3, 10));
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', expect.closeTo(0.3, 10));
 	});
 
-	it('increase treats missing current value as 0', async () => {
+	it('falls back to compositionState value when parameterStates has no entry', async () => {
+		// speed param has value 0.5 in makeLayerComposition
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.5'}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0.5);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.1'}});
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', expect.closeTo(0.6, 10));
 	});
 
-	it('toggle flips boolean true → false', async () => {
-		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: true} as any});
-		const mod = makeMockModule();
-		const action = await makeAction(mod);
-		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'toggle', value: ''}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', false);
-	});
-
-	it('toggle flips boolean false → true', async () => {
-		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: false} as any});
+	it('toggle flips boolean using parameterStates value', async () => {
+		parameterStates.set({'/parameter/by-id/301': {value: true} as any});
 		const mod = makeMockModule();
 		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'toggle', value: ''}});
-		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', true);
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', false);
+	});
+
+	it('toggle falls back to compositionState value', async () => {
+		// speed has value 0.5 (falsy-ish as boolean is false) — compositionState
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'toggle', value: ''}});
+		// !0.5 === false
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('301', false);
 	});
 });

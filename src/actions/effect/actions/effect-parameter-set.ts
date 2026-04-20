@@ -91,12 +91,17 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');
 				return;
 			}
-			const path = eu.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
+			const param = eu.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
+			if (param?.id === undefined) {
+				resolumeArenaInstance.log('warn', `effectParameterSet: param '${paramName}' not found in composition state`);
+				return;
+			}
+			const paramId = param.id;
 			const mode = (options.mode as EffectParamMode | undefined) ?? 'set';
 
 			if (mode === 'toggle') {
-				const current = parameterStates.get()[path]?.value;
-				ws.setPath(path, !current);
+				const current = parameterStates.get()['/parameter/by-id/' + paramId]?.value ?? param.value;
+				ws.setParam(String(paramId), !current);
 				return;
 			}
 
@@ -106,14 +111,14 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				: await resolumeArenaInstance.parseVariablesInString(options.value as string);
 
 			if (mode === 'increase' || mode === 'decrease') {
-				const current = parameterStates.get()[path]?.value;
+				const current = parameterStates.get()['/parameter/by-id/' + paramId]?.value ?? param.value;
 				const base = typeof current === 'number' ? current : 0;
 				const delta = parseFloat(rawValue) || 0;
-				ws.setPath(path, mode === 'increase' ? base + delta : base - delta);
+				ws.setParam(String(paramId), mode === 'increase' ? base + delta : base - delta);
 				return;
 			}
 
-			ws.setPath(path, coerceValue(rawValue));
+			ws.setParam(String(paramId), coerceValue(rawValue));
 		},
 	};
 }
