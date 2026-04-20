@@ -221,11 +221,11 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	/**
-	 * Returns a deduplicated list of known parameter names for the given scope,
-	 * collected from all effects and all three collections (params/mixer/effect).
+	 * Returns a deduplicated list of all known parameter names across the entire
+	 * composition (all scopes, all effects, all three collections).
 	 * Prefixed with the manual sentinel so the user can still type freely.
 	 */
-	buildParamChoices(scope: EffectScope): DropdownChoice[] {
+	buildParamChoices(): DropdownChoice[] {
 		const choices: DropdownChoice[] = [{id: MANUAL_PARAM_CHOICE, label: 'Manual (type below)'}];
 		const seen = new Set<string>();
 
@@ -248,17 +248,12 @@ export class EffectUtils implements MessageSubscriber {
 		const state = compositionState.get();
 		if (!state) return choices;
 
-		if (scope === 'composition') {
-			(state.video?.effects ?? []).forEach(addFromEffect);
-		} else if (scope === 'layergroup') {
-			(state.layergroups ?? []).forEach((g) => (g.video?.effects ?? []).forEach(addFromEffect));
-		} else if (scope === 'layer') {
-			(state.layers ?? []).forEach((l) => (l.video?.effects ?? []).forEach(addFromEffect));
-		} else if (scope === 'clip') {
-			(state.layers ?? []).forEach((l) =>
-				(l.clips ?? []).forEach((c) => (c.video?.effects ?? []).forEach(addFromEffect))
-			);
-		}
+		(state.video?.effects ?? []).forEach(addFromEffect);
+		(state.layergroups ?? []).forEach((g) => (g.video?.effects ?? []).forEach(addFromEffect));
+		(state.layers ?? []).forEach((l) => {
+			(l.video?.effects ?? []).forEach(addFromEffect);
+			(l.clips ?? []).forEach((c) => (c.video?.effects ?? []).forEach(addFromEffect));
+		});
 
 		return choices;
 	}

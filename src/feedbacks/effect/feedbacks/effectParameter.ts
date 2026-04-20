@@ -35,7 +35,7 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 				],
 				default: 'params',
 			},
-			...buildParamNameOptions(eu, scope),
+			...buildParamNameOptions(eu),
 		],
 		callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
 		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),

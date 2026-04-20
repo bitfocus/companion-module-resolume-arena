@@ -44,7 +44,7 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				],
 				default: 'params',
 			},
-			...buildParamNameOptions(eu, scope),
+			...buildParamNameOptions(eu),
 			{
 				id: 'value',
 				type: 'textinput',

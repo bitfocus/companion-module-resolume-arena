@@ -109,8 +109,8 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
  * Builds a parameter-name dropdown (deduplicated from compositionState) plus
  * a manual textinput shown when the manual sentinel is selected.
  */
-export function buildParamNameOptions(eu: EffectUtils, scope: EffectScope): SomeCompanionFeedbackInputField[] {
-	const choices = eu.buildParamChoices(scope);
+export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInputField[] {
+	const choices = eu.buildParamChoices();
 	return [
 		{
 			id: 'paramChoice',
