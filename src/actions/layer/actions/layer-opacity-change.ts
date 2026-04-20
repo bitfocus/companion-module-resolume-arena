@@ -69,9 +69,11 @@ export function layerOpacityChange(
 					}
 					if (value != undefined) {
 						const layerObject = theLayerUtils.getLayerFromCompositionState(layer);
-						let paramId = layerObject?.video!.opacity!.id! + '';
-						websocketApi()?.subscribeParam(+paramId);
-						websocketApi()?.setParam(paramId, value);
+						const id = layerObject?.video?.opacity?.id;
+						if (id !== undefined) {
+							websocketApi()?.subscribeParam(id);
+							websocketApi()?.setParam(String(id), value);
+						}
 					}
 				}
 			}

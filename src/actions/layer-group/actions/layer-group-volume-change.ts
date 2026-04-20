@@ -69,8 +69,10 @@ export function layerGroupVolumeChange(
 				}
 				if (value != undefined) {
 					const layer = theLayerGroupUtils.getLayerGroupFromCompositionState(layerGroup);
-					let paramId = layer?.audio!.volume!.id! + '';
-					websocketApi()?.setParam(paramId, value);
+					const id = layer?.audio?.volume?.id;
+					if (id !== undefined) {
+						websocketApi()?.setParam(String(id), value);
+					}
 				}
 			}
 		}

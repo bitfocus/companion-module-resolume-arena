@@ -60,9 +60,12 @@ export function compositionOpacityChange(
 					default:
 						break;
 				}
-				if (value!=undefined) {
-					let paramId = compositionState.get()!.video!.opacity!.id!+''
-					websocketApi()?.setParam(paramId, value);				}
+				if (value != undefined) {
+					const id = compositionState.get()?.video?.opacity?.id;
+					if (id !== undefined) {
+						websocketApi()?.setParam(String(id), value);
+					}
+				}
 			}
 		},
 	};

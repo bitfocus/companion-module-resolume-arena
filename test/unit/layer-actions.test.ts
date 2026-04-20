@@ -271,6 +271,17 @@ describe('layerOpacityChange', () => {
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '100' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
 	})
+
+	it('does not call subscribeParam or setParam when layer has no opacity id (#140)', async () => {
+		const ws = makeWsApi()
+		const layerUtils = { getLayerFromCompositionState: vi.fn().mockReturnValue(undefined) }
+		const instance = makeInstance(['1', '50'])
+		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
+		const action = layerOpacityChange(() => ({} as any), () => ws as any, () => null, () => layerUtils as any, instance)
+		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
+		expect(ws.subscribeParam).not.toHaveBeenCalled()
+		expect(ws.setParam).not.toHaveBeenCalled()
+	})
 })
 
 // ── layerVolumeChange ─────────────────────────────────────────────────────────
@@ -297,6 +308,17 @@ describe('layerVolumeChange', () => {
 		const ws = makeWsApi()
 		const action = layerVolumeChange(() => null, () => ws as any, () => null, () => null, makeInstance())
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '1.0' } })
+		expect(ws.setParam).not.toHaveBeenCalled()
+	})
+
+	it('does not call subscribeParam or setParam when layer has no volume id (#140)', async () => {
+		const ws = makeWsApi()
+		const layerUtils = { getLayerFromCompositionState: vi.fn().mockReturnValue(undefined) }
+		const instance = makeInstance(['1', '-6'])
+		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
+		const action = layerVolumeChange(() => ({} as any), () => ws as any, () => null, () => layerUtils as any, instance)
+		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '-6' } })
+		expect(ws.subscribeParam).not.toHaveBeenCalled()
 		expect(ws.setParam).not.toHaveBeenCalled()
 	})
 })

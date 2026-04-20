@@ -69,8 +69,10 @@ export function layerGroupOpacityChange(
 				}
 				if (value != undefined) {
 					const layerGroup = theLayerGroupUtils.getLayerGroupFromCompositionState(layerGroupInput);
-					let paramId = layerGroup?.video!.opacity!.id! + '';
-					websocketApi()?.setParam(paramId, value);
+					const id = layerGroup?.video?.opacity?.id;
+					if (id !== undefined) {
+						websocketApi()?.setParam(String(id), value);
+					}
 				}
 			}
 		}
