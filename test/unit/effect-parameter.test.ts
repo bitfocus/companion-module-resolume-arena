@@ -204,4 +204,66 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const action = effectParameterSet({...mod, getEffectUtils: () => eu} as any, 'layer');
 		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
+
+	it('uses valueChoice when not manual sentinel', async () => {
+		const mod = makeMockModule();
+		const eu = new EffectUtils(mod);
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', mode: 'set', valueChoice: 'Warm', value: ''}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/look', 'Warm');
+	});
+});
+
+describe('effectParameterSet — relative modes', () => {
+	beforeEach(() => {
+		parameterStates.set({});
+	});
+
+	async function makeAction(mod: any) {
+		const eu = new EffectUtils(mod);
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
+	}
+
+	const BASE_OPTS = {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', valueChoice: '__manual_value__'};
+
+	it('increase adds delta to current numeric value', async () => {
+		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: 0.3} as any});
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.1'}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', expect.closeTo(0.4, 10));
+	});
+
+	it('decrease subtracts delta from current numeric value', async () => {
+		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: 0.5} as any});
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'decrease', value: '0.2'}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', expect.closeTo(0.3, 10));
+	});
+
+	it('increase treats missing current value as 0', async () => {
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'increase', value: '0.5'}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0.5);
+	});
+
+	it('toggle flips boolean true → false', async () => {
+		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: true} as any});
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'toggle', value: ''}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', false);
+	});
+
+	it('toggle flips boolean false → true', async () => {
+		parameterStates.set({'/composition/layers/1/video/effects/1/params/speed': {value: false} as any});
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		await (action.callback as Function)({options: {...BASE_OPTS, mode: 'toggle', value: ''}});
+		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', true);
+	});
 });

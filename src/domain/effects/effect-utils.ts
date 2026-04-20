@@ -3,7 +3,7 @@ import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
 import {MessageSubscriber} from '../../websocket';
-import {ParameterCollection, VideoEffect} from '../api';
+import {ChoiceParameter, ParameterCollection, VideoEffect} from '../api';
 
 export interface EffectMeta {
 	idx: number;
@@ -27,6 +27,8 @@ export interface EffectLocation {
 
 export const MANUAL_EFFECT_CHOICE = '__manual__';
 export const MANUAL_PARAM_CHOICE = '__manual_param__';
+export const MANUAL_VALUE_CHOICE = '__manual_value__';
+export type EffectParamMode = 'set' | 'increase' | 'decrease' | 'toggle';
 
 function resolveName(raw: string | undefined, idx: number, fallbackPrefix: string): string {
 	if (!raw) return `${fallbackPrefix} ${idx}`;
@@ -243,6 +245,43 @@ export class EffectUtils implements MessageSubscriber {
 			addFromCollection(eff.params);
 			addFromCollection(eff.mixer);
 			addFromCollection(eff.effect);
+		};
+
+		const state = compositionState.get();
+		if (!state) return choices;
+
+		(state.video?.effects ?? []).forEach(addFromEffect);
+		(state.layergroups ?? []).forEach((g) => (g.video?.effects ?? []).forEach(addFromEffect));
+		(state.layers ?? []).forEach((l) => {
+			(l.video?.effects ?? []).forEach(addFromEffect);
+			(l.clips ?? []).forEach((c) => (c.video?.effects ?? []).forEach(addFromEffect));
+		});
+
+		return choices;
+	}
+
+	/**
+	 * Returns a deduplicated list of all known string options from ChoiceParameter/ParamState
+	 * parameters across the entire composition. Prefixed with the manual sentinel.
+	 */
+	buildValueChoices(): DropdownChoice[] {
+		const choices: DropdownChoice[] = [{id: MANUAL_VALUE_CHOICE, label: 'Manual (type below)'}];
+		const seen = new Set<string>();
+
+		const addFromEffect = (eff: VideoEffect) => {
+			for (const coll of [eff.params, eff.mixer, eff.effect] as (ParameterCollection | undefined)[]) {
+				if (!coll) continue;
+				for (const param of Object.values(coll)) {
+					if (param.valuetype === 'ParamChoice' || param.valuetype === 'ParamState') {
+						for (const opt of (param as ChoiceParameter).options ?? []) {
+							if (!seen.has(opt)) {
+								seen.add(opt);
+								choices.push({id: opt, label: opt});
+							}
+						}
+					}
+				}
+			}
 		};
 
 		const state = compositionState.get();

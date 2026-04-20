@@ -394,3 +394,72 @@ describe('EffectUtils.buildParamChoices', () => {
 		expect(ids).toContain('amount');
 	});
 });
+
+describe('EffectUtils.buildValueChoices', () => {
+	it('always includes the manual sentinel as first choice', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.buildValueChoices()[0].id).toBe('__manual_value__');
+	});
+
+	it('returns only manual sentinel when composition is empty', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.buildValueChoices()).toHaveLength(1);
+	});
+
+	it('collects options from ChoiceParameter across all scopes', () => {
+		compositionState.set({
+			video: {effects: [{id: 1, name: 'fx', bypassed: {id: 10}, params: {look: {id: 100, valuetype: 'ParamChoice', value: 'Warm', options: ['Warm', 'Cool', 'Neutral']}}}]},
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [{id: 2, name: 'fx2', bypassed: {id: 20}, params: {mode: {id: 200, valuetype: 'ParamChoice', value: 'Fast', options: ['Fast', 'Slow']}}}]},
+					clips: [],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildValueChoices().map((c) => c.id);
+		expect(ids).toContain('Warm');
+		expect(ids).toContain('Cool');
+		expect(ids).toContain('Neutral');
+		expect(ids).toContain('Fast');
+		expect(ids).toContain('Slow');
+	});
+
+	it('deduplicates values appearing in multiple parameters', () => {
+		compositionState.set({
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [
+						{id: 1, name: 'fx1', bypassed: {id: 10}, params: {a: {id: 1, valuetype: 'ParamChoice', options: ['On', 'Off']}}},
+						{id: 2, name: 'fx2', bypassed: {id: 20}, params: {b: {id: 2, valuetype: 'ParamChoice', options: ['On', 'Auto']}}},
+					]},
+					clips: [],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildValueChoices().map((c) => c.id);
+		expect(ids.filter((id) => id === 'On')).toHaveLength(1);
+		expect(ids).toContain('Off');
+		expect(ids).toContain('Auto');
+	});
+
+	it('ignores non-choice parameters', () => {
+		compositionState.set({
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [{id: 1, name: 'fx', bypassed: {id: 10}, params: {speed: {id: 1, valuetype: 'ParamRange', value: 0.5, min: 0, max: 1}}}]},
+					clips: [],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.buildValueChoices()).toHaveLength(1); // only sentinel
+	});
+});

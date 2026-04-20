@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope} from '../../../domain/effects/effect-utils';
+import {EffectScope, EffectParamMode, MANUAL_PARAM_CHOICE, MANUAL_VALUE_CHOICE} from '../../../domain/effects/effect-utils';
 import {buildScopedEffectOptions, buildParamNameOptions} from '../effect-action-options';
-import {MANUAL_PARAM_CHOICE} from '../../../domain/effects/effect-utils';
+import {parameterStates} from '../../../state';
 
 function coerceValue(raw: string): string | number | boolean {
 	const lower = raw.trim().toLowerCase();
@@ -46,11 +46,37 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			},
 			...buildParamNameOptions(eu),
 			{
+				id: 'mode',
+				type: 'dropdown',
+				label: 'Mode',
+				choices: [
+					{id: 'set', label: 'Set — write a fixed value'},
+					{id: 'increase', label: 'Increase by — add delta to current value'},
+					{id: 'decrease', label: 'Decrease by — subtract delta from current value'},
+					{id: 'toggle', label: 'Toggle — flip boolean on/off'},
+				],
+				default: 'set',
+			},
+			{
+				id: 'valueChoice',
+				type: 'dropdown',
+				label: 'Value — select a known option or choose Manual to type',
+				choices: eu.buildValueChoices(),
+				default: MANUAL_VALUE_CHOICE,
+				isVisible: (opts) => opts['mode'] === 'set',
+			},
+			{
 				id: 'value',
 				type: 'textinput',
 				label: 'Value (number, true/false, or text — supports variables)',
 				default: '',
 				useVariables: true,
+				isVisible: (opts) => {
+					const mode = opts['mode'] as string;
+					if (mode === 'toggle') return false;
+					if (mode === 'set') return opts['valueChoice'] === MANUAL_VALUE_CHOICE;
+					return true; // increase / decrease always show the delta field
+				},
 			},
 		],
 		callback: async ({options}) => {
@@ -61,12 +87,32 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			const paramName = rawParamChoice === MANUAL_PARAM_CHOICE
 				? await resolumeArenaInstance.parseVariablesInString(options.paramName as string)
 				: rawParamChoice;
-			const rawValue = await resolumeArenaInstance.parseVariablesInString(options.value as string);
 			if (!resolved.effectIdx || !paramName) {
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');
 				return;
 			}
 			const path = eu.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
+			const mode = (options.mode as EffectParamMode | undefined) ?? 'set';
+
+			if (mode === 'toggle') {
+				const current = parameterStates.get()[path]?.value;
+				ws.setPath(path, !current);
+				return;
+			}
+
+			const rawValueChoice = options.valueChoice as string | undefined;
+			const rawValue = rawValueChoice && rawValueChoice !== MANUAL_VALUE_CHOICE
+				? rawValueChoice
+				: await resolumeArenaInstance.parseVariablesInString(options.value as string);
+
+			if (mode === 'increase' || mode === 'decrease') {
+				const current = parameterStates.get()[path]?.value;
+				const base = typeof current === 'number' ? current : 0;
+				const delta = parseFloat(rawValue) || 0;
+				ws.setPath(path, mode === 'increase' ? base + delta : base - delta);
+				return;
+			}
+
 			ws.setPath(path, coerceValue(rawValue));
 		},
 	};
