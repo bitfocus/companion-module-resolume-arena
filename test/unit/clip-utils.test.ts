@@ -202,6 +202,75 @@ describe('ClipUtils.initComposition — clip name subscriptions and initial valu
 	})
 })
 
+describe('ClipUtils.clipConnectedWebsocketSubscribe / Unsubscribe', () => {
+	it('subscribes to both connect and name paths', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		cu.clipConnectedWebsocketSubscribe(2, 3)
+		const ws = mod._wsApi
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/2/clips/3/connect')
+		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/2/clips/3/name')
+	})
+
+	it('unsubscribes from both connect and name paths', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		cu.clipConnectedWebsocketUnsubscribe(2, 3)
+		const ws = mod._wsApi
+		expect(ws.unsubscribePath).toHaveBeenCalledWith('/composition/layers/2/clips/3/connect')
+		expect(ws.unsubscribePath).toHaveBeenCalledWith('/composition/layers/2/clips/3/name')
+	})
+})
+
+describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => {
+	function makeConnectedFeedback(layer: string, column: string, id = 'fb1') {
+		return {
+			id,
+			options: {
+				layer,
+				column,
+				color_connected: 0,
+				color_connected_selected: 0,
+				color_connected_preview: 0,
+				color_preview: 0,
+			},
+		} as any
+	}
+
+	it('sets previewedClipName when clip is Previewing and name is in parameterStates', async () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		parameterStates.set({
+			'/composition/layers/1/clips/2/connect': { value: 'Previewing' },
+			'/composition/layers/1/clips/2/name': { value: 'MyAwesomeClip' },
+		} as any)
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '2'), makeContext('1', '2'))
+		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'MyAwesomeClip' })
+	})
+
+	it('sets previewedClipName when clip is Connected & previewing', async () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		parameterStates.set({
+			'/composition/layers/3/clips/4/connect': { value: 'Connected & previewing' },
+			'/composition/layers/3/clips/4/name': { value: 'OtherClip' },
+		} as any)
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('3', '4'), makeContext('3', '4'))
+		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'OtherClip' })
+	})
+
+	it('does not set previewedClipName when clip is only Connected (no preview)', async () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		parameterStates.set({
+			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
+			'/composition/layers/1/clips/1/name': { value: 'SomeClip' },
+		} as any)
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '1'), makeContext('1', '1'))
+		expect(mod.setVariableValues).not.toHaveBeenCalledWith({ previewedClipName: expect.anything() })
+	})
+})
+
 describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 	it('returns true when parameterStates has select = true for the clip', async () => {
 		const mod = makeMockModule()
