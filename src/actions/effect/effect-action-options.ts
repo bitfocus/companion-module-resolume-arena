@@ -1,27 +1,47 @@
 import {SomeCompanionFeedbackInputField, Regex, CompanionOptionValues} from '@companion-module/base';
 import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE} from '../../domain/effects/effect-utils';
 
+// Clip scope is excluded from the effect dropdown — a composition can have hundreds
+// of clips and populating all their effects would make the dropdown unusably large.
+// Clip scope always uses manual entry.
+const SCOPE_SUPPORTS_DROPDOWN: Record<EffectScope, boolean> = {
+	composition: true,
+	layergroup: true,
+	layer: true,
+	clip: false,
+};
+
 /**
- * Builds the effect-choice dropdown filtered to the given scope,
- * plus the manual fallback inputs shown only when the manual option is selected.
+ * Builds options for an effect action or feedback for the given scope.
+ *
+ * For composition/layergroup/layer: shows a dynamic dropdown of known effects
+ * (from compositionState) plus a manual fallback that reveals location + index inputs.
+ *
+ * For clip: always shows manual inputs (layer, column, effectIdx) because a large
+ * composition can have hundreds of clips and enumerating all their effects would
+ * make the action definition payload too large for the Companion web UI.
  */
 export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope): SomeCompanionFeedbackInputField[] {
-	const allChoices = eu.buildEffectChoices();
-	const prefix = scope === 'composition' ? 'composition:' : `${scope}:`;
-	const filtered = allChoices.filter((c) => c.id === MANUAL_EFFECT_CHOICE || String(c.id).startsWith(prefix));
+	const fields: SomeCompanionFeedbackInputField[] = [];
 
-	const fields: SomeCompanionFeedbackInputField[] = [
-		{
+	if (SCOPE_SUPPORTS_DROPDOWN[scope]) {
+		const allChoices = eu.buildEffectChoices();
+		const prefix = `${scope}:`;
+		const filtered = allChoices.filter((c) => c.id === MANUAL_EFFECT_CHOICE || String(c.id).startsWith(prefix));
+		fields.push({
 			id: 'effectChoice',
 			type: 'dropdown',
 			label: 'Effect',
 			choices: filtered,
 			default: MANUAL_EFFECT_CHOICE,
-		},
-	];
+		});
+	}
 
-	// Location inputs — only shown when manual is selected
-	if (scope === 'layer' || scope === 'clip') {
+	const isManual = SCOPE_SUPPORTS_DROPDOWN[scope]
+		? (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE
+		: () => true;
+
+	if (scope === 'layer') {
 		fields.push({
 			id: 'layer',
 			type: 'textinput',
@@ -29,10 +49,19 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope): S
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE,
+			isVisible: isManual,
 		});
 	}
+
 	if (scope === 'clip') {
+		fields.push({
+			id: 'layer',
+			type: 'textinput',
+			label: 'Layer',
+			default: '1',
+			useVariables: true,
+			regex: Regex.NUMBER,
+		});
 		fields.push({
 			id: 'column',
 			type: 'textinput',
@@ -40,9 +69,9 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope): S
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE,
 		});
 	}
+
 	if (scope === 'layergroup') {
 		fields.push({
 			id: 'layerGroup',
@@ -51,7 +80,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope): S
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE,
+			isVisible: isManual,
 		});
 	}
 
@@ -62,7 +91,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope): S
 		default: '1',
 		useVariables: true,
 		regex: Regex.NUMBER,
-		isVisible: (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE,
+		isVisible: isManual,
 	});
 
 	return fields;

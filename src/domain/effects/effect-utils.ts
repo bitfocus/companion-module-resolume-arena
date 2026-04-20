@@ -178,15 +178,8 @@ export class EffectUtils implements MessageSubscriber {
 				const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
 				choices.push({id: `layer:${li + 1}:0:0:${ei + 1}`, label: `${layerLabel} – ${label} (#${ei + 1})`});
 			});
-			// Clip effects (for each clip in the layer)
-			(layer.clips ?? []).forEach((clip, ci) => {
-				(clip.video?.effects ?? []).forEach((eff, ei) => {
-					const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
-					const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
-					const clipLabel = (clip.name as any)?.value ?? `Clip ${ci + 1}`;
-					choices.push({id: `clip:${li + 1}:${ci + 1}:0:${ei + 1}`, label: `${layerLabel}/${clipLabel} – ${label} (#${ei + 1})`});
-				});
-			});
+			// Clip effects are intentionally excluded — compositions can have hundreds
+			// of clips and enumerating all effects would make the payload too large.
 		});
 
 		return choices;

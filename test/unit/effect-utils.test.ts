@@ -200,7 +200,7 @@ describe('EffectUtils.buildEffectChoices', () => {
 		expect(choices[0].id).toBe('__manual__');
 	});
 
-	it('includes effects from all scopes', () => {
+	it('includes effects from composition, layergroup and layer scopes (not clip)', () => {
 		compositionState.set({
 			video: {effects: [{id: 1, name: 'fx', displayName: 'FX'}]},
 			layergroups: [{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'gfx', displayName: 'GFX'}]}}],
@@ -215,13 +215,13 @@ describe('EffectUtils.buildEffectChoices', () => {
 		} as any);
 		const eu = new EffectUtils(makeMockModule());
 		const choices = eu.buildEffectChoices();
-		expect(choices.length).toBeGreaterThan(4);
-		const ids = choices.map((c) => c.id);
+		const ids = choices.map((c) => String(c.id));
 		expect(ids).toContain('__manual__');
 		expect(ids.some((id) => id.startsWith('composition:'))).toBe(true);
 		expect(ids.some((id) => id.startsWith('layergroup:'))).toBe(true);
 		expect(ids.some((id) => id.startsWith('layer:'))).toBe(true);
-		expect(ids.some((id) => id.startsWith('clip:'))).toBe(true);
+		// Clip effects are excluded to avoid massive payloads in large compositions
+		expect(ids.some((id) => id.startsWith('clip:'))).toBe(false);
 	});
 });
 
