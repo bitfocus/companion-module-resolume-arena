@@ -183,7 +183,7 @@ export class WebsocketInstance {
 			action: 'get',
 			parameter: path
 		};
-		this.sendMessage(data);
+		return this.sendMessage(data);
 	}
 
 	getParam(paramId: string) {
