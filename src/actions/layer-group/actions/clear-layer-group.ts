@@ -21,7 +21,7 @@ export function clearLayerGroup(
 				const layergroups = compositionState.get()?.layergroups;
 				if (layergroups) {
 					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-					const layersObject = layergroups[layerGroup-1].layers;
+					const layersObject = layergroups[layerGroup-1]?.layers;
 					if (layersObject) {
 						for (const [_layerIndex, layerObject] of layersObject.entries()) {
 							const compositionLayersObject = compositionState.get()?.layers;
