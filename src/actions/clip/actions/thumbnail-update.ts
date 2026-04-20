@@ -1,25 +1,25 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {getClipOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
+import {ClipUtils} from '../../../domain/clip/clip-utils';
 import {ResolumeArenaModuleInstance} from '../../../index';
 
 export function thumbnailUpdate(
-	websocketApi: () => (WebsocketInstance | null),
+	clipUtils: () => (ClipUtils | null),
 	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Refresh Clip Thumbnail',
-		description: 'Request Resolume to push the current thumbnail for a clip via WebSocket',
+		description: 'Re-fetch the current thumbnail for a clip from Resolume and update Companion buttons immediately',
 		options: [...getClipOption()],
 		callback: async ({options}: {options: any}): Promise<void> => {
-			const websocket = websocketApi();
-			if (!websocket) {
-				resolumeArenaModuleInstance.log('warn', 'Refresh Clip Thumbnail requires a WebSocket connection (REST mode)');
+			const utils = clipUtils();
+			if (!utils) {
+				resolumeArenaModuleInstance.log('warn', 'Refresh Clip Thumbnail requires a REST connection');
 				return;
 			}
 			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
 			const column = +await resolumeArenaModuleInstance.parseVariablesInString(options.column);
-			websocket.subscribePath(`/composition/layers/${layer}/clips/${column}/thumbnail`);
+			await utils.refreshThumbnail(layer, column);
 		},
 	};
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { thumbnailUpdate } from '../../src/actions/clip/actions/thumbnail-update'
 
-function makeWebsocketApi() {
-	return { subscribePath: vi.fn() }
+function makeClipUtils() {
+	return { refreshThumbnail: vi.fn().mockResolvedValue(undefined) }
 }
 
 function makeInstance(parseResult = '1') {
@@ -27,9 +27,9 @@ describe('thumbnailUpdate action definition', () => {
 	})
 })
 
-describe('thumbnailUpdate callback — WebSocket available', () => {
-	it('calls subscribePath with the correct clip thumbnail path', async () => {
-		const ws = makeWebsocketApi()
+describe('thumbnailUpdate callback — REST available', () => {
+	it('calls refreshThumbnail with the correct layer and column', async () => {
+		const utils = makeClipUtils()
 		let callIndex = 0
 		const instance = {
 			log: vi.fn(),
@@ -37,13 +37,13 @@ describe('thumbnailUpdate callback — WebSocket available', () => {
 				Promise.resolve(callIndex++ === 0 ? '2' : '3')
 			),
 		} as any
-		const action = thumbnailUpdate(() => ws as any, instance)
+		const action = thumbnailUpdate(() => utils as any, instance)
 		await (action.callback as any)({ options: { layer: '2', column: '3' } })
-		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/2/clips/3/thumbnail')
+		expect(utils.refreshThumbnail).toHaveBeenCalledWith(2, 3)
 	})
 
 	it('uses parsed variable values for layer and column', async () => {
-		const ws = makeWebsocketApi()
+		const utils = makeClipUtils()
 		let callIndex = 0
 		const instance = {
 			log: vi.fn(),
@@ -51,13 +51,13 @@ describe('thumbnailUpdate callback — WebSocket available', () => {
 				Promise.resolve(callIndex++ === 0 ? '5' : '1')
 			),
 		} as any
-		const action = thumbnailUpdate(() => ws as any, instance)
+		const action = thumbnailUpdate(() => utils as any, instance)
 		await (action.callback as any)({ options: { layer: '$(var:layer)', column: '1' } })
-		expect(ws.subscribePath).toHaveBeenCalledWith('/composition/layers/5/clips/1/thumbnail')
+		expect(utils.refreshThumbnail).toHaveBeenCalledWith(5, 1)
 	})
 })
 
-describe('thumbnailUpdate callback — no WebSocket (OSC-only mode)', () => {
+describe('thumbnailUpdate callback — no ClipUtils (OSC-only mode)', () => {
 	it('logs a warning and does not throw', async () => {
 		const instance = makeInstance('1')
 		const action = thumbnailUpdate(() => null, instance)
@@ -65,11 +65,11 @@ describe('thumbnailUpdate callback — no WebSocket (OSC-only mode)', () => {
 		expect(instance.log).toHaveBeenCalledWith('warn', expect.any(String))
 	})
 
-	it('does not call subscribePath when websocket is null', async () => {
-		const ws = makeWebsocketApi()
+	it('does not call refreshThumbnail when clipUtils is null', async () => {
+		const utils = makeClipUtils()
 		const instance = makeInstance('1')
 		const action = thumbnailUpdate(() => null, instance)
 		await (action.callback as any)({ options: { layer: '1', column: '1' } })
-		expect(ws.subscribePath).not.toHaveBeenCalled()
+		expect(utils.refreshThumbnail).not.toHaveBeenCalled()
 	})
 })

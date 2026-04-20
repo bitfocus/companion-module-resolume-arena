@@ -18,6 +18,6 @@ export function getClipActions(resolumeArenaModuleInstance: ResolumeArenaModuleI
 		clipSpeedChange: clipSpeedChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 		clipOpacityChange: clipOpacityChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
 		clipVolumeChange: clipVolumeChange(restApi, websocketApi, oscApi, clipUtils, resolumeArenaModuleInstance),
-		thumbnailUpdate: thumbnailUpdate(websocketApi, resolumeArenaModuleInstance),
+		thumbnailUpdate: thumbnailUpdate(clipUtils, resolumeArenaModuleInstance),
 	};
 }

@@ -205,6 +205,19 @@ export class ClipUtils implements MessageSubscriber {
 
 	}
 
+	async refreshThumbnail(layer: number, column: number): Promise<void> {
+		const clipId = new ClipId(layer, column);
+		const thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
+		if (!thumb) return;
+		this.clipBase64Thumbs.set(clipId.getIdString(), thumb);
+		try {
+			this.clipThumbs.set(clipId.getIdString(), drawThumb(thumb));
+		} catch (e) {
+			this.resolumeArenaInstance.log('warn', 'could not draw thumb: ' + e);
+		}
+		this.resolumeArenaInstance.checkFeedbacks('clipInfo');
+	}
+
 	async getThumbs(clipId: ClipId, feedbackId: string) {
 		let thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
 		if (thumb) {
