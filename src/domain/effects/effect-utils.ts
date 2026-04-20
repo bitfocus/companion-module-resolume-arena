@@ -50,14 +50,14 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	private checkAllBypassFeedbacks(): void {
-		for (const scope of ['Layer', 'Clip', 'Group', 'Composition'] as const) {
-			this.resolumeArenaInstance.checkFeedbacks(`effectBypassed${scope}`);
+		for (const id of ['effectBypassedLayer', 'effectBypassedClip', 'effectBypassedClipList', 'effectBypassedGroup', 'effectBypassedComposition']) {
+			this.resolumeArenaInstance.checkFeedbacks(id);
 		}
 	}
 
 	private checkAllParameterFeedbacks(): void {
-		for (const scope of ['Layer', 'Clip', 'Group', 'Composition'] as const) {
-			this.resolumeArenaInstance.checkFeedbacks(`effectParameter${scope}`);
+		for (const id of ['effectParameterLayer', 'effectParameterClip', 'effectParameterClipList', 'effectParameterGroup', 'effectParameterComposition']) {
+			this.resolumeArenaInstance.checkFeedbacks(id);
 		}
 	}
 
@@ -147,10 +147,11 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	/**
-	 * Returns dropdown choices for all effects across all scopes in the current composition.
-	 * Each choice id encodes `scope:layer:column:layerGroup:effectIdx` and the label is human-readable.
+	 * Returns dropdown choices for effects in the current composition.
+	 * When includeClips is true, clip effects are included — only use this for
+	 * compositions known to be small; large compositions can have thousands of entries.
 	 */
-	buildEffectChoices(): DropdownChoice[] {
+	buildEffectChoices(includeClips = false): DropdownChoice[] {
 		const choices: DropdownChoice[] = [{id: MANUAL_EFFECT_CHOICE, label: 'Manual (enter index below)'}];
 		const state = compositionState.get();
 		if (!state) return choices;
@@ -178,8 +179,16 @@ export class EffectUtils implements MessageSubscriber {
 				const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
 				choices.push({id: `layer:${li + 1}:0:0:${ei + 1}`, label: `${layerLabel} – ${label} (#${ei + 1})`});
 			});
-			// Clip effects are intentionally excluded — compositions can have hundreds
-			// of clips and enumerating all effects would make the payload too large.
+			if (includeClips) {
+				(layer.clips ?? []).forEach((clip, ci) => {
+					(clip.video?.effects ?? []).forEach((eff, ei) => {
+						const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
+						const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
+						const clipLabel = (clip.name as any)?.value ?? `Clip ${ci + 1}`;
+						choices.push({id: `clip:${li + 1}:${ci + 1}:0:${ei + 1}`, label: `${layerLabel}/${clipLabel} – ${label} (#${ei + 1})`});
+					});
+				});
+			}
 		});
 
 		return choices;

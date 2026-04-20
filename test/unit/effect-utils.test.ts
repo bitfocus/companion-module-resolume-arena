@@ -225,6 +225,42 @@ describe('EffectUtils.buildEffectChoices', () => {
 	});
 });
 
+describe('EffectUtils.buildEffectChoices — includeClips flag', () => {
+	it('includes clip effects when includeClips=true', () => {
+		compositionState.set({
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: []},
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildEffectChoices(true);
+		const ids = choices.map((c) => String(c.id));
+		expect(ids.some((id) => id.startsWith('clip:'))).toBe(true);
+	});
+
+	it('excludes clip effects when includeClips=false (default)', () => {
+		compositionState.set({
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: []},
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildEffectChoices();
+		const ids = choices.map((c) => String(c.id));
+		expect(ids.some((id) => id.startsWith('clip:'))).toBe(false);
+	});
+});
+
 describe('EffectUtils.decodeEffectChoice', () => {
 	it('returns null for manual sentinel', () => {
 		const eu = new EffectUtils(makeMockModule());

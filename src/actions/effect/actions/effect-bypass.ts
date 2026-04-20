@@ -11,12 +11,13 @@ const SCOPE_LABELS: Record<EffectScope, string> = {
 	composition: 'Composition',
 };
 
-export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope): CompanionActionDefinition {
+export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope, withClipList = false): CompanionActionDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
+	const nameSuffix = withClipList ? ' — from list' : '';
 	return {
-		name: `Bypass Effect (${SCOPE_LABELS[scope]})`,
+		name: `Bypass Effect (${SCOPE_LABELS[scope]}${nameSuffix})`,
 		options: [
-			...buildScopedEffectOptions(eu, scope),
+			...buildScopedEffectOptions(eu, scope, withClipList),
 			{
 				id: 'bypass',
 				type: 'dropdown',

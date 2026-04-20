@@ -7,10 +7,12 @@ export function getEffectApiFeedbacks(resolumeArenaInstance: ResolumeArenaModule
 	return {
 		effectBypassedLayer: effectBypassed(resolumeArenaInstance, 'layer'),
 		effectBypassedClip: effectBypassed(resolumeArenaInstance, 'clip'),
+		effectBypassedClipList: effectBypassed(resolumeArenaInstance, 'clip', true),
 		effectBypassedGroup: effectBypassed(resolumeArenaInstance, 'layergroup'),
 		effectBypassedComposition: effectBypassed(resolumeArenaInstance, 'composition'),
 		effectParameterLayer: effectParameter(resolumeArenaInstance, 'layer'),
 		effectParameterClip: effectParameter(resolumeArenaInstance, 'clip'),
+		effectParameterClipList: effectParameter(resolumeArenaInstance, 'clip', true),
 		effectParameterGroup: effectParameter(resolumeArenaInstance, 'layergroup'),
 		effectParameterComposition: effectParameter(resolumeArenaInstance, 'composition'),
 	};

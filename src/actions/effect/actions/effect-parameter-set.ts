@@ -19,12 +19,13 @@ const SCOPE_LABELS: Record<EffectScope, string> = {
 	composition: 'Composition',
 };
 
-export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope): CompanionActionDefinition {
+export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope, withClipList = false): CompanionActionDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
+	const nameSuffix = withClipList ? ' — from list' : '';
 	return {
-		name: `Set Effect Parameter (${SCOPE_LABELS[scope]})`,
+		name: `Set Effect Parameter (${SCOPE_LABELS[scope]}${nameSuffix})`,
 		options: [
-			...buildScopedEffectOptions(eu, scope),
+			...buildScopedEffectOptions(eu, scope, withClipList),
 			{
 				id: 'collection',
 				type: 'dropdown',
