@@ -77,7 +77,7 @@ describe('connectColumn — REST path', () => {
 			() => columnUtils as any,
 			instance
 		)
-		await (action.callback as any)({ options: { action: 'set', value: '2' } })
+		await (action.callback as any)({ options: { lookupMode: 'byIndex', action: 'set', value: '2' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', false)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', true)
 	})
@@ -93,7 +93,7 @@ describe('connectColumn — REST path', () => {
 			() => columnUtils as any,
 			instance
 		)
-		await (action.callback as any)({ options: { action: 'add', value: '1' } })
+		await (action.callback as any)({ options: { lookupMode: 'byIndex', action: 'add', value: '1' } })
 		expect(columnUtils.calculateConnectedNextColumn).toHaveBeenCalledWith(1)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/3/connect', true)
 	})
@@ -109,7 +109,7 @@ describe('connectColumn — REST path', () => {
 			() => columnUtils as any,
 			instance
 		)
-		await (action.callback as any)({ options: { action: 'subtract', value: '1' } })
+		await (action.callback as any)({ options: { lookupMode: 'byIndex', action: 'subtract', value: '1' } })
 		expect(columnUtils.calculateConnectedPreviousColumn).toHaveBeenCalledWith(1)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', true)
 	})
@@ -124,7 +124,68 @@ describe('connectColumn — REST path', () => {
 			() => columnUtils as any,
 			makeInstance()
 		)
-		await (action.callback as any)({ options: { action: 'set', value: '1' } })
+		await (action.callback as any)({ options: { lookupMode: 'byIndex', action: 'set', value: '1' } })
+		expect(ws.triggerPath).not.toHaveBeenCalled()
+	})
+})
+
+describe('connectColumn — byName lookup', () => {
+	it('connects to the column whose name matches', async () => {
+		parameterStates.set({
+			'/composition/columns/1/name': { value: 'Intro' },
+			'/composition/columns/2/name': { value: 'Verse' },
+			'/composition/columns/3/name': { value: 'Chorus' },
+		} as any)
+		const ws = makeWsApi()
+		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
+		const instance = makeInstance('Verse')
+		const action = connectColumn(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => columnUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { lookupMode: 'byName', name: 'Verse' } })
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', false)
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', true)
+	})
+
+	it('logs an error and does not trigger when name is not found', async () => {
+		parameterStates.set({
+			'/composition/columns/1/name': { value: 'Intro' },
+		} as any)
+		const ws = makeWsApi()
+		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
+		const instance = makeInstance('Missing')
+		instance.log = vi.fn()
+		const action = connectColumn(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => columnUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { lookupMode: 'byName', name: 'Missing' } })
+		expect(ws.triggerPath).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('error', expect.stringContaining('Missing'))
+	})
+
+	it('does nothing when restApi is null (byName)', async () => {
+		parameterStates.set({
+			'/composition/columns/1/name': { value: 'Intro' },
+		} as any)
+		const ws = makeWsApi()
+		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
+		const instance = makeInstance('Intro')
+		const action = connectColumn(
+			() => null,
+			() => ws as any,
+			() => null,
+			() => columnUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { lookupMode: 'byName', name: 'Intro' } })
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
 })

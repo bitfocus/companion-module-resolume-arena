@@ -4,6 +4,18 @@ import ArenaRestApi from '../../../arena-api/rest';
 import {ColumnUtils} from '../../../domain/columns/column-util';
 import {WebsocketInstance} from '../../../websocket';
 import {ResolumeArenaModuleInstance} from '../../../index';
+import {parameterStates} from '../../../state';
+
+function lookupColumnIndexByName(name: string): number | undefined {
+	const states = parameterStates.get();
+	for (const key of Object.keys(states)) {
+		const match = key.match(/^\/composition\/columns\/(\d+)\/name$/);
+		if (match && states[key]?.value === name) {
+			return parseInt(match[1], 10);
+		}
+	}
+	return undefined;
+}
 
 export function connectColumn(
 	restApi: () => (ArenaRestApi | null),
@@ -15,6 +27,16 @@ export function connectColumn(
 	return {
 		name: 'Connect Column',
 		options: [
+			{
+				id: 'lookupMode',
+				type: 'dropdown',
+				label: 'Lookup mode',
+				choices: [
+					{id: 'byIndex', label: 'By index'},
+					{id: 'byName', label: 'By name'},
+				],
+				default: 'byIndex',
+			},
 			{
 				id: 'action',
 				type: 'dropdown',
@@ -33,24 +55,44 @@ export function connectColumn(
 					}
 				],
 				default: 'set',
-				label: 'Action'
+				label: 'Action',
+				isVisible: (options) => options.lookupMode === 'byIndex',
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value',
-				useVariables: true
+				useVariables: true,
+				isVisible: (options) => options.lookupMode === 'byIndex',
+			},
+			{
+				type: 'textinput',
+				id: 'name',
+				label: 'Column name',
+				useVariables: true,
+				isVisible: (options) => options.lookupMode === 'byName',
 			}
 		],
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			let theColumnUtils = columnUtils();
 			if (theApi && theColumnUtils) {
-				const action = options.action;
-				const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
-				if (action != undefined) {
-					let column: number | undefined;
-					switch (options.action) {
+				let column: number | undefined;
+
+				if (options.lookupMode === 'byName') {
+					const name = await resolumeArenaModuleInstance.parseVariablesInString(options.name ?? '');
+					column = lookupColumnIndexByName(name);
+					if (column === undefined) {
+						resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
+						return;
+					}
+				} else {
+					const action = options.action;
+					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					if (action == undefined) {
+						return;
+					}
+					switch (action) {
 						case 'set':
 							column = value;
 							break;
@@ -63,10 +105,11 @@ export function connectColumn(
 						default:
 							break;
 					}
-					if (column != undefined) {
-						websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', false);
-						websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', true);
-					}
+				}
+
+				if (column != undefined) {
+					websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', false);
+					websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', true);
 				}
 			}
 		}
