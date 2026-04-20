@@ -18,6 +18,7 @@ import { getApiVariables } from './api-variables'
 import { ArenaOscListener } from './osc-listener'
 import { OscState } from './osc-state'
 import { getAllOscVariables } from './variables/osc-variables'
+import { getAllWsVariables } from './variables/ws-variables'
 import { getOscTransportPresets } from './presets/osc-transport/oscTransportPresets'
 import { getOscTransportFeedbacks } from './feedbacks/osc-transport/oscTransportFeedbacks'
 
@@ -92,6 +93,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.restApi) {
 			variables.push(...getApiVariables())
 			variables.push(...this.clipUtils.getClipNameVariableDefinitions())
+			variables.push(...getAllWsVariables())
 		}
 		// OSC variables require the listener to populate them
 		if (this.config?.useOscListener) {

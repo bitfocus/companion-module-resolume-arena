@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { getOscLayerVariables, getAllOscVariables, OSC_DEFAULT_LAYERS } from '../../src/variables/osc-variables'
 
 describe('getOscLayerVariables', () => {
-	it('returns 6 variables per layer', () => {
-		expect(getOscLayerVariables(1)).toHaveLength(6)
+	it('returns 7 variables per layer', () => {
+		expect(getOscLayerVariables(1)).toHaveLength(7)
 	})
 
 	it('prefixes all variableIds with osc_layer_<n>', () => {
@@ -13,9 +13,10 @@ describe('getOscLayerVariables', () => {
 		}
 	})
 
-	it('includes elapsed, duration, remaining, remaining_seconds, progress, clip_name', () => {
+	it('includes elapsed, elapsed_seconds, duration, remaining, remaining_seconds, progress, clip_name', () => {
 		const ids = getOscLayerVariables(1).map((v) => v.variableId)
 		expect(ids).toContain('osc_layer_1_elapsed')
+		expect(ids).toContain('osc_layer_1_elapsed_seconds')
 		expect(ids).toContain('osc_layer_1_duration')
 		expect(ids).toContain('osc_layer_1_remaining')
 		expect(ids).toContain('osc_layer_1_remaining_seconds')

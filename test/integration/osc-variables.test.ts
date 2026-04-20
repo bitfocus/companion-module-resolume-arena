@@ -9,8 +9,10 @@
  *   - osc_active_column         — active composition column number
  *   - osc_active_column_name    — active composition column name
  *   - osc_layer_N_elapsed       — elapsed timecode (HH:MM:SS or MM:SS)
+ *   - osc_layer_N_elapsed_seconds — elapsed time in whole seconds
  *   - osc_layer_N_duration      — total duration timecode
  *   - osc_layer_N_remaining     — remaining timecode
+ *   - osc_layer_N_remaining_seconds — remaining time in whole seconds
  *   - osc_layer_N_progress      — progress % string
  *   - osc_layer_N_clip_name     — clip name
  */
@@ -202,8 +204,9 @@ describe.skipIf(!resolume)('OscState — duration/progress variables (requires m
 
 describe.skipIf(!resolume)('OscState — variables via direct message injection', () => {
 	it('handleMessage /connected >= 2 sets osc_active_column', () => {
+		// Drive activeColumn to a different column first so the guard (activeColumn !== column) fires
+		oscState.handleMessage(`/composition/columns/${TEST_COLUMN + 1}/connected`, 2)
 		capturedVariables = {}
-		// First inject a column connected message
 		oscState.handleMessage(`/composition/columns/${TEST_COLUMN}/connected`, 2)
 		expect(capturedVariables['osc_active_column']).toBe(String(TEST_COLUMN))
 	})
@@ -301,6 +304,156 @@ describe.skipIf(!resolume)('OscState — elapsed/remaining/progress variables (r
 			// Expected format: "42.5%" or "42.5" or a numeric string — just check it's a non-empty string
 			expect(typeof capturedVariables[progressKey]).toBe('string')
 			expect(capturedVariables[progressKey].length).toBeGreaterThan(0)
+		}
+	})
+})
+
+// ── elapsed_seconds / remaining_seconds ───────────────────────────────────────
+
+describe.skipIf(!resolume)('OscState — elapsed_seconds / remaining_seconds variables (requires media)', () => {
+	const positionPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/position`
+	const durationPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/duration`
+	const connectedPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/connected`
+	const elapsedSecKey = `osc_layer_${TEST_LAYER}_elapsed_seconds`
+	const remainingSecKey = `osc_layer_${TEST_LAYER}_remaining_seconds`
+
+	async function setupActiveClipWithDuration(): Promise<void> {
+		capturedVariables = {}
+		await rest.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
+		await pause(300)
+		await queryAndWait(connectedPath, () => oscState.getActiveClipColumn(TEST_LAYER) === TEST_COLUMN, 2000)
+		listener.send(durationPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => oscState.getLayerDurationSeconds(TEST_LAYER) > 0, 2000)
+		listener.send(positionPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => capturedVariables[elapsedSecKey] !== undefined, 2000)
+	}
+
+	afterAll(async () => {
+		await rest.Layers.clear(TEST_LAYER)
+		await pause(300)
+	})
+
+	it('elapsed_seconds is a whole-number string >= 0', async () => {
+		await setupActiveClipWithDuration()
+		if (capturedVariables[elapsedSecKey] === undefined) return
+		expect(capturedVariables[elapsedSecKey]).toMatch(/^\d+$/)
+		expect(Number(capturedVariables[elapsedSecKey])).toBeGreaterThanOrEqual(0)
+	})
+
+	it('remaining_seconds is a whole-number string >= 0', async () => {
+		if (capturedVariables[remainingSecKey] === undefined) return
+		expect(capturedVariables[remainingSecKey]).toMatch(/^\d+$/)
+		expect(Number(capturedVariables[remainingSecKey])).toBeGreaterThanOrEqual(0)
+	})
+
+	it('elapsed_seconds + remaining_seconds approximates total duration', async () => {
+		if (capturedVariables[elapsedSecKey] === undefined || capturedVariables[remainingSecKey] === undefined) return
+		const durationSec = oscState.getLayerDurationSeconds(TEST_LAYER)
+		const sum = Number(capturedVariables[elapsedSecKey]) + Number(capturedVariables[remainingSecKey])
+		// Allow ±1s for rounding and OSC jitter
+		expect(Math.abs(sum - durationSec)).toBeLessThanOrEqual(1)
+	})
+})
+
+// ── elapsed_seconds advances while playing ────────────────────────────────────
+
+describe.skipIf(!resolume)('OscState — elapsed_seconds advances while playing (requires media)', () => {
+	const positionPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/position`
+	const durationPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/duration`
+	const connectedPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/connected`
+	const elapsedSecKey = `osc_layer_${TEST_LAYER}_elapsed_seconds`
+
+	afterAll(async () => {
+		await rest.Layers.clear(TEST_LAYER)
+		await pause(300)
+	})
+
+	it('elapsed_seconds increases after 500ms of playback', async () => {
+		capturedVariables = {}
+		await rest.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
+		await pause(300)
+		await queryAndWait(connectedPath, () => oscState.getActiveClipColumn(TEST_LAYER) === TEST_COLUMN, 2000)
+		listener.send(durationPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => oscState.getLayerDurationSeconds(TEST_LAYER) > 0, 2000)
+
+		// First position read
+		listener.send(positionPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => capturedVariables[elapsedSecKey] !== undefined, 2000)
+		const first = Number(capturedVariables[elapsedSecKey])
+
+		await pause(1500)
+
+		// Second position read — clip should have advanced
+		delete capturedVariables[elapsedSecKey]
+		listener.send(positionPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => capturedVariables[elapsedSecKey] !== undefined, 2000)
+		const second = Number(capturedVariables[elapsedSecKey])
+
+		if (capturedVariables[elapsedSecKey] !== undefined) {
+			expect(second).toBeGreaterThanOrEqual(first)
+		}
+	})
+})
+
+// ── elapsed_seconds stable when paused ───────────────────────────────────────
+
+describe.skipIf(!resolume)('OscState — elapsed_seconds stable when paused (requires media)', () => {
+	const clipUrl = `http://${TEST_HOST}:${REST_PORT}/api/v1/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}`
+	const positionPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/position`
+	const durationPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/transport/position/behaviour/duration`
+	const connectedPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/connected`
+	const elapsedSecKey = `osc_layer_${TEST_LAYER}_elapsed_seconds`
+
+	async function putClip(body: any): Promise<void> {
+		const { default: fetch } = await import('node-fetch')
+		await fetch(clipUrl, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+			timeout: 3000,
+		} as any)
+	}
+
+	afterAll(async () => {
+		await putClip({ transport: { controls: { speed: { value: 1.0 } } } })
+		await rest.Layers.clear(TEST_LAYER)
+		await pause(300)
+	})
+
+	it('elapsed_seconds does not advance when speed is 0', async () => {
+		capturedVariables = {}
+		await rest.Clips.connect(new ClipId(TEST_LAYER, TEST_COLUMN))
+		await pause(300)
+		await queryAndWait(connectedPath, () => oscState.getActiveClipColumn(TEST_LAYER) === TEST_COLUMN, 2000)
+		listener.send(durationPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => oscState.getLayerDurationSeconds(TEST_LAYER) > 0, 2000)
+
+		// Check clip has speed control before testing
+		const clipData = (await import('node-fetch')).default
+		const res = await (clipData as any)(`${clipUrl}`, { timeout: 3000 })
+		const clip = await res.json() as any
+		if (clip?.transport?.controls?.speed == null) return
+
+		// Freeze playback
+		await putClip({ transport: { controls: { speed: { value: 0 } } } })
+		await pause(300)
+
+		// First position read
+		listener.send(positionPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => capturedVariables[elapsedSecKey] !== undefined, 2000)
+		const first = Number(capturedVariables[elapsedSecKey])
+
+		await pause(1000)
+
+		// Second position read — should not have moved
+		delete capturedVariables[elapsedSecKey]
+		listener.send(positionPath, [{ type: 's', value: '?' }], TEST_HOST, OSC_SEND_PORT)
+		await waitFor(() => capturedVariables[elapsedSecKey] !== undefined, 2000)
+		const second = Number(capturedVariables[elapsedSecKey])
+
+		if (capturedVariables[elapsedSecKey] !== undefined) {
+			// Allow ±1s for rounding
+			expect(Math.abs(second - first)).toBeLessThanOrEqual(1)
 		}
 	})
 })

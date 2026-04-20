@@ -28,6 +28,7 @@ export class ClipUtils implements MessageSubscriber {
 	private clipNameLayerCount = 0;
 	private clipNameColumnCount = 0;
 
+
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
 		this.resolumeArenaInstance.log('debug', 'ClipUtils constructor called');
@@ -80,6 +81,10 @@ export class ClipUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipTransportPosition');
+				const posMatch = data.path.match(/^\/composition\/layers\/(\d+)\/clips\/(\d+)\/transport\/position$/);
+				if (posMatch) {
+					this.updateWsLayerTimingVariables(+posMatch[1], +posMatch[2]);
+				}
 			}
 		}
 	}
@@ -650,11 +655,11 @@ export class ClipUtils implements MessageSubscriber {
 
 		var view = feedback.options.view;
 		var timeRemaining = feedback.options.timeRemaining;
-		const param = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position'] as RangeParameter;
+		const timing = ClipId.isValid(layer, column) && view ? this.wsPositionToSeconds(layer, column) : null;
 
-		if (ClipId.isValid(layer, column) && view && param && param.max !== undefined && param.value !== undefined) {
-			const max = param.max;
-			const value = param.value;
+		if (timing) {
+			const { elapsedSec, remainingSec } = timing;
+			const displaySec = timeRemaining ? remainingSec : elapsedSec;
 
 			const subSecondsInSecond = 60;
 			const secondsInMinute = 60;
@@ -662,14 +667,7 @@ export class ClipUtils implements MessageSubscriber {
 			const framesInMinute = subSecondsInSecond * secondsInMinute;
 			const framesInHour = framesInMinute * minutesInHour;
 
-			let time: number;
-
-			if (timeRemaining) {
-				time = ((max - value) / 100) * 6 + 0.6;
-			} else {
-				time = (value / 100) * 6;
-			}
-
+			const time = displaySec * subSecondsInSecond;
 			var hours = Math.floor(Math.abs(time / framesInHour));
 			var minutesOnly = Math.floor(Math.abs((time - hours * framesInHour) / framesInMinute));
 			var secondsOnly = Math.floor(Math.abs((time - hours * framesInHour - minutesOnly * framesInMinute) / subSecondsInSecond));
@@ -678,7 +676,7 @@ export class ClipUtils implements MessageSubscriber {
 
 			switch (view) {
 				case 'fullSeconds':
-					return {text: (Math.round(value / 100) / 10).toFixed(1) + 's', size: 14};
+					return {text: displaySec.toFixed(1) + 's', size: 14};
 				case 'frames':
 					return {text: framesOnly.toString().padStart(2, '0')};
 				case 'seconds':
@@ -750,5 +748,45 @@ export class ClipUtils implements MessageSubscriber {
 		if (clipTransportPositionId) {
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(clipTransportPositionId);
 		}
+	}
+
+	private updateWsLayerTimingVariables(layer: number, column: number): void {
+		const connectState = parameterStates.get()[`/composition/layers/${layer}/clips/${column}/connect`]?.value;
+		if (connectState !== 'Connected' && connectState !== 'ConnectedAndSelected') return;
+
+		const timing = this.wsPositionToSeconds(layer, column);
+		if (!timing) return;
+
+		const { elapsedSec, totalSec, remainingSec } = timing;
+		const prefix = `ws_layer_${layer}`;
+		this.resolumeArenaInstance.setVariableValues({
+			[`${prefix}_elapsed`]: this.wsSecondsToTimecode(elapsedSec),
+			[`${prefix}_elapsed_seconds`]: Math.round(elapsedSec).toString(),
+			[`${prefix}_duration`]: this.wsSecondsToTimecode(totalSec),
+			[`${prefix}_remaining`]: this.wsSecondsToTimecode(remainingSec),
+			[`${prefix}_remaining_seconds`]: Math.round(remainingSec).toString(),
+			[`${prefix}_progress`]: totalSec > 0 ? (elapsedSec / totalSec * 100).toFixed(0) : '0',
+		});
+	}
+
+	/** Extract elapsed/total/remaining seconds from a clip's WebSocket transport position parameter. */
+	wsPositionToSeconds(layer: number, column: number): { elapsedSec: number; totalSec: number; remainingSec: number } | null {
+		const param = parameterStates.get()[`/composition/layers/${layer}/clips/${column}/transport/position`] as RangeParameter;
+		if (!param || param.value === undefined || param.max === undefined || param.max === 0) return null;
+		const elapsedSec = param.value / 1000;
+		const totalSec = param.max / 1000;
+		return { elapsedSec, totalSec, remainingSec: Math.max(0, totalSec - elapsedSec) };
+	}
+
+	private wsSecondsToTimecode(sec: number): string {
+		const neg = sec < 0;
+		const abs = Math.abs(sec);
+		const h = Math.floor(abs / 3600);
+		const m = Math.floor((abs % 3600) / 60);
+		const s = Math.floor(abs % 60);
+		const base = h > 0
+			? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+			: `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+		return neg ? `-${base}` : base;
 	}
 }

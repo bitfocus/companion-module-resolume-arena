@@ -625,12 +625,16 @@ export class OscState {
 			const config = this.instance.getConfig();
 			if (!listener) return;
 
-			// Wildcard queries — let Resolume tell us everything at once
-			// This catches clip changes, name swaps, column changes, etc.
-			listener.send('/composition/layers/*/clips/*/name', [{ type: 's', value: '?' }], config.host, config.port);
-			listener.send('/composition/layers/*/clips/*/transport/position/behaviour/duration', [{ type: 's', value: '?' }], config.host, config.port);
+			// Wildcard queries — let Resolume tell us everything at once.
+			// Order matters: connected/layer-position must arrive before transport/position
+			// so activeClip and layerPosition are set when the position filter runs.
 			listener.send('/composition/columns/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/columns/*/name', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/name', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/transport/position/behaviour/duration', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/position', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/transport/position', [{ type: 's', value: '?' }], config.host, config.port);
 		}, 5000);
 	}
 	/**
@@ -651,6 +655,8 @@ export class OscState {
 		const listener = this.instance.getOscListener();
 		const config = this.instance.getConfig();
 		if (!listener) return;
+		// Query connected first so activeClip is set before duration/name responses arrive
+		listener.send('/composition/layers/*/clips/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
 		listener.send('/composition/layers/*/clips/*/name', [{ type: 's', value: '?' }], config.host, config.port);
 		listener.send('/composition/layers/*/clips/*/transport/position/behaviour/duration', [{ type: 's', value: '?' }], config.host, config.port);
 	}
@@ -675,9 +681,12 @@ export class OscState {
 			if (!listener) return;
 			listener.send('/composition/columns/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/columns/*/name', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/clips/*/name', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/clips/*/transport/position/behaviour/duration', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/direction', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/position', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/layers/*/clips/*/transport/position', [{ type: 's', value: '?' }], config.host, config.port);
 		}, 200);
 	}
 	/**
