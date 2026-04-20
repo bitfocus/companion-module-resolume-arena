@@ -50,6 +50,15 @@ export function bypassLayer(
 					bypassed = options.bypass == 'on';
 				}
 				thewebsocketApi?.setPath(`/composition/layers/${layer}/bypassed`, bypassed);
+				// Optimistically update local state so the feedback re-evaluates immediately,
+				// even if the WS subscription was briefly dropped (e.g. single-subscriber
+				// rotary encoder unsubscribe/subscribe cycle) and the parameter_update from
+				// Resolume is not yet received or is silently lost.
+				const bypassedPath = '/composition/layers/' + layer + '/bypassed';
+				parameterStates.update((state) => {
+					state[bypassedPath] = {value: bypassed} as any;
+				});
+				resolumeArenaInstance.checkFeedbacks('layerBypassed');
 			} else {
 				let bypassed;
 				switch (options.bypass) {
