@@ -529,11 +529,15 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	clipConnectedWebsocketSubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		const ws = this.resolumeArenaInstance.getWebsocketApi();
+		ws?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		ws?.subscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
 	}
 
 	clipConnectedWebsocketUnsubscribe(layer: number, column: number) {
-		this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		const ws = this.resolumeArenaInstance.getWebsocketApi();
+		ws?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/connect');
+		ws?.unsubscribePath('/composition/layers/' + layer + '/clips/' + column + '/name');
 	}
 
 	/////////////////////////////////////////////////
