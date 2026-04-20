@@ -28,13 +28,19 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 		options: [
 			...buildScopedEffectOptions(eu, scope, withClipList),
 			{
+				id: '_hint_collection',
+				type: 'static-text',
+				label: '',
+				value: 'Collection: "params" covers most effect controls. Use "mixer" for mix/blend parameters, "effect" for effect-level flags.',
+			},
+			{
 				id: 'collection',
 				type: 'dropdown',
 				label: 'Collection',
 				choices: [
-					{id: 'params', label: 'params'},
-					{id: 'mixer', label: 'mixer'},
-					{id: 'effect', label: 'effect'},
+					{id: 'params', label: 'params — effect controls (most common)'},
+					{id: 'mixer', label: 'mixer — mix/blend parameters'},
+					{id: 'effect', label: 'effect — effect-level flags'},
 				],
 				default: 'params',
 			},
@@ -42,7 +48,7 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			{
 				id: 'value',
 				type: 'textinput',
-				label: 'Value',
+				label: 'Value (number, true/false, or text — supports variables)',
 				default: '',
 				useVariables: true,
 			},

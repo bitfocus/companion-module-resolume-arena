@@ -19,7 +19,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		fields.push({
 			id: 'effectChoice',
 			type: 'dropdown',
-			label: 'Effect',
+			label: 'Effect — select from loaded effects or choose Manual to enter an index',
 			choices: filtered,
 			default: MANUAL_EFFECT_CHOICE,
 		});
@@ -29,11 +29,21 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		? (opts: CompanionOptionValues) => opts['effectChoice'] === MANUAL_EFFECT_CHOICE
 		: () => true;
 
+	if (showDropdown) {
+		fields.push({
+			id: '_hint_manual',
+			type: 'static-text',
+			label: '',
+			value: 'Manual mode: enter the location and effect index below. Use Companion variables ($(module:var)) in any field.',
+			isVisible: isManual,
+		});
+	}
+
 	if (scope === 'layer') {
 		fields.push({
 			id: 'layer',
 			type: 'textinput',
-			label: 'Layer',
+			label: 'Layer (1-based)',
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
@@ -42,10 +52,18 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 	}
 
 	if (scope === 'clip') {
+		if (!showDropdown) {
+			fields.push({
+				id: '_hint_clip',
+				type: 'static-text',
+				label: '',
+				value: 'Enter the layer (row) and column of the clip, then the effect index within that clip.',
+			});
+		}
 		fields.push({
 			id: 'layer',
 			type: 'textinput',
-			label: 'Layer',
+			label: 'Layer (1-based)',
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
@@ -54,7 +72,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		fields.push({
 			id: 'column',
 			type: 'textinput',
-			label: 'Column',
+			label: 'Column (1-based)',
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
@@ -66,7 +84,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		fields.push({
 			id: 'layerGroup',
 			type: 'textinput',
-			label: 'Layer Group',
+			label: 'Layer Group (1-based)',
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
@@ -77,7 +95,7 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 	fields.push({
 		id: 'effectIdx',
 		type: 'textinput',
-		label: 'Effect index (1-based)',
+		label: 'Effect index (1-based, left to right in the effect chain)',
 		default: '1',
 		useVariables: true,
 		regex: Regex.NUMBER,
@@ -97,14 +115,14 @@ export function buildParamNameOptions(eu: EffectUtils, scope: EffectScope): Some
 		{
 			id: 'paramChoice',
 			type: 'dropdown',
-			label: 'Parameter',
+			label: 'Parameter — select a known parameter or choose Manual to type one',
 			choices,
 			default: MANUAL_PARAM_CHOICE,
 		},
 		{
 			id: 'paramName',
 			type: 'textinput',
-			label: 'Parameter name (manual)',
+			label: 'Parameter name (manual, supports variables)',
 			default: '',
 			useVariables: true,
 			isVisible: (opts: CompanionOptionValues) => opts['paramChoice'] === MANUAL_PARAM_CHOICE,
