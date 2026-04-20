@@ -10,6 +10,7 @@ import { ClipUtils } from './domain/clip/clip-utils'
 import { ColumnUtils } from './domain/columns/column-util'
 import { CompositionUtils } from './domain/composition/composition-utils'
 import { DeckUtils } from './domain/deck/deck-util'
+import { EffectUtils } from './domain/effects/effect-utils'
 import { LayerGroupUtils } from './domain/layer-groups/layer-group-util'
 import { LayerUtils } from './domain/layers/layer-util'
 import { getUpgradeScripts } from './upgrade-scripts'
@@ -36,6 +37,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private columnUtils: ColumnUtils
 	private compositionUtils: CompositionUtils
 	private deckUtils: DeckUtils
+	private effectUtils: EffectUtils
 	private websocketSubscribers: Set<MessageSubscriber> = new Set()
 
 	constructor(internal: unknown) {
@@ -48,6 +50,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.columnUtils = new ColumnUtils(this)
 		this.compositionUtils = new CompositionUtils(this)
 		this.deckUtils = new DeckUtils(this)
+		this.effectUtils = new EffectUtils(this)
 	}
 
 	async init(config: ResolumeArenaConfig, _isFirstInit: boolean): Promise<void> {
@@ -62,6 +65,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.websocketSubscribers.add(this.clipUtils)
 		this.websocketSubscribers.add(this.compositionUtils)
 		this.websocketSubscribers.add(this.deckUtils)
+		this.websocketSubscribers.add(this.effectUtils)
 	}
 
 	setupFeedback(): void {
@@ -222,6 +226,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 	getDeckUtils(): DeckUtils | null {
 		return this.deckUtils
+	}
+
+	getEffectUtils(): EffectUtils {
+		return this.effectUtils
 	}
 
 	handleOscInput(address: string, value: number | string, _args: unknown[]): void {
