@@ -43,7 +43,7 @@ export function bypassLayer(
 			let thewebsocketApi = websocketApi();
 			const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
 			if (theApi) {
-				let bypassed;
+				let bypassed: boolean;
 				if (options.bypass == 'toggle') {
 					bypassed = !parameterStates.get()['/composition/layers/' + layer + '/bypassed']?.value;
 				} else {
