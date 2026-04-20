@@ -209,11 +209,14 @@ export class ClipUtils implements MessageSubscriber {
 		const clipId = new ClipId(layer, column);
 		const thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
 		if (!thumb) return;
-		this.clipBase64Thumbs.set(clipId.getIdString(), thumb);
-		try {
-			this.clipThumbs.set(clipId.getIdString(), drawThumb(thumb));
-		} catch (e) {
-			this.resolumeArenaInstance.log('warn', 'could not draw thumb: ' + e);
+		if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+			try {
+				this.clipThumbs.set(clipId.getIdString(), drawThumb(thumb));
+			} catch (e) {
+				this.resolumeArenaInstance.log('warn', 'could not draw thumb: ' + e);
+			}
+		} else {
+			this.clipBase64Thumbs.set(clipId.getIdString(), thumb);
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 	}
