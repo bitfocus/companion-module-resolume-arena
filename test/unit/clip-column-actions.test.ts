@@ -171,6 +171,26 @@ describe('connectColumn — byName lookup', () => {
 		expect(instance.log).toHaveBeenCalledWith('error', expect.stringContaining('Missing'))
 	})
 
+	it('matches column whose stored name uses # as index placeholder', async () => {
+		parameterStates.set({
+			'/composition/columns/1/name': { value: 'Test Col #' },
+			'/composition/columns/2/name': { value: 'Test Col #' },
+		} as any)
+		const ws = makeWsApi()
+		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
+		const instance = makeInstance('Test Col 2')
+		const action = connectColumn(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => columnUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { lookupMode: 'byName', name: 'Test Col 2' } })
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', false)
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/columns/2/connect', true)
+	})
+
 	it('does nothing when restApi is null (byName)', async () => {
 		parameterStates.set({
 			'/composition/columns/1/name': { value: 'Intro' },

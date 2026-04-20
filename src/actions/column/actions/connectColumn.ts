@@ -10,8 +10,13 @@ function lookupColumnIndexByName(name: string): number | undefined {
 	const states = parameterStates.get();
 	for (const key of Object.keys(states)) {
 		const match = key.match(/^\/composition\/columns\/(\d+)\/name$/);
-		if (match && states[key]?.value === name) {
-			return parseInt(match[1], 10);
+		if (match) {
+			const stored = String(states[key]?.value ?? '');
+			// Resolume displays '#' in a column name as the column number
+			const display = stored.replace('#', match[1]);
+			if (stored === name || display === name) {
+				return parseInt(match[1], 10);
+			}
 		}
 	}
 	return undefined;
