@@ -225,6 +225,31 @@ describe('EffectUtils.buildEffectChoices', () => {
 	});
 });
 
+describe('EffectUtils.buildEffectChoices — # placeholder in names', () => {
+	it('replaces # with the 1-based index in layer, group and clip labels', () => {
+		compositionState.set({
+			layergroups: [{name: {value: 'Group #'}, video: {effects: [{id: 1, name: 'gfx', displayName: 'GFX', bypassed: {id: 10}}]}}],
+			layers: [
+				{
+					name: {value: 'Layer #'},
+					video: {effects: [{id: 2, name: 'lfx', displayName: 'LFX', bypassed: {id: 20}}]},
+					clips: [{name: {value: 'Clip #'}, video: {effects: [{id: 3, name: 'cfx', displayName: 'CFX', bypassed: {id: 30}}]}}],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildEffectChoices(true);
+		const labels = choices.map((c) => c.label);
+		expect(labels.some((l) => l.startsWith('Group 1'))).toBe(true);
+		expect(labels.some((l) => l.startsWith('Layer 1'))).toBe(true);
+		expect(labels.some((l) => l.includes('Clip 1'))).toBe(true);
+		// Name portion (before '–') should not contain a bare '#'
+		const nameParts = labels.map((l) => l.split('–')[0].trim());
+		expect(nameParts.some((n) => n.includes('#'))).toBe(false);
+	});
+});
+
 describe('EffectUtils.buildEffectChoices — includeClips flag', () => {
 	it('includes clip effects when includeClips=true', () => {
 		compositionState.set({

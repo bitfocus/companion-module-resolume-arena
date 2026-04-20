@@ -28,6 +28,11 @@ export interface EffectLocation {
 export const MANUAL_EFFECT_CHOICE = '__manual__';
 export const MANUAL_PARAM_CHOICE = '__manual_param__';
 
+function resolveName(raw: string | undefined, idx: number, fallbackPrefix: string): string {
+	if (!raw) return `${fallbackPrefix} ${idx}`;
+	return raw.replace('#', String(idx));
+}
+
 export class EffectUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
@@ -168,7 +173,7 @@ export class EffectUtils implements MessageSubscriber {
 		(state.layergroups ?? []).forEach((group, gi) => {
 			(group.video?.effects ?? []).forEach((eff, ei) => {
 				const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
-				const groupLabel = (group.name as any)?.value ?? `Group ${gi + 1}`;
+				const groupLabel = resolveName((group.name as any)?.value, gi + 1, 'Group');
 				choices.push({id: `layergroup:0:0:${gi + 1}:${ei + 1}`, label: `${groupLabel} – ${label} (#${ei + 1})`});
 			});
 		});
@@ -177,15 +182,15 @@ export class EffectUtils implements MessageSubscriber {
 		(state.layers ?? []).forEach((layer, li) => {
 			(layer.video?.effects ?? []).forEach((eff, ei) => {
 				const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
-				const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
+				const layerLabel = resolveName((layer.name as any)?.value, li + 1, 'Layer');
 				choices.push({id: `layer:${li + 1}:0:0:${ei + 1}`, label: `${layerLabel} – ${label} (#${ei + 1})`});
 			});
 			if (includeClips) {
 				(layer.clips ?? []).forEach((clip, ci) => {
 					(clip.video?.effects ?? []).forEach((eff, ei) => {
 						const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
-						const layerLabel = (layer.name as any)?.value ?? `Layer ${li + 1}`;
-						const clipLabel = (clip.name as any)?.value ?? `Clip ${ci + 1}`;
+						const layerLabel = resolveName((layer.name as any)?.value, li + 1, 'Layer');
+						const clipLabel = resolveName((clip.name as any)?.value, ci + 1, 'Clip');
 						choices.push({id: `clip:${li + 1}:${ci + 1}:0:${ei + 1}`, label: `${layerLabel}/${clipLabel} – ${label} (#${ei + 1})`});
 					});
 				});
