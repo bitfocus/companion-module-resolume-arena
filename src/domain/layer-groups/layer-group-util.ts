@@ -474,7 +474,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		const add = feedback.options.next as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
+			const column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
+			if (column === undefined) return {};
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
 			if (text) {
 				return {text: text.replace('#', column.toString())};
@@ -503,7 +504,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		const subtract = feedback.options.previous as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
+			const column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
+			if (column === undefined) return {};
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
 			if (text) {
 				return {text: text.replace('#', column.toString())};
