@@ -328,6 +328,23 @@ export class EffectUtils implements MessageSubscriber {
 		return (eff[collection] as ParameterCollection | undefined)?.[paramName];
 	}
 
+	/**
+	 * Finds a parameter by name across all three collections (params / mixer / effect).
+	 * Use this when the collection is not known or should not constrain the lookup.
+	 */
+	findEffectParam(
+		scope: EffectScope,
+		location: EffectLocation,
+		effectIdx: number,
+		paramName: string
+	): (ParameterCollection[string] & {id?: number; value?: any}) | undefined {
+		for (const coll of ['params', 'mixer', 'effect'] as EffectCollection[]) {
+			const p = this.getEffectParam(scope, location, effectIdx, coll, paramName);
+			if (p !== undefined) return p;
+		}
+		return undefined;
+	}
+
 	/////////////////////////////////////////////////
 	// EFFECT BYPASS
 	// scope is the first param so these can be partially applied via .bind(eu, scope)
@@ -374,12 +391,27 @@ export class EffectUtils implements MessageSubscriber {
 		return context.parseVariablesInString(options.paramName as string ?? '');
 	}
 
+	private resolveEffectParam(
+		options: Record<string, any>,
+		scope: EffectScope,
+		location: EffectLocation,
+		effectIdx: number,
+		paramName: string
+	): (ParameterCollection[string] & {id?: number; value?: any}) | undefined {
+		const rawChoice = options.paramChoice as string | undefined;
+		// Known param from dropdown: search all collections so the collection selector is irrelevant
+		if (rawChoice && rawChoice !== MANUAL_PARAM_CHOICE) {
+			return this.findEffectParam(scope, location, effectIdx, paramName);
+		}
+		// Manual param: honour the collection selector
+		return this.getEffectParam(scope, location, effectIdx, options.collection as EffectCollection, paramName);
+	}
+
 	async effectParameterFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
-		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
-		if (!resolved.effectIdx || !collection || !paramName) return {text: '?'};
-		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !paramName) return {text: '?'};
+		const param = this.resolveEffectParam(feedback.options, resolved.scope, resolved.location, resolved.effectIdx, paramName);
 		if (param?.id === undefined) return {text: '?'};
 		const current = parameterStates.get()['/parameter/by-id/' + param.id]?.value;
 		if (current === undefined) return {text: '?'};
@@ -388,10 +420,9 @@ export class EffectUtils implements MessageSubscriber {
 
 	async effectParameterFeedbackSubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
-		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
-		if (!resolved.effectIdx || !collection || !paramName) return;
-		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !paramName) return;
+		const param = this.resolveEffectParam(feedback.options, resolved.scope, resolved.location, resolved.effectIdx, paramName);
 		if (param?.id === undefined) return;
 		const key = '/parameter/by-id/' + param.id;
 		if (!this.effectParameterSubscriptions.has(key)) {
@@ -403,10 +434,9 @@ export class EffectUtils implements MessageSubscriber {
 
 	async effectParameterFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
-		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await this.resolveParamName(feedback.options, context);
-		if (!resolved.effectIdx || !collection || !paramName) return;
-		const param = this.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !paramName) return;
+		const param = this.resolveEffectParam(feedback.options, resolved.scope, resolved.location, resolved.effectIdx, paramName);
 		if (param?.id === undefined) return;
 		const key = '/parameter/by-id/' + param.id;
 		const subs = this.effectParameterSubscriptions.get(key);

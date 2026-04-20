@@ -91,7 +91,12 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');
 				return;
 			}
-			const param = eu.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
+			// For known params (selected from dropdown), search all collections —
+			// the user shouldn't need to know which collection a param lives in.
+			// For manually typed params, honour the collection selector.
+			const param = rawParamChoice !== MANUAL_PARAM_CHOICE
+				? eu.findEffectParam(resolved.scope, resolved.location, resolved.effectIdx, paramName)
+				: eu.getEffectParam(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
 			if (param?.id === undefined) {
 				resolumeArenaInstance.log('warn', `effectParameterSet: param '${paramName}' not found in composition state`);
 				return;

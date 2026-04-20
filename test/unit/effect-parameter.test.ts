@@ -37,6 +37,9 @@ function makeLayerComposition(paramId = 301) {
 					active: {id: 302, value: false, valuetype: 'ParamBoolean'},
 					look: {id: 303, value: 'Warm', valuetype: 'ParamChoice', options: ['Warm', 'Cool']},
 				},
+				mixer: {
+					'Blend Mode': {id: 400, value: 'Alpha', valuetype: 'ParamChoice', options: ['Alpha', 'Add']},
+				},
 			}]},
 			clips: [],
 		}],
@@ -244,6 +247,19 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const action = await makeAction(mod);
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', mode: 'set', valueChoice: 'Warm', value: ''}});
 		expect(mod._wsApi.setParam).toHaveBeenCalledWith('303', 'Warm');
+	});
+
+	it('finds param in mixer collection even when collection selector says params', async () => {
+		const mod = makeMockModule();
+		const action = await makeAction(mod);
+		// paramChoice is NOT manual → uses findEffectParam (all-collection search)
+		// 'Blend Mode' is in mixer, but collection dropdown says 'params'
+		await (action.callback as Function)({options: {
+			effectChoice: '__manual__', layer: '1', effectIdx: '1',
+			collection: 'params', paramChoice: 'Blend Mode', value: 'Add',
+			mode: 'set', valueChoice: '__manual_value__',
+		}});
+		expect(mod._wsApi.setParam).toHaveBeenCalledWith('400', 'Add');
 	});
 
 	it('logs warning when param not found in compositionState', async () => {
