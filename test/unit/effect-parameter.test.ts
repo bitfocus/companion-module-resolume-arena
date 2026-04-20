@@ -2,19 +2,26 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {EffectUtils} from '../../src/domain/effects/effect-utils';
 import {parameterStates, compositionState} from '../../src/state';
 
+function makeEffectUtils(mod: any) {
+	return new EffectUtils(mod);
+}
+
 function makeMockModule() {
 	const wsApi = {
 		subscribePath: vi.fn(),
 		unsubscribePath: vi.fn(),
 		setPath: vi.fn(),
 	};
-	return {
+	const mod: any = {
 		checkFeedbacks: vi.fn(),
 		log: vi.fn(),
+		rebuildDynamicDefinitions: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		parseVariablesInString: vi.fn((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
-	} as any;
+	};
+	mod.getEffectUtils = vi.fn().mockImplementation(() => makeEffectUtils(mod));
+	return mod;
 }
 
 function makeFeedback(layer: string, effectIdx: string, collection: string, paramName: string, id = 'fb1') {

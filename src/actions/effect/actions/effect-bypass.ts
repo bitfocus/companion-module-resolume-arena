@@ -1,21 +1,15 @@
-import {CompanionActionDefinition, Regex} from '@companion-module/base';
-import {getLayerOption} from '../../../defaults';
-import {parameterStates} from '../../../state';
+import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
+import {parameterStates} from '../../../state';
+import {buildEffectScopeOptions, buildEffectChoiceOptions} from '../effect-action-options';
 
 export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
+	const eu = resolumeArenaInstance.getEffectUtils();
 	return {
 		name: 'Bypass Effect',
 		options: [
-			...getLayerOption(),
-			{
-				id: 'effectIdx',
-				type: 'textinput',
-				label: 'Effect (1-based index)',
-				default: '1',
-				useVariables: true,
-				regex: Regex.NUMBER,
-			},
+			...buildEffectChoiceOptions(eu),
+			...buildEffectScopeOptions(),
 			{
 				id: 'bypass',
 				type: 'dropdown',
@@ -31,10 +25,9 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance)
 		callback: async ({options}) => {
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
-			const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer as string);
-			const effectIdx = +await resolumeArenaInstance.parseVariablesInString(options.effectIdx as string);
-			if (!layer || !effectIdx) return;
-			const path = `/composition/layers/${layer}/video/effects/${effectIdx}/bypassed`;
+			const {scope, location, effectIdx} = await eu.parseScopeOptionsFromAction(options, resolumeArenaInstance);
+			if (!effectIdx) return;
+			const path = eu.effectBypassPath(scope, location, effectIdx);
 			let bypassed: boolean;
 			if (options.bypass === 'toggle') {
 				bypassed = !parameterStates.get()[path]?.value;

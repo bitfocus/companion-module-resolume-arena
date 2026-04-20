@@ -6,6 +6,7 @@ function makeMockModule() {
 	return {
 		checkFeedbacks: vi.fn(),
 		log: vi.fn(),
+		rebuildDynamicDefinitions: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue({
 			subscribeParam: vi.fn(),
 			unsubscribeParam: vi.fn(),
@@ -82,19 +83,19 @@ describe('EffectUtils.getEffectBypassedParamId', () => {
 	it('returns bypassed param id', () => {
 		compositionState.set(makeComposition());
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectBypassedParamId(1, 1)).toBe(201);
-		expect(eu.getEffectBypassedParamId(1, 2)).toBe(202);
+		expect(eu.getEffectBypassedParamId('layer', {layer: 1}, 1)).toBe(201);
+		expect(eu.getEffectBypassedParamId('layer', {layer: 1}, 2)).toBe(202);
 	});
 
 	it('returns undefined when compositionState is undefined', () => {
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectBypassedParamId(1, 1)).toBeUndefined();
+		expect(eu.getEffectBypassedParamId('layer', {layer: 1}, 1)).toBeUndefined();
 	});
 
 	it('returns undefined for out-of-range effect index', () => {
 		compositionState.set(makeComposition());
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectBypassedParamId(1, 99)).toBeUndefined();
+		expect(eu.getEffectBypassedParamId('layer', {layer: 1}, 99)).toBeUndefined();
 	});
 });
 
@@ -102,19 +103,144 @@ describe('EffectUtils.getEffectParamId', () => {
 	it('returns param id from params collection', () => {
 		compositionState.set(makeComposition());
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectParamId(1, 1, 'params', 'look')).toBe(301);
-		expect(eu.getEffectParamId(1, 1, 'params', 'speed')).toBe(302);
+		expect(eu.getEffectParamId('layer', {layer: 1}, 1, 'params', 'look')).toBe(301);
+		expect(eu.getEffectParamId('layer', {layer: 1}, 1, 'params', 'speed')).toBe(302);
 	});
 
 	it('returns undefined for unknown param name', () => {
 		compositionState.set(makeComposition());
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectParamId(1, 1, 'params', 'nonexistent')).toBeUndefined();
+		expect(eu.getEffectParamId('layer', {layer: 1}, 1, 'params', 'nonexistent')).toBeUndefined();
 	});
 
 	it('returns undefined when composition is undefined', () => {
 		const eu = new EffectUtils(makeMockModule());
-		expect(eu.getEffectParamId(1, 1, 'params', 'look')).toBeUndefined();
+		expect(eu.getEffectParamId('layer', {layer: 1}, 1, 'params', 'look')).toBeUndefined();
+	});
+});
+
+describe('EffectUtils.listEffectsForScope', () => {
+	function makeMultiScopeComposition() {
+		return {
+			video: {effects: [{id: 1, name: 'comp-effect', displayName: 'CompFX', bypassed: {id: 10}}]},
+			layergroups: [
+				{
+					name: {value: 'Group 1'},
+					video: {effects: [{id: 2, name: 'group-effect', displayName: 'GroupFX', bypassed: {id: 20}}]},
+				},
+			],
+			layers: [
+				{
+					name: {value: 'Layer 1'},
+					video: {effects: [{id: 3, name: 'layer-effect', displayName: 'LayerFX', bypassed: {id: 30}}]},
+					clips: [
+						{
+							name: {value: 'Clip 1'},
+							video: {effects: [{id: 4, name: 'clip-effect', displayName: 'ClipFX', bypassed: {id: 40}}]},
+						},
+					],
+				},
+			],
+			columns: [],
+		} as any;
+	}
+
+	it('returns composition-level effects', () => {
+		compositionState.set(makeMultiScopeComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const effects = eu.listEffectsForScope('composition', {});
+		expect(effects).toHaveLength(1);
+		expect(effects[0]).toMatchObject({idx: 1, id: 1, name: 'comp-effect'});
+	});
+
+	it('returns layer-group effects', () => {
+		compositionState.set(makeMultiScopeComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const effects = eu.listEffectsForScope('layergroup', {layerGroup: 1});
+		expect(effects).toHaveLength(1);
+		expect(effects[0]).toMatchObject({idx: 1, id: 2, name: 'group-effect'});
+	});
+
+	it('returns clip effects', () => {
+		compositionState.set(makeMultiScopeComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const effects = eu.listEffectsForScope('clip', {layer: 1, column: 1});
+		expect(effects).toHaveLength(1);
+		expect(effects[0]).toMatchObject({idx: 1, id: 4, name: 'clip-effect'});
+	});
+});
+
+describe('EffectUtils.effectBypassPath — all scopes', () => {
+	it('builds composition path', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.effectBypassPath('composition', {}, 1)).toBe('/composition/video/effects/1/bypassed');
+	});
+
+	it('builds layergroup path', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.effectBypassPath('layergroup', {layerGroup: 2}, 1)).toBe('/composition/layergroups/2/video/effects/1/bypassed');
+	});
+
+	it('builds layer path', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.effectBypassPath('layer', {layer: 3}, 2)).toBe('/composition/layers/3/video/effects/2/bypassed');
+	});
+
+	it('builds clip path', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.effectBypassPath('clip', {layer: 1, column: 2}, 3)).toBe('/composition/layers/1/clips/2/video/effects/3/bypassed');
+	});
+});
+
+describe('EffectUtils.buildEffectChoices', () => {
+	it('returns manual option when composition is empty', () => {
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildEffectChoices();
+		expect(choices).toHaveLength(1);
+		expect(choices[0].id).toBe('__manual__');
+	});
+
+	it('includes effects from all scopes', () => {
+		compositionState.set({
+			video: {effects: [{id: 1, name: 'fx', displayName: 'FX'}]},
+			layergroups: [{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'gfx', displayName: 'GFX'}]}}],
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [{id: 3, name: 'lfx', displayName: 'LFX'}]},
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildEffectChoices();
+		expect(choices.length).toBeGreaterThan(4);
+		const ids = choices.map((c) => c.id);
+		expect(ids).toContain('__manual__');
+		expect(ids.some((id) => id.startsWith('composition:'))).toBe(true);
+		expect(ids.some((id) => id.startsWith('layergroup:'))).toBe(true);
+		expect(ids.some((id) => id.startsWith('layer:'))).toBe(true);
+		expect(ids.some((id) => id.startsWith('clip:'))).toBe(true);
+	});
+});
+
+describe('EffectUtils.decodeEffectChoice', () => {
+	it('returns null for manual sentinel', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.decodeEffectChoice('__manual__')).toBeNull();
+	});
+
+	it('decodes layer choice', () => {
+		const eu = new EffectUtils(makeMockModule());
+		const result = eu.decodeEffectChoice('layer:2:0:0:3');
+		expect(result).toMatchObject({scope: 'layer', location: {layer: 2}, effectIdx: 3});
+	});
+
+	it('decodes clip choice', () => {
+		const eu = new EffectUtils(makeMockModule());
+		const result = eu.decodeEffectChoice('clip:1:2:0:1');
+		expect(result).toMatchObject({scope: 'clip', location: {layer: 1, column: 2}, effectIdx: 1});
 	});
 });
 
@@ -136,11 +262,12 @@ describe('EffectUtils.messageUpdates', () => {
 });
 
 describe('EffectUtils.effectsUpdated', () => {
-	it('calls checkFeedbacks for effect feedbacks', () => {
+	it('calls checkFeedbacks and rebuilds definitions', () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		eu.effectsUpdated();
 		expect(mod.checkFeedbacks).toHaveBeenCalledWith('effectBypassed');
 		expect(mod.checkFeedbacks).toHaveBeenCalledWith('effectParameter');
+		expect(mod.rebuildDynamicDefinitions).toHaveBeenCalledTimes(1);
 	});
 });

@@ -1,6 +1,6 @@
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getLayerOption} from '../../../defaults';
 import {ResolumeArenaModuleInstance} from '../../../index';
+import {buildEffectChoiceOptions, buildEffectScopeOptions} from '../../../actions/effect/effect-action-options';
 
 export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
@@ -8,14 +8,8 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 		type: 'advanced',
 		name: 'Effect Parameter Value',
 		options: [
-			...getLayerOption(),
-			{
-				id: 'effectIdx',
-				type: 'textinput',
-				label: 'Effect (1-based index)',
-				default: '1',
-				useVariables: true,
-			},
+			...buildEffectChoiceOptions(eu),
+			...buildEffectScopeOptions(),
 			{
 				id: 'collection',
 				type: 'dropdown',

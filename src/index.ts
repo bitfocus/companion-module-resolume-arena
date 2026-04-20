@@ -68,6 +68,13 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.websocketSubscribers.add(this.effectUtils)
 	}
 
+	rebuildDynamicDefinitions(): void {
+		if (this.restApi) {
+			this.setupFeedback()
+			this.setActionDefinitions(getActions(this))
+		}
+	}
+
 	setupFeedback(): void {
 		const feedbacks = {}
 		if (this.restApi) {

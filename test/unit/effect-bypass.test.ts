@@ -2,19 +2,26 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {EffectUtils} from '../../src/domain/effects/effect-utils';
 import {parameterStates, compositionState} from '../../src/state';
 
+function makeEffectUtils(mod: any) {
+	return new EffectUtils(mod);
+}
+
 function makeMockModule() {
 	const wsApi = {
 		subscribePath: vi.fn(),
 		unsubscribePath: vi.fn(),
 		setPath: vi.fn(),
 	};
-	return {
+	const mod: any = {
 		checkFeedbacks: vi.fn(),
 		log: vi.fn(),
+		rebuildDynamicDefinitions: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		parseVariablesInString: vi.fn((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
-	} as any;
+	};
+	mod.getEffectUtils = vi.fn().mockImplementation(() => makeEffectUtils(mod));
+	return mod;
 }
 
 function makeFeedback(layer: string, effectIdx: string, id = 'fb1') {
@@ -135,8 +142,8 @@ describe('effectBypass action callback', () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
 		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
-		const action = effectBypass({...mod, getWebsocketApi: () => mod._wsApi} as any);
-		await (action.callback as Function)({options: {layer: '1', effectIdx: '1', bypass: 'on'}});
+		const action = effectBypass(mod as any);
+		await (action.callback as Function)({options: {effectChoice: '__manual__', scope: 'layer', layer: '1', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
 	});
 
@@ -144,8 +151,8 @@ describe('effectBypass action callback', () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: true} as any});
 		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
-		const action = effectBypass({...mod, getWebsocketApi: () => mod._wsApi} as any);
-		await (action.callback as Function)({options: {layer: '1', effectIdx: '1', bypass: 'off'}});
+		const action = effectBypass(mod as any);
+		await (action.callback as Function)({options: {effectChoice: '__manual__', scope: 'layer', layer: '1', effectIdx: '1', bypass: 'off'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', false);
 	});
 
@@ -153,8 +160,8 @@ describe('effectBypass action callback', () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
 		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
-		const action = effectBypass({...mod, getWebsocketApi: () => mod._wsApi} as any);
-		await (action.callback as Function)({options: {layer: '1', effectIdx: '1', bypass: 'toggle'}});
+		const action = effectBypass(mod as any);
+		await (action.callback as Function)({options: {effectChoice: '__manual__', scope: 'layer', layer: '1', effectIdx: '1', bypass: 'toggle'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
 	});
 
@@ -162,6 +169,6 @@ describe('effectBypass action callback', () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
 		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
 		const action = effectBypass(mod as any);
-		await expect((action.callback as Function)({options: {layer: '1', effectIdx: '1', bypass: 'on'}})).resolves.not.toThrow();
+		await expect((action.callback as Function)({options: {effectChoice: '__manual__', scope: 'layer', layer: '1', effectIdx: '1', bypass: 'on'}})).resolves.not.toThrow();
 	});
 });

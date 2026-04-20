@@ -1,6 +1,7 @@
-import {CompanionFeedbackDefinition, Regex} from '@companion-module/base';
-import {getDefaultStyleRed, getLayerOption} from '../../../defaults';
+import {CompanionFeedbackDefinition} from '@companion-module/base';
+import {getDefaultStyleRed} from '../../../defaults';
 import {ResolumeArenaModuleInstance} from '../../../index';
+import {buildEffectChoiceOptions, buildEffectScopeOptions} from '../../../actions/effect/effect-action-options';
 
 export function effectBypassed(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
@@ -9,15 +10,8 @@ export function effectBypassed(resolumeArenaInstance: ResolumeArenaModuleInstanc
 		name: 'Effect Bypassed',
 		defaultStyle: getDefaultStyleRed(),
 		options: [
-			...getLayerOption(),
-			{
-				id: 'effectIdx',
-				type: 'textinput',
-				label: 'Effect (1-based index)',
-				default: '1',
-				useVariables: true,
-				regex: Regex.NUMBER,
-			},
+			...buildEffectChoiceOptions(eu),
+			...buildEffectScopeOptions(),
 		],
 		callback: eu.effectBypassedFeedbackCallback.bind(eu),
 		subscribe: eu.effectBypassedFeedbackSubscribe.bind(eu),
