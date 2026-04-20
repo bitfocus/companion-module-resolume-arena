@@ -24,6 +24,7 @@ function makeInstance(parseResults: string[] | string = '1') {
 	let callIndex = 0
 	return {
 		log: vi.fn(),
+		checkFeedbacks: vi.fn(),
 		parseVariablesInString: vi.fn().mockImplementation(() => {
 			if (results) {
 				return Promise.resolve(results[callIndex++] ?? results[results.length - 1])
@@ -75,6 +76,58 @@ describe('bypassLayer — REST path', () => {
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'toggle' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/bypassed', false)
+	})
+})
+
+describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
+	it('bypass=on updates parameterStates immediately and calls checkFeedbacks', async () => {
+		const ws = makeWsApi()
+		const instance = makeInstance('1')
+		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
+		await (action.callback as any)({ options: { layer: '1', bypass: 'on' } })
+		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(true)
+		expect(instance.checkFeedbacks).toHaveBeenCalledWith('layerBypassed')
+	})
+
+	it('bypass=off updates parameterStates immediately to false', async () => {
+		const ws = makeWsApi()
+		parameterStates.set({ '/composition/layers/1/bypassed': { value: true } } as any)
+		const instance = makeInstance('1')
+		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
+		await (action.callback as any)({ options: { layer: '1', bypass: 'off' } })
+		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(false)
+		expect(instance.checkFeedbacks).toHaveBeenCalledWith('layerBypassed')
+	})
+
+	it('bypass=toggle updates parameterStates to flipped value immediately', async () => {
+		const ws = makeWsApi()
+		parameterStates.set({ '/composition/layers/1/bypassed': { value: false } } as any)
+		const instance = makeInstance('1')
+		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
+		await (action.callback as any)({ options: { layer: '1', bypass: 'toggle' } })
+		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(true)
+		expect(instance.checkFeedbacks).toHaveBeenCalledWith('layerBypassed')
+	})
+
+	it('single subscriber: feedback re-evaluates even when WS subscription is temporarily dropped', async () => {
+		// Simulates the single-rotary-encoder scenario: only one feedback subscriber,
+		// bypass is toggled, parameterStates is updated optimistically, checkFeedbacks fires.
+		const ws = makeWsApi()
+		parameterStates.set({ '/composition/layers/2/bypassed': { value: true } } as any)
+		const instance = makeInstance('2')
+		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
+		await (action.callback as any)({ options: { layer: '2', bypass: 'toggle' } })
+		// State should reflect the new bypassed=false immediately, without needing a WS response
+		expect(parameterStates.get()['/composition/layers/2/bypassed']?.value).toBe(false)
+		expect(instance.checkFeedbacks).toHaveBeenCalledWith('layerBypassed')
+	})
+
+	it('does not call checkFeedbacks when restApi is null (OSC path)', async () => {
+		const osc = makeOscApi()
+		const instance = makeInstance('1')
+		const action = bypassLayer(() => null, () => null, () => osc as any, instance)
+		await (action.callback as any)({ options: { layer: '1', bypass: 'on' } })
+		expect(instance.checkFeedbacks).not.toHaveBeenCalled()
 	})
 })
 
