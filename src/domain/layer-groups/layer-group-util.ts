@@ -395,15 +395,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {};
 	}
 
-	calculateNextSelectedLayerGroupColumn(layerGroup: number, add: number): number {
-		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
-		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+	calculateNextSelectedLayerGroupColumn(layerGroup: number, add: number): number | undefined {
+		const column = this.selectedLayerGroupColumns.get(+layerGroup);
+		const lastColumn = this.lastLayerGroupColumns.get(+layerGroup);
+		if (column === undefined || lastColumn === undefined) return undefined;
 		if (column + add > lastColumn) {
-			column = +column + add - lastColumn;
-		} else {
-			column += add;
+			return column + add - lastColumn;
 		}
-		return column;
+		return column + add;
 	}
 
 	/////////////////////////////////////////////////
@@ -420,15 +419,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {};
 	}
 
-	calculatePreviousSelectedLayerGroupColumn(layerGroup: number, subtract: number): number {
-		let column = +this.selectedLayerGroupColumns.get(+layerGroup)!;
-		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+	calculatePreviousSelectedLayerGroupColumn(layerGroup: number, subtract: number): number | undefined {
+		const column = this.selectedLayerGroupColumns.get(+layerGroup);
+		const lastColumn = this.lastLayerGroupColumns.get(+layerGroup);
+		if (column === undefined || lastColumn === undefined) return undefined;
 		if (column - subtract < 1) {
-			column = +lastColumn + column - subtract;
-		} else {
-			column = column - subtract;
+			return lastColumn + column - subtract;
 		}
-		return column;
+		return column - subtract;
 	}
 
 	/////////////////////////////////////////////////
@@ -476,7 +474,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		const add = feedback.options.next as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
+			const column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
+			if (column === undefined) return {};
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
 			if (text) {
 				return {text: text.replace('#', column.toString())};
@@ -487,15 +486,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {};
 	}
 
-	calculateNextConnectedLayerGroupColumn(layerGroup: number, add: number): number {
-		let column = +this.connectedLayerGroupColumns.get(+layerGroup)!;
-		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+	calculateNextConnectedLayerGroupColumn(layerGroup: number, add: number): number | undefined {
+		const column = this.connectedLayerGroupColumns.get(+layerGroup);
+		const lastColumn = this.lastLayerGroupColumns.get(+layerGroup);
+		if (column === undefined || lastColumn === undefined) return undefined;
 		if (column + add > lastColumn) {
-			column = +column + add - lastColumn;
-		} else {
-			column += add;
+			return column + add - lastColumn;
 		}
-		return column;
+		return column + add;
 	}
 
 	/////////////////////////////////////////////////
@@ -506,7 +504,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		const subtract = feedback.options.previous as number;
 		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
-			let column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
+			const column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
+			if (column === undefined) return {};
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
 			if (text) {
 				return {text: text.replace('#', column.toString())};
@@ -517,15 +516,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {};
 	}
 
-	calculatePreviousConnectedLayerGroupColumn(layerGroup: number, subtract: number): number {
-		let column = +this.connectedLayerGroupColumns.get(+layerGroup)!;
-		const lastColumn = +this.lastLayerGroupColumns.get(+layerGroup)!;
+	calculatePreviousConnectedLayerGroupColumn(layerGroup: number, subtract: number): number | undefined {
+		const column = this.connectedLayerGroupColumns.get(+layerGroup);
+		const lastColumn = this.lastLayerGroupColumns.get(+layerGroup);
+		if (column === undefined || lastColumn === undefined) return undefined;
 		if (column - subtract < 1) {
-			column = +lastColumn + column - subtract;
-		} else {
-			column = column - subtract;
+			return lastColumn + column - subtract;
 		}
-		return column;
+		return column - subtract;
 	}
 
 

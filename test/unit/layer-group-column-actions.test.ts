@@ -33,7 +33,7 @@ describe('connectLayerGroupColumn', () => {
 	it('action=set triggers column connect path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('1')
+		const instance = makeInstance('1', '3')
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -78,6 +78,40 @@ describe('connectLayerGroupColumn', () => {
 		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '1' } })
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
+
+	it('does not call triggerPath when calculateNext returns undefined (uninitialized state, #143)', async () => {
+		const ws = makeWsApi()
+		const lgu = {
+			calculateNextConnectedLayerGroupColumn: vi.fn().mockReturnValue(undefined),
+			calculatePreviousConnectedLayerGroupColumn: vi.fn(),
+		}
+		const instance = makeInstance('1', '1')
+		const action = connectLayerGroupColumn(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => lgu as any,
+			instance
+		)
+		await (action.callback as any)({ options: { layerGroup: '1', action: 'add', value: '1' } })
+		expect(ws.triggerPath).not.toHaveBeenCalled()
+	})
+
+	it('options.value is resolved through parseVariablesInString (#143)', async () => {
+		const ws = makeWsApi()
+		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
+		const instance = makeInstance('1', '5')
+		const action = connectLayerGroupColumn(
+			() => ({} as any),
+			() => ws as any,
+			() => null,
+			() => lgu as any,
+			instance
+		)
+		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '$(var:foo)' } })
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', false)
+		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', true)
+	})
 })
 
 // ── selectLayerGroupColumn ─────────────────────────────────────────────────────
@@ -86,7 +120,7 @@ describe('selectLayerGroupColumn', () => {
 	it('action=set triggers select path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextSelectedLayerGroupColumn: vi.fn(), calculatePreviousSelectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('2')
+		const instance = makeInstance('2', '2')
 		const action = selectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,

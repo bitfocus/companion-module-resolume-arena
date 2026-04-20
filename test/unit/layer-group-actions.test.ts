@@ -158,6 +158,18 @@ describe('clearLayerGroup — REST path', () => {
 		await (action.callback as any)({ options: { layer: '1' } })
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
+
+	it('does not crash when layer group index is out of bounds (#143)', async () => {
+		const ws = makeWsApi()
+		compositionState.set({
+			layers: [{ id: 10 }],
+			layergroups: [{ layers: [{ id: 10, clips: [{}] }] }],
+		} as any)
+		const instance = makeInstance('5')
+		const action = clearLayerGroup(() => ({} as any), () => ws as any, () => null, instance)
+		await expect((action.callback as any)({ options: { layer: '5' } })).resolves.not.toThrow()
+		expect(ws.triggerPath).not.toHaveBeenCalled()
+	})
 })
 
 describe('clearLayerGroup — OSC path', () => {

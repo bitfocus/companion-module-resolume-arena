@@ -48,10 +48,10 @@ export function connectLayerGroupColumn(
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
 				const action = options.action;
-				const value = +options.value as number;
 				if (action != undefined) {
 					let column: number | undefined;
 					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layerGroup);
+					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
 					switch (options.action) {
 						case 'set':
 							column = value;
