@@ -64,6 +64,8 @@ export function compositionOpacityChange(
 					const id = compositionState.get()?.video?.opacity?.id;
 					if (id !== undefined) {
 						websocketApi()?.setParam(String(id), value);
+					} else {
+						resolumeArenaInstance.log('warn', 'compositionOpacityChange: paramId should not be undefined');
 					}
 				}
 			}

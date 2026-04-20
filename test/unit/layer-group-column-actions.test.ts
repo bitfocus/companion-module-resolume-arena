@@ -224,6 +224,24 @@ describe('clipVolumeChange — REST path', () => {
 		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
 		expect(ws.setParam).toHaveBeenCalledWith('33', -12)
 	})
+
+	it('logs warn and does not call setParam when clip has no volume id (#140)', async () => {
+		const ws = makeWsApi()
+		const clipUtils = { getClipFromCompositionState: vi.fn().mockReturnValue(undefined) }
+		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ audio: { volume: { value: -6 } } }) } }
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('-12')
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('1'),
+		} as any
+		const action = clipVolumeChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
+		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
+		expect(ws.subscribeParam).not.toHaveBeenCalled()
+		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
+	})
 })
 
 // ── clipOpacityChange ──────────────────────────────────────────────────────────
@@ -293,5 +311,23 @@ describe('clipOpacityChange — REST path', () => {
 		const action = clipOpacityChange(() => null, () => ws as any, () => null, () => null, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
+	})
+
+	it('logs warn and does not call setParam when clip has no opacity id (#140)', async () => {
+		const ws = makeWsApi()
+		const clipUtils = { getClipFromCompositionState: vi.fn().mockReturnValue(undefined) }
+		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ video: { opacity: { value: 0.5 } } }) } }
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('50')
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('1'),
+		} as any
+		const action = clipOpacityChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
+		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })
+		expect(ws.subscribeParam).not.toHaveBeenCalled()
+		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })

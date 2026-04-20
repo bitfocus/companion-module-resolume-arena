@@ -75,6 +75,8 @@ export function clipVolumeChange(
 						if (id !== undefined) {
 							await websocketApi()?.subscribeParam(id);
 							await websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'clipVolumeChange: paramId should not be undefined');
 						}
 					}
 				}

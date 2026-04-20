@@ -64,6 +64,8 @@ export function compositionVolumeChange(
 					const id = compositionState.get()?.audio?.volume?.id;
 					if (id !== undefined) {
 						websocketApi()?.setParam(String(id), value);
+					} else {
+						resolumeArenaInstance.log('warn', 'compositionVolumeChange: paramId should not be undefined');
 					}
 				}
 			}

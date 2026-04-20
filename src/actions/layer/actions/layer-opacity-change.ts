@@ -73,6 +73,8 @@ export function layerOpacityChange(
 						if (id !== undefined) {
 							websocketApi()?.subscribeParam(id);
 							websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'layerOpacityChange: paramId should not be undefined');
 						}
 					}
 				}

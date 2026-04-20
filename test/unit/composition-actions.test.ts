@@ -196,14 +196,16 @@ describe('compositionOpacityChange', () => {
 	it('does not call setParam when composition has no opacity id (#140)', async () => {
 		const ws = makeWsApi()
 		compositionState.set(undefined)
+		const instance = makeInstance('50')
 		const action = compositionOpacityChange(
 			() => ({} as any),
 			() => ws as any,
 			() => null,
-			makeInstance('50')
+			instance
 		)
 		await (action.callback as any)({ options: { action: 'set', value: '50' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })
 
@@ -257,13 +259,15 @@ describe('compositionVolumeChange', () => {
 	it('does not call setParam when composition has no volume id (#140)', async () => {
 		const ws = makeWsApi()
 		compositionState.set(undefined)
+		const instance = makeInstance('-6')
 		const action = compositionVolumeChange(
 			() => ({} as any),
 			() => ws as any,
 			() => null,
-			makeInstance('-6')
+			instance
 		)
 		await (action.callback as any)({ options: { action: 'set', value: '-6' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })

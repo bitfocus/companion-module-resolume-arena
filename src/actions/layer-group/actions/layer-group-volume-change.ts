@@ -72,6 +72,8 @@ export function layerGroupVolumeChange(
 					const id = layer?.audio?.volume?.id;
 					if (id !== undefined) {
 						websocketApi()?.setParam(String(id), value);
+					} else {
+						resolumeArenaInstance.log('warn', 'layerGroupVolumeChange: paramId should not be undefined');
 					}
 				}
 			}

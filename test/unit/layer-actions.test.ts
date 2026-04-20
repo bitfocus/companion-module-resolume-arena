@@ -281,6 +281,7 @@ describe('layerOpacityChange', () => {
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
 		expect(ws.subscribeParam).not.toHaveBeenCalled()
 		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })
 
@@ -320,6 +321,7 @@ describe('layerVolumeChange', () => {
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '-6' } })
 		expect(ws.subscribeParam).not.toHaveBeenCalled()
 		expect(ws.setParam).not.toHaveBeenCalled()
+		expect(instance.log).toHaveBeenCalledWith('warn', expect.stringContaining('paramId should not be undefined'))
 	})
 })
 

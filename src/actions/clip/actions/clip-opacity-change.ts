@@ -75,6 +75,8 @@ export function clipOpacityChange(
 						if (id !== undefined) {
 							await websocketApi()?.subscribeParam(id);
 							await websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'clipOpacityChange: paramId should not be undefined');
 						}
 					}
 				}
