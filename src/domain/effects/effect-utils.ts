@@ -26,6 +26,7 @@ export interface EffectLocation {
 }
 
 export const MANUAL_EFFECT_CHOICE = '__manual__';
+export const MANUAL_PARAM_CHOICE = '__manual_param__';
 
 export class EffectUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -214,6 +215,49 @@ export class EffectUtils implements MessageSubscriber {
 		};
 	}
 
+	/**
+	 * Returns a deduplicated list of known parameter names for the given scope,
+	 * collected from all effects and all three collections (params/mixer/effect).
+	 * Prefixed with the manual sentinel so the user can still type freely.
+	 */
+	buildParamChoices(scope: EffectScope): DropdownChoice[] {
+		const choices: DropdownChoice[] = [{id: MANUAL_PARAM_CHOICE, label: 'Manual (type below)'}];
+		const seen = new Set<string>();
+
+		const addFromCollection = (coll: ParameterCollection | undefined) => {
+			if (!coll) return;
+			for (const name of Object.keys(coll)) {
+				if (!seen.has(name)) {
+					seen.add(name);
+					choices.push({id: name, label: name});
+				}
+			}
+		};
+
+		const addFromEffect = (eff: VideoEffect) => {
+			addFromCollection(eff.params);
+			addFromCollection(eff.mixer);
+			addFromCollection(eff.effect);
+		};
+
+		const state = compositionState.get();
+		if (!state) return choices;
+
+		if (scope === 'composition') {
+			(state.video?.effects ?? []).forEach(addFromEffect);
+		} else if (scope === 'layergroup') {
+			(state.layergroups ?? []).forEach((g) => (g.video?.effects ?? []).forEach(addFromEffect));
+		} else if (scope === 'layer') {
+			(state.layers ?? []).forEach((l) => (l.video?.effects ?? []).forEach(addFromEffect));
+		} else if (scope === 'clip') {
+			(state.layers ?? []).forEach((l) =>
+				(l.clips ?? []).forEach((c) => (c.video?.effects ?? []).forEach(addFromEffect))
+			);
+		}
+
+		return choices;
+	}
+
 	getEffectBypassedParamId(scope: EffectScope, location: EffectLocation, effectIdx: number): number | undefined {
 		const effects = this.getEffectsArray(scope, location);
 		if (!effects) return undefined;
@@ -268,10 +312,16 @@ export class EffectUtils implements MessageSubscriber {
 	// EFFECT PARAMETER
 	/////////////////////////////////////////////////
 
+	private async resolveParamName(options: Record<string, any>, context: CompanionCommonCallbackContext): Promise<string> {
+		const rawChoice = options.paramChoice as string | undefined;
+		if (rawChoice && rawChoice !== MANUAL_PARAM_CHOICE) return rawChoice;
+		return context.parseVariablesInString(options.paramName as string ?? '');
+	}
+
 	async effectParameterFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
-		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
+		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return {text: '?'};
 		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		const current = parameterStates.get()[path]?.value;
@@ -282,7 +332,7 @@ export class EffectUtils implements MessageSubscriber {
 	async effectParameterFeedbackSubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
-		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
+		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return;
 		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		if (!this.effectParameterSubscriptions.has(path)) {
@@ -295,7 +345,7 @@ export class EffectUtils implements MessageSubscriber {
 	async effectParameterFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
-		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
+		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !collection || !paramName) return;
 		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		const subs = this.effectParameterSubscriptions.get(path);

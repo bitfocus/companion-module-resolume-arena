@@ -156,7 +156,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'active', value: 'true'}});
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'true'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/active', true);
 	});
 
@@ -165,7 +165,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'active', value: 'false'}});
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'active', value: 'false'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/active', false);
 	});
 
@@ -174,7 +174,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'speed', value: '0.5'}});
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0.5'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0.5);
 	});
 
@@ -183,7 +183,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'look', value: 'My Look'}});
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'look', value: 'My Look'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/look', 'My Look');
 	});
 
@@ -192,7 +192,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod as any);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
-		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'speed', value: '0'}});
+		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '0'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/params/speed', 0);
 		expect(typeof mod._wsApi.setPath.mock.calls[0][1]).toBe('number');
 	});
@@ -202,6 +202,6 @@ describe('coerceValue (via effectParameterSet action)', () => {
 		const eu = new EffectUtils(mod as any);
 		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
 		const action = effectParameterSet({...mod, getEffectUtils: () => eu} as any, 'layer');
-		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
+		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', collection: 'params', paramChoice: '__manual_param__', paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
 });

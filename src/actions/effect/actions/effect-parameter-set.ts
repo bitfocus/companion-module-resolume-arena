@@ -1,7 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import {EffectScope} from '../../../domain/effects/effect-utils';
-import {buildScopedEffectOptions} from '../effect-action-options';
+import {buildScopedEffectOptions, buildParamNameOptions} from '../effect-action-options';
+import {MANUAL_PARAM_CHOICE} from '../../../domain/effects/effect-utils';
 
 function coerceValue(raw: string): string | number | boolean {
 	const lower = raw.trim().toLowerCase();
@@ -37,13 +38,7 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				],
 				default: 'params',
 			},
-			{
-				id: 'paramName',
-				type: 'textinput',
-				label: 'Parameter name',
-				default: '',
-				useVariables: true,
-			},
+			...buildParamNameOptions(eu, scope),
 			{
 				id: 'value',
 				type: 'textinput',
@@ -56,7 +51,10 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
 			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
-			const paramName = await resolumeArenaInstance.parseVariablesInString(options.paramName as string);
+			const rawParamChoice = options.paramChoice as string;
+			const paramName = rawParamChoice === MANUAL_PARAM_CHOICE
+				? await resolumeArenaInstance.parseVariablesInString(options.paramName as string)
+				: rawParamChoice;
 			const rawValue = await resolumeArenaInstance.parseVariablesInString(options.value as string);
 			if (!resolved.effectIdx || !paramName) {
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');

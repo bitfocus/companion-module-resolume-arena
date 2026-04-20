@@ -1,7 +1,7 @@
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
 import {EffectScope} from '../../../domain/effects/effect-utils';
-import {buildScopedEffectOptions} from '../../../actions/effect/effect-action-options';
+import {buildScopedEffectOptions, buildParamNameOptions} from '../../../actions/effect/effect-action-options';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',
@@ -29,13 +29,7 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 				],
 				default: 'params',
 			},
-			{
-				id: 'paramName',
-				type: 'textinput',
-				label: 'Parameter name',
-				default: '',
-				useVariables: true,
-			},
+			...buildParamNameOptions(eu, scope),
 		],
 		callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
 		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),

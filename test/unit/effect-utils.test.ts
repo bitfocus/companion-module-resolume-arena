@@ -307,3 +307,90 @@ describe('EffectUtils.effectsUpdated', () => {
 		expect(mod.rebuildDynamicDefinitions).toHaveBeenCalledTimes(1);
 	});
 });
+
+describe('EffectUtils.buildParamChoices', () => {
+	function makeParamComposition() {
+		return {
+			video: {effects: [{id: 1, name: 'comp-fx', displayName: 'CompFX', bypassed: {id: 10}, params: {brightness: {id: 100, value: 0}}, mixer: {opacity: {id: 101, value: 1}}}]},
+			layergroups: [
+				{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'group-fx', displayName: 'GroupFX', bypassed: {id: 20}, params: {speed: {id: 200, value: 0.5}}}]}},
+			],
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [{id: 3, name: 'layer-fx', displayName: 'LayerFX', bypassed: {id: 30}, params: {amount: {id: 300, value: 0}}}]},
+					clips: [
+						{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'clip-fx', displayName: 'ClipFX', bypassed: {id: 40}, params: {size: {id: 400, value: 1}}}]}},
+					],
+				},
+			],
+			columns: [],
+		} as any;
+	}
+
+	it('always includes the manual sentinel as first choice', () => {
+		const eu = new EffectUtils(makeMockModule());
+		const choices = eu.buildParamChoices('layer');
+		expect(choices[0].id).toBe('__manual_param__');
+	});
+
+	it('returns only manual sentinel when composition is empty', () => {
+		const eu = new EffectUtils(makeMockModule());
+		expect(eu.buildParamChoices('layer')).toHaveLength(1);
+	});
+
+	it('returns composition-scope params', () => {
+		compositionState.set(makeParamComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoices('composition').map((c) => c.id);
+		expect(ids).toContain('brightness');
+		expect(ids).toContain('opacity');
+		expect(ids).not.toContain('speed');
+		expect(ids).not.toContain('amount');
+	});
+
+	it('returns layer-scope params', () => {
+		compositionState.set(makeParamComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoices('layer').map((c) => c.id);
+		expect(ids).toContain('amount');
+		expect(ids).not.toContain('brightness');
+		expect(ids).not.toContain('size');
+	});
+
+	it('returns layergroup-scope params', () => {
+		compositionState.set(makeParamComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoices('layergroup').map((c) => c.id);
+		expect(ids).toContain('speed');
+		expect(ids).not.toContain('amount');
+	});
+
+	it('returns clip-scope params', () => {
+		compositionState.set(makeParamComposition());
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoices('clip').map((c) => c.id);
+		expect(ids).toContain('size');
+		expect(ids).not.toContain('amount');
+	});
+
+	it('deduplicates param names across multiple effects', () => {
+		compositionState.set({
+			layers: [
+				{
+					name: {value: 'L1'},
+					video: {effects: [
+						{id: 1, name: 'fx1', bypassed: {id: 10}, params: {speed: {id: 1}}},
+						{id: 2, name: 'fx2', bypassed: {id: 20}, params: {speed: {id: 2}, amount: {id: 3}}},
+					]},
+					clips: [],
+				},
+			],
+			columns: [],
+		} as any);
+		const eu = new EffectUtils(makeMockModule());
+		const ids = eu.buildParamChoices('layer').map((c) => c.id);
+		expect(ids.filter((id) => id === 'speed')).toHaveLength(1);
+		expect(ids).toContain('amount');
+	});
+});

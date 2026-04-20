@@ -1,5 +1,5 @@
 import {SomeCompanionFeedbackInputField, Regex, CompanionOptionValues} from '@companion-module/base';
-import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE} from '../../domain/effects/effect-utils';
+import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE, MANUAL_PARAM_CHOICE} from '../../domain/effects/effect-utils';
 
 /**
  * Builds options for an effect action or feedback for the given scope.
@@ -85,4 +85,29 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 	});
 
 	return fields;
+}
+
+/**
+ * Builds a parameter-name dropdown (deduplicated from compositionState) plus
+ * a manual textinput shown when the manual sentinel is selected.
+ */
+export function buildParamNameOptions(eu: EffectUtils, scope: EffectScope): SomeCompanionFeedbackInputField[] {
+	const choices = eu.buildParamChoices(scope);
+	return [
+		{
+			id: 'paramChoice',
+			type: 'dropdown',
+			label: 'Parameter',
+			choices,
+			default: MANUAL_PARAM_CHOICE,
+		},
+		{
+			id: 'paramName',
+			type: 'textinput',
+			label: 'Parameter name (manual)',
+			default: '',
+			useVariables: true,
+			isVisible: (opts: CompanionOptionValues) => opts['paramChoice'] === MANUAL_PARAM_CHOICE,
+		},
+	];
 }
