@@ -503,6 +503,7 @@ export function getOscTransportActions(
 						{ id: 'backward', label: 'Play Backward' },
 						{ id: 'pause', label: 'Pause' },
 						{ id: 'forward', label: 'Play Forward' },
+						{ id: 'toggle', label: 'Play / Pause Toggle' },
 					],
 					default: 'forward',
 				},
@@ -511,12 +512,12 @@ export function getOscTransportActions(
 				const api = oscApi();
 				if (!api) return;
 				const state = options.state as string;
-				if (state === 'backward') {
-					api.send('/composition/backwards', { type: 'i', value: 1 });
-				} else if (state === 'pause') {
-					api.send('/composition/paused', { type: 'i', value: 1 });
+				if (state === 'toggle') {
+					const currentDir = oscState()?.compositionDirection ?? 2;
+					api.send('/composition/direction', { type: 'i', value: currentDir === 1 ? 2 : 1 });
 				} else {
-					api.send('/composition/forwards', { type: 'i', value: 1 });
+					const dirMap: Record<string, number> = { backward: 0, pause: 1, forward: 2 };
+					api.send('/composition/direction', { type: 'i', value: dirMap[state] });
 				}
 			},
 		},
@@ -540,6 +541,7 @@ export function getOscTransportActions(
 						{ id: 'backward', label: 'Play Backward' },
 						{ id: 'pause', label: 'Pause' },
 						{ id: 'forward', label: 'Play Forward' },
+						{ id: 'toggle', label: 'Play / Pause Toggle' },
 					],
 					default: 'forward',
 				},
@@ -550,12 +552,12 @@ export function getOscTransportActions(
 				const api = oscApi();
 				if (!api) return;
 				const state = options.state as string;
-				if (state === 'backward') {
-					api.send(`/composition/groups/${group}/backwards`, { type: 'i', value: 1 });
-				} else if (state === 'pause') {
-					api.send(`/composition/groups/${group}/paused`, { type: 'i', value: 1 });
+				if (state === 'toggle') {
+					const currentDir = oscState()?.groupDirections.get(group) ?? 2;
+					api.send(`/composition/groups/${group}/direction`, { type: 'i', value: currentDir === 1 ? 2 : 1 });
 				} else {
-					api.send(`/composition/groups/${group}/forwards`, { type: 'i', value: 1 });
+					const dirMap: Record<string, number> = { backward: 0, pause: 1, forward: 2 };
+					api.send(`/composition/groups/${group}/direction`, { type: 'i', value: dirMap[state] });
 				}
 			},
 		},

@@ -31,6 +31,8 @@ function makeMockInstance() {
 		getLayerDurationSeconds: vi.fn().mockReturnValue(60),
 		getLayerElapsedSeconds: vi.fn().mockReturnValue(0),
 		queryAllLayers: vi.fn(),
+		compositionDirection: 2,
+		groupDirections: new Map<number, number>([[1, 2], [2, 2]]),
 	}
 	return {
 		log: vi.fn(),
@@ -45,25 +47,41 @@ function makeMockInstance() {
 // ── oscCompositionDirection ───────────────────────────────────────────────────
 
 describe('oscCompositionDirection', () => {
-	it('sends /composition/forwards when state=forward', async () => {
+	it('sends /composition/direction=2 when state=forward', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscCompositionDirection!.callback({ options: { state: 'forward' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/forwards', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/direction', { type: 'i', value: 2 })
 	})
 
-	it('sends /composition/paused when state=pause', async () => {
+	it('sends /composition/direction=1 when state=pause', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscCompositionDirection!.callback({ options: { state: 'pause' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/paused', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/direction', { type: 'i', value: 1 })
 	})
 
-	it('sends /composition/backwards when state=backward', async () => {
+	it('sends /composition/direction=0 when state=backward', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscCompositionDirection!.callback({ options: { state: 'backward' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/backwards', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/direction', { type: 'i', value: 0 })
+	})
+
+	it('sends play (2) on toggle when compositionDirection is paused (1)', async () => {
+		const mod = makeMockInstance()
+		mod._oscState.compositionDirection = 1
+		const actions = getOscTransportActions(mod)
+		await actions.oscCompositionDirection!.callback({ options: { state: 'toggle' } } as any, {} as any)
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/direction', { type: 'i', value: 2 })
+	})
+
+	it('sends pause (1) on toggle when compositionDirection is playing (2)', async () => {
+		const mod = makeMockInstance()
+		mod._oscState.compositionDirection = 2
+		const actions = getOscTransportActions(mod)
+		await actions.oscCompositionDirection!.callback({ options: { state: 'toggle' } } as any, {} as any)
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/direction', { type: 'i', value: 1 })
 	})
 
 	it('does not call send when oscApi is null', async () => {
@@ -78,25 +96,41 @@ describe('oscCompositionDirection', () => {
 // ── oscGroupDirection ─────────────────────────────────────────────────────────
 
 describe('oscGroupDirection', () => {
-	it('sends /composition/groups/2/forwards when group=2 state=forward', async () => {
+	it('sends /composition/groups/2/direction=2 when group=2 state=forward', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscGroupDirection!.callback({ options: { group: '2', state: 'forward' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/2/forwards', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/2/direction', { type: 'i', value: 2 })
 	})
 
-	it('sends /composition/groups/1/paused when group=1 state=pause', async () => {
+	it('sends /composition/groups/1/direction=1 when group=1 state=pause', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscGroupDirection!.callback({ options: { group: '1', state: 'pause' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/1/paused', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/1/direction', { type: 'i', value: 1 })
 	})
 
-	it('sends /composition/groups/3/backwards when group=3 state=backward', async () => {
+	it('sends /composition/groups/3/direction=0 when group=3 state=backward', async () => {
 		const mod = makeMockInstance()
 		const actions = getOscTransportActions(mod)
 		await actions.oscGroupDirection!.callback({ options: { group: '3', state: 'backward' } } as any, {} as any)
-		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/3/backwards', { type: 'i', value: 1 })
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/3/direction', { type: 'i', value: 0 })
+	})
+
+	it('sends play (2) on toggle when group direction is paused (1)', async () => {
+		const mod = makeMockInstance()
+		mod._oscState.groupDirections.set(1, 1)
+		const actions = getOscTransportActions(mod)
+		await actions.oscGroupDirection!.callback({ options: { group: '1', state: 'toggle' } } as any, {} as any)
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/1/direction', { type: 'i', value: 2 })
+	})
+
+	it('sends pause (1) on toggle when group direction is playing (2)', async () => {
+		const mod = makeMockInstance()
+		mod._oscState.groupDirections.set(2, 2)
+		const actions = getOscTransportActions(mod)
+		await actions.oscGroupDirection!.callback({ options: { group: '2', state: 'toggle' } } as any, {} as any)
+		expect(mod._oscApi.send).toHaveBeenCalledWith('/composition/groups/2/direction', { type: 'i', value: 1 })
 	})
 
 	it('does nothing when group input is non-numeric', async () => {

@@ -184,6 +184,7 @@ function getGroupPresets(group: number): CompanionPresetDefinitions {
 		[`${pfx}_Reverse`]: btn(cat, 'Reverse', `${gp}◀◀\\nReverse`, white, blue, 'auto', [['oscGroupDirection', { group: G, state: 'backward' }]]),
 		[`${pfx}_Pause`]: btn(cat, 'Pause', `${gp}⏸\\nPause`, white, red, 'auto', [['oscGroupDirection', { group: G, state: 'pause' }]]),
 		[`${pfx}_Play`]: btn(cat, 'Play', `${gp}▶\\nPlay`, white, green, 'auto', [['oscGroupDirection', { group: G, state: 'forward' }]]),
+		[`${pfx}_Toggle`]: btn(cat, 'Play/Pause Toggle', `${gp}⏯\\nToggle`, white, orange, 'auto', [['oscGroupDirection', { group: G, state: 'toggle' }]]),
 
 		// 5. Bypass
 		[`${pfx}_BypassOff`]: btn(cat, 'Bypass Off', `${gp}Bypass\\nOff`, white, green, 'auto', [['oscGroupBypass', { group: G, bypass: 'off' }]]),
@@ -214,6 +215,7 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 		oscComp_Reverse: btn(cat, 'Reverse', '◀◀\\nReverse', white, blue, 'auto', [['oscCompositionDirection', { state: 'backward' }]]),
 		oscComp_Pause: btn(cat, 'Pause', '⏸\\nPause', white, red, 'auto', [['oscCompositionDirection', { state: 'pause' }]]),
 		oscComp_Play: btn(cat, 'Play', '▶\\nPlay', white, green, 'auto', [['oscCompositionDirection', { state: 'forward' }]]),
+		oscComp_Toggle: btn(cat, 'Play/Pause Toggle', '⏯\\nToggle', white, orange, 'auto', [['oscCompositionDirection', { state: 'toggle' }]]),
 
 		// 5. (no bypass at composition level)
 

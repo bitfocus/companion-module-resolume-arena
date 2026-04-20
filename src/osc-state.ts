@@ -48,6 +48,10 @@ interface LayerState {
 export class OscState {
 	private instance: ResolumeArenaModuleInstance
 	private layers: Map<number, LayerState> = new Map()
+	/** Composition-level direction: 0=backward, 1=pause, 2=forward */
+	public compositionDirection: number = 2
+	/** Per-group direction: 0=backward, 1=pause, 2=forward */
+	public groupDirections: Map<number, number> = new Map()
 	/** Track which layers have had their variables registered */
 	private registeredLayers: Set<number> = new Set()
 	/** Periodic refresh interval handle */
@@ -299,6 +303,17 @@ export class OscState {
 		match = address.match(/^\/composition\/layers\/(\d+)\/direction$/);
 		if (match) {
 			this.getOrCreateLayer(+match[1]).direction = +value;
+			return;
+		}
+		// ── Composition Direction ──
+		if (address === '/composition/direction') {
+			this.compositionDirection = +value;
+			return;
+		}
+		// ── Group Direction ──
+		match = address.match(/^\/composition\/groups\/(\d+)\/direction$/);
+		if (match) {
+			this.groupDirections.set(+match[1], +value);
 			return;
 		}
 		// ── Layer Master ──
@@ -684,6 +699,8 @@ export class OscState {
 			listener.send('/composition/layers/*/clips/*/connected', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/clips/*/name', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/clips/*/transport/position/behaviour/duration', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/direction', [{ type: 's', value: '?' }], config.host, config.port);
+			listener.send('/composition/groups/*/direction', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/direction', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/position', [{ type: 's', value: '?' }], config.host, config.port);
 			listener.send('/composition/layers/*/clips/*/transport/position', [{ type: 's', value: '?' }], config.host, config.port);
