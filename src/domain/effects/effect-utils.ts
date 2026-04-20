@@ -40,18 +40,30 @@ export class EffectUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: string; value: string | boolean | number}, isComposition: boolean): void {
 		if (isComposition) {
-			this.resolumeArenaInstance.checkFeedbacks('effectBypassed');
-			this.resolumeArenaInstance.checkFeedbacks('effectParameter');
+			this.checkAllBypassFeedbacks();
+			this.checkAllParameterFeedbacks();
 		} else if (data.path?.match(/\/video\/effects\/\d+\/bypassed/)) {
-			this.resolumeArenaInstance.checkFeedbacks('effectBypassed');
+			this.checkAllBypassFeedbacks();
 		} else if (data.path?.match(/\/video\/effects\/\d+\/(params|mixer|effect)\//)) {
-			this.resolumeArenaInstance.checkFeedbacks('effectParameter');
+			this.checkAllParameterFeedbacks();
+		}
+	}
+
+	private checkAllBypassFeedbacks(): void {
+		for (const scope of ['Layer', 'Clip', 'Group', 'Composition'] as const) {
+			this.resolumeArenaInstance.checkFeedbacks(`effectBypassed${scope}`);
+		}
+	}
+
+	private checkAllParameterFeedbacks(): void {
+		for (const scope of ['Layer', 'Clip', 'Group', 'Composition'] as const) {
+			this.resolumeArenaInstance.checkFeedbacks(`effectParameter${scope}`);
 		}
 	}
 
 	effectsUpdated(): void {
-		this.resolumeArenaInstance.checkFeedbacks('effectBypassed');
-		this.resolumeArenaInstance.checkFeedbacks('effectParameter');
+		this.checkAllBypassFeedbacks();
+		this.checkAllParameterFeedbacks();
 		// Rebuild action/feedback definitions so effect dropdowns reflect current composition
 		this.resolumeArenaInstance.rebuildDynamicDefinitions();
 	}
@@ -216,35 +228,37 @@ export class EffectUtils implements MessageSubscriber {
 
 	/////////////////////////////////////////////////
 	// EFFECT BYPASS
+	// scope is the first param so these can be partially applied via .bind(eu, scope)
+	// and the Companion SDK will call them as (feedback, context)
 	/////////////////////////////////////////////////
 
-	async effectBypassedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
-		if (!effectIdx) return false;
-		return !!parameterStates.get()[this.effectBypassPath(scope, location, effectIdx)]?.value;
+	async effectBypassedFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
+		if (!resolved.effectIdx) return false;
+		return !!parameterStates.get()[this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx)]?.value;
 	}
 
-	async effectBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
-		if (!effectIdx) return;
-		const key = this.subscriptionKey(scope, location, effectIdx);
+	async effectBypassedFeedbackSubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
+		if (!resolved.effectIdx) return;
+		const key = this.subscriptionKey(resolved.scope, resolved.location, resolved.effectIdx);
 		if (!this.effectBypassedSubscriptions.has(key)) {
 			this.effectBypassedSubscriptions.set(key, new Set());
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(this.effectBypassPath(scope, location, effectIdx));
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx));
 		}
 		this.effectBypassedSubscriptions.get(key)!.add(feedback.id);
 	}
 
-	async effectBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
-		if (!effectIdx) return;
-		const key = this.subscriptionKey(scope, location, effectIdx);
+	async effectBypassedFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
+		if (!resolved.effectIdx) return;
+		const key = this.subscriptionKey(resolved.scope, resolved.location, resolved.effectIdx);
 		const subs = this.effectBypassedSubscriptions.get(key);
 		if (!subs) return;
 		subs.delete(feedback.id);
 		if (subs.size === 0) {
 			this.effectBypassedSubscriptions.delete(key);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(this.effectBypassPath(scope, location, effectIdx));
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx));
 		}
 	}
 
@@ -252,23 +266,23 @@ export class EffectUtils implements MessageSubscriber {
 	// EFFECT PARAMETER
 	/////////////////////////////////////////////////
 
-	async effectParameterFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
+	async effectParameterFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
-		if (!effectIdx || !collection || !paramName) return {text: '?'};
-		const path = this.effectParamPath(scope, location, effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !collection || !paramName) return {text: '?'};
+		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		const current = parameterStates.get()[path]?.value;
 		if (current === undefined) return {text: '?'};
 		return {text: String(current)};
 	}
 
-	async effectParameterFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
+	async effectParameterFeedbackSubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
-		if (!effectIdx || !collection || !paramName) return;
-		const path = this.effectParamPath(scope, location, effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !collection || !paramName) return;
+		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		if (!this.effectParameterSubscriptions.has(path)) {
 			this.effectParameterSubscriptions.set(path, new Set());
 			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(path);
@@ -276,12 +290,12 @@ export class EffectUtils implements MessageSubscriber {
 		this.effectParameterSubscriptions.get(path)!.add(feedback.id);
 	}
 
-	async effectParameterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
-		const {scope, location, effectIdx} = await this.parseScopeOptions(feedback.options, context);
+	async effectParameterFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
+		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const collection = feedback.options.collection as EffectCollection;
 		const paramName = await context.parseVariablesInString(feedback.options.paramName as string);
-		if (!effectIdx || !collection || !paramName) return;
-		const path = this.effectParamPath(scope, location, effectIdx, collection, paramName);
+		if (!resolved.effectIdx || !collection || !paramName) return;
+		const path = this.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, collection, paramName);
 		const subs = this.effectParameterSubscriptions.get(path);
 		if (!subs) return;
 		subs.delete(feedback.id);
@@ -309,7 +323,8 @@ export class EffectUtils implements MessageSubscriber {
 		options: Record<string, any>,
 		context: CompanionCommonCallbackContext
 	): Promise<{scope: EffectScope; location: EffectLocation; effectIdx: number}> {
-		const scope = (options.scope as EffectScope) ?? 'layer';
+		// Caller always embeds scope in options (from action/feedback scope param)
+		const scope = options.scope as EffectScope;
 
 		// If a preset effect choice is selected, decode it
 		const effectChoice = options.effectChoice as string | undefined;

@@ -5,7 +5,13 @@ import {effectParameterSet} from './actions/effect-parameter-set';
 
 export function getEffectActions(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	return {
-		effectBypass: effectBypass(resolumeArenaInstance),
-		effectParameterSet: effectParameterSet(resolumeArenaInstance),
+		effectBypassLayer: effectBypass(resolumeArenaInstance, 'layer'),
+		effectBypassClip: effectBypass(resolumeArenaInstance, 'clip'),
+		effectBypassGroup: effectBypass(resolumeArenaInstance, 'layergroup'),
+		effectBypassComposition: effectBypass(resolumeArenaInstance, 'composition'),
+		effectParameterSetLayer: effectParameterSet(resolumeArenaInstance, 'layer'),
+		effectParameterSetClip: effectParameterSet(resolumeArenaInstance, 'clip'),
+		effectParameterSetGroup: effectParameterSet(resolumeArenaInstance, 'layergroup'),
+		effectParameterSetComposition: effectParameterSet(resolumeArenaInstance, 'composition'),
 	};
 }

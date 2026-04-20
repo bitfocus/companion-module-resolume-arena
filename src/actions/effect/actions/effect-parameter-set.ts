@@ -1,6 +1,7 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
-import {buildEffectScopeOptions, buildEffectChoiceOptions} from '../effect-action-options';
+import {EffectScope} from '../../../domain/effects/effect-utils';
+import {buildScopedEffectOptions} from '../effect-action-options';
 
 function coerceValue(raw: string): string | number | boolean {
 	const lower = raw.trim().toLowerCase();
@@ -11,13 +12,19 @@ function coerceValue(raw: string): string | number | boolean {
 	return raw;
 }
 
-export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
+const SCOPE_LABELS: Record<EffectScope, string> = {
+	layer: 'Layer',
+	clip: 'Clip',
+	layergroup: 'Layer Group',
+	composition: 'Composition',
+};
+
+export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope): CompanionActionDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
 	return {
-		name: 'Set Effect Parameter',
+		name: `Set Effect Parameter (${SCOPE_LABELS[scope]})`,
 		options: [
-			...buildEffectChoiceOptions(eu),
-			...buildEffectScopeOptions(),
+			...buildScopedEffectOptions(eu, scope),
 			{
 				id: 'collection',
 				type: 'dropdown',
@@ -47,14 +54,14 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 		callback: async ({options}) => {
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
-			const {scope, location, effectIdx} = await eu.parseScopeOptionsFromAction(options, resolumeArenaInstance);
+			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
 			const paramName = await resolumeArenaInstance.parseVariablesInString(options.paramName as string);
 			const rawValue = await resolumeArenaInstance.parseVariablesInString(options.value as string);
-			if (!effectIdx || !paramName) {
+			if (!resolved.effectIdx || !paramName) {
 				resolumeArenaInstance.log('warn', 'effectParameterSet: invalid effectIdx or paramName');
 				return;
 			}
-			const path = eu.effectParamPath(scope, location, effectIdx, options.collection as any, paramName);
+			const path = eu.effectParamPath(resolved.scope, resolved.location, resolved.effectIdx, options.collection as any, paramName);
 			ws.setPath(path, coerceValue(rawValue));
 		},
 	};

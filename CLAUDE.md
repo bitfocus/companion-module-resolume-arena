@@ -22,3 +22,29 @@ Integration tests require a live Resolume Arena instance with the test compositi
 - All code, comments, and docs in English.
 - Follow existing patterns in the codebase — check adjacent files before introducing new abstractions.
 - Variable and action definitions follow the established domain structure under `src/domain/` and `src/variables/`.
+
+## Agent Rules (sub-agents spawned by the team)
+
+### Verify API paths before implementing
+
+Before using any WebSocket path (e.g. `/composition/outputmode`) or OSC path, grep for it in the existing source:
+
+```
+grep -r "the-path" src/arena-api/ src/osc-state.ts src/websocket.ts
+```
+
+If it does not appear, it is not a known API surface. Do not invent paths — check the Resolume REST API docs or ask. Implementing against a non-existent path wastes a branch and introduces dead code.
+
+### Check feasibility before writing code
+
+If the issue says "check if the API exposes X", do the check first. Read the relevant arena-api files, grep for the endpoint, and confirm it exists and is writable. If it does not exist, report back immediately — do not write a stub implementation or a test for something that cannot work.
+
+### Never push
+
+`git push` is blocked by project settings. Do not attempt it. Commit your branch and stop there.
+
+### Commit checklist
+
+Only commit when all of the following are true:
+- `yarn test` passes (all unit tests green).
+- The commit message references the issue number.

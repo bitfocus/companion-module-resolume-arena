@@ -252,11 +252,10 @@ describe.skipIf(!resolume)('effect control — effectParameterSet action path co
 			getWebsocketApi: () => fakeWs,
 			getEffectUtils: () => effectUtils,
 		};
-		const action = effectParameterSet(fakeInstance);
+		const action = effectParameterSet(fakeInstance, 'layer');
 		await (action.callback as Function)({
 			options: {
 				effectChoice: '__manual__',
-				scope: 'layer',
 				layer: String(TEST_LAYER),
 				effectIdx: '1',
 				collection: 'params',

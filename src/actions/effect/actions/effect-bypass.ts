@@ -1,15 +1,22 @@
 import {CompanionActionDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
+import {EffectScope} from '../../../domain/effects/effect-utils';
 import {parameterStates} from '../../../state';
-import {buildEffectScopeOptions, buildEffectChoiceOptions} from '../effect-action-options';
+import {buildScopedEffectOptions} from '../effect-action-options';
 
-export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
+const SCOPE_LABELS: Record<EffectScope, string> = {
+	layer: 'Layer',
+	clip: 'Clip',
+	layergroup: 'Layer Group',
+	composition: 'Composition',
+};
+
+export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope): CompanionActionDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
 	return {
-		name: 'Bypass Effect',
+		name: `Bypass Effect (${SCOPE_LABELS[scope]})`,
 		options: [
-			...buildEffectChoiceOptions(eu),
-			...buildEffectScopeOptions(),
+			...buildScopedEffectOptions(eu, scope),
 			{
 				id: 'bypass',
 				type: 'dropdown',
@@ -25,9 +32,9 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance)
 		callback: async ({options}) => {
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
-			const {scope, location, effectIdx} = await eu.parseScopeOptionsFromAction(options, resolumeArenaInstance);
-			if (!effectIdx) return;
-			const path = eu.effectBypassPath(scope, location, effectIdx);
+			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
+			if (!resolved.effectIdx) return;
+			const path = eu.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx);
 			let bypassed: boolean;
 			if (options.bypass === 'toggle') {
 				bypassed = !parameterStates.get()[path]?.value;

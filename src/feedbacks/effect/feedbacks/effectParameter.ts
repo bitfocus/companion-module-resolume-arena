@@ -1,15 +1,22 @@
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index';
-import {buildEffectChoiceOptions, buildEffectScopeOptions} from '../../../actions/effect/effect-action-options';
+import {EffectScope} from '../../../domain/effects/effect-utils';
+import {buildScopedEffectOptions} from '../../../actions/effect/effect-action-options';
 
-export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
+const SCOPE_LABELS: Record<EffectScope, string> = {
+	layer: 'Layer',
+	clip: 'Clip',
+	layergroup: 'Layer Group',
+	composition: 'Composition',
+};
+
+export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstance, scope: EffectScope): CompanionFeedbackDefinition {
 	const eu = resolumeArenaInstance.getEffectUtils();
 	return {
 		type: 'advanced',
-		name: 'Effect Parameter Value',
+		name: `Effect Parameter Value (${SCOPE_LABELS[scope]})`,
 		options: [
-			...buildEffectChoiceOptions(eu),
-			...buildEffectScopeOptions(),
+			...buildScopedEffectOptions(eu, scope),
 			{
 				id: 'collection',
 				type: 'dropdown',
@@ -29,8 +36,8 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 				useVariables: true,
 			},
 		],
-		callback: eu.effectParameterFeedbackCallback.bind(eu),
-		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu),
-		unsubscribe: eu.effectParameterFeedbackUnsubscribe.bind(eu),
+		callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
+		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),
+		unsubscribe: eu.effectParameterFeedbackUnsubscribe.bind(eu, scope),
 	};
 }

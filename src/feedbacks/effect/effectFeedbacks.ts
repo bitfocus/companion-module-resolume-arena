@@ -5,7 +5,13 @@ import {effectParameter} from './feedbacks/effectParameter';
 
 export function getEffectApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {
-		effectBypassed: effectBypassed(resolumeArenaInstance),
-		effectParameter: effectParameter(resolumeArenaInstance),
+		effectBypassedLayer: effectBypassed(resolumeArenaInstance, 'layer'),
+		effectBypassedClip: effectBypassed(resolumeArenaInstance, 'clip'),
+		effectBypassedGroup: effectBypassed(resolumeArenaInstance, 'layergroup'),
+		effectBypassedComposition: effectBypassed(resolumeArenaInstance, 'composition'),
+		effectParameterLayer: effectParameter(resolumeArenaInstance, 'layer'),
+		effectParameterClip: effectParameter(resolumeArenaInstance, 'clip'),
+		effectParameterGroup: effectParameter(resolumeArenaInstance, 'layergroup'),
+		effectParameterComposition: effectParameter(resolumeArenaInstance, 'composition'),
 	};
 }
