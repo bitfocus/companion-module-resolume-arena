@@ -1,1 +1,2 @@
 sed -e '/INSERT_HELP/{r ./companion/HELP.md' -e 'd' -e '}' README.tpl > README.md
+yarn build
