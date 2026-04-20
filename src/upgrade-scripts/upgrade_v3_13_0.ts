@@ -16,6 +16,10 @@ export function upgrade_v3_13_0(
 			action.actionId = 'oscCustomCommand';
 			updatedActions.push(action);
 		}
+		if (action.actionId === 'connectColumn' && action.options['lookupMode'] === undefined) {
+			action.options['lookupMode'] = 'byIndex';
+			updatedActions.push(action);
+		}
 	}
 
 	return {
