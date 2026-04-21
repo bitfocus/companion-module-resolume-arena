@@ -183,10 +183,10 @@ describe('ClipUtils — ws_layer_N_elapsed timecode format', () => {
 // ── ws-variables definitions ──────────────────────────────────────────────────
 
 describe('getAllWsVariables', () => {
-	it('returns 6 variables per layer for 10 layers', async () => {
+	it('returns 8 variables per layer for 10 layers', async () => {
 		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
 		const vars = getAllWsVariables()
-		expect(vars).toHaveLength(60)
+		expect(vars).toHaveLength(80)
 	})
 
 	it('includes elapsed_seconds and remaining_seconds for layer 1', async () => {

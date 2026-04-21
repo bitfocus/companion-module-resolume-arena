@@ -5,6 +5,8 @@ export const WS_DEFAULT_LAYERS = 10
 export function getWsLayerVariables(layer: number): CompanionVariableDefinition[] {
 	const prefix = `ws_layer_${layer}`
 	return [
+		{ variableId: `${prefix}_active`, name: `WS Layer ${layer} / Active (1 if clip is playing, 0 if not)` },
+		{ variableId: `${prefix}_connected_column`, name: `WS Layer ${layer} / Connected Column (0 if none)` },
 		{ variableId: `${prefix}_elapsed`, name: `WS Layer ${layer} / Elapsed Time` },
 		{ variableId: `${prefix}_elapsed_seconds`, name: `WS Layer ${layer} / Elapsed (seconds)` },
 		{ variableId: `${prefix}_duration`, name: `WS Layer ${layer} / Duration` },

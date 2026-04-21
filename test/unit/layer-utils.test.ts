@@ -97,6 +97,54 @@ describe('LayerUtils — bypass subscribe / unsubscribe', () => {
 	})
 })
 
+describe('LayerUtils.updateActiveLayers — variable emission', () => {
+	it('emits ws_layer_X_active=0 and ws_layer_X_connected_column=0 when no clip is connected', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [{}] }, { clips: [{}] }] } as any)
+		parameterStates.set({})
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layer_1_active: '0',
+			ws_layer_1_connected_column: '0',
+			ws_layer_2_active: '0',
+			ws_layer_2_connected_column: '0',
+		}))
+	})
+
+	it('emits ws_layer_X_active=1 and connected column index when clip is connected', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [{}, {}] }] } as any)
+		parameterStates.set({ '/composition/layers/1/clips/2/connect': { value: 'Connected' } } as any)
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layer_1_active: '1',
+			ws_layer_1_connected_column: '2',
+		}))
+	})
+
+	it('emits ws_layer_X_active=1 for "Connected & previewing" state', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [{}] }] } as any)
+		parameterStates.set({ '/composition/layers/1/clips/1/connect': { value: 'Connected & previewing' } } as any)
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layer_1_active: '1',
+			ws_layer_1_connected_column: '1',
+		}))
+	})
+
+	it('does not call setVariableValues when composition state is undefined', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set(undefined)
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).not.toHaveBeenCalled()
+	})
+})
+
 describe('LayerUtils.layerActiveFeedbackCallback', () => {
 	it('returns false when layer has no active clip', async () => {
 		const mod = makeMockModule()

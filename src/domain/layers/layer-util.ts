@@ -98,6 +98,16 @@ export class LayerUtils implements MessageSubscriber {
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerActive');
 			this.resolumeArenaInstance.checkFeedbacks('layerTransportPosition');
+
+			const varUpdates: Record<string, string> = {}
+			for (const [layerIndex, _layerObject] of layersObject.entries()) {
+				const layer = layerIndex + 1;
+				const prefix = `ws_layer_${layer}`;
+				const col = this.activeLayers.get(layer) ?? 0;
+				varUpdates[`${prefix}_active`] = col > 0 ? '1' : '0';
+				varUpdates[`${prefix}_connected_column`] = String(col);
+			}
+			this.resolumeArenaInstance.setVariableValues(varUpdates);
 		}
 	}
 
