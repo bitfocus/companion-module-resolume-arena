@@ -1,3 +1,4 @@
+import {evaluateExpression} from '../../util/expression';
 import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
@@ -97,7 +98,7 @@ export class ColumnUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
 		if (column !== undefined) {
 			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string | undefined;
 			return {text: text?.replace('#', column.toString())};
@@ -110,7 +111,7 @@ export class ColumnUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/select']?.value;
 		}
@@ -193,7 +194,7 @@ export class ColumnUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async columnConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/connect']?.value === 'Connected';
 		}

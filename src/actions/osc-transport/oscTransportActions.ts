@@ -16,15 +16,8 @@ export function getOscTransportActions(
 ): CompanionActionDefinitions {
 	const oscApi = () => resolumeArenaModuleInstance.getOscApi()
 	const oscState = () => resolumeArenaModuleInstance.getOscState()
-	const parse = (s: string) => resolumeArenaModuleInstance.parseVariablesInString(s)
-	const parseIntParam = async (s: string): Promise<number | undefined> => {
-		const n = parseInt(await parse(s), 10)
-		return isNaN(n) ? undefined : n
-	}
-	const parseFloatParam = async (s: string): Promise<number | undefined> => {
-		const n = parseFloat(await parse(s))
-		return isNaN(n) ? undefined : n
-	}
+	const parseIntParam = (s: string) => resolumeArenaModuleInstance.resolveInt(s)
+	const parseFloatParam = (s: string) => resolumeArenaModuleInstance.resolveNumber(s)
 
 	// ─── Shared option builders ───
 
@@ -1298,8 +1291,8 @@ export function getOscTransportActions(
 				},
 			],
 			callback: async ({options}: {options: Record<string, any>}) => {
-				const path = await parse(options.customPath);
-				const value = await parse(options.customValue);
+				const path = await resolumeArenaModuleInstance.parseVariablesInString(options.customPath);
+				const value = await resolumeArenaModuleInstance.parseVariablesInString(options.customValue);
 				oscApi()?.customOsc(path, options.oscType, value, options.relativeType);
 			},
 		},

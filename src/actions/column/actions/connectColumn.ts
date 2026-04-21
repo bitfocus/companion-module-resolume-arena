@@ -93,7 +93,7 @@ export function connectColumn(
 					}
 				} else {
 					const action = options.action;
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					const value = (await resolumeArenaModuleInstance.resolveInt(options.value)) ?? 0;
 					if (action == undefined) {
 						return;
 					}

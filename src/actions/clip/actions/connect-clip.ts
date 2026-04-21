@@ -17,8 +17,8 @@ export function connectClip(
 		callback: async ({options}: {options: any}): Promise<void> => {
 			let rest = restApi();
 			let websocket = websocketApi();
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const column = +await resolumeArenaModuleInstance.parseVariablesInString(options.column);
+			const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
+			const column = (await resolumeArenaModuleInstance.resolveInt(options.column)) ?? 0;
 			if (rest) {
 				await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/connect`, true)
 				await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/connect`, false)

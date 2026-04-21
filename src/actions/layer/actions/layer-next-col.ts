@@ -22,7 +22,7 @@ export function layerNextCol(
 			}
 		],
 		callback: async ({options}: {options: any}) => {
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
 			oscApi()?.layerNextCol(layer);
 		},
 	};

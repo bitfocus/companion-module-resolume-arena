@@ -44,7 +44,7 @@ export function compositionMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+                const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0)/100;
 				const currentValue: number = +parameterStates.get()['/composition/master']?.value;
 				let value: number | undefined;
 				switch (options.action) {

@@ -44,6 +44,8 @@ function makeInstance(...results: string[]) {
 	return {
 		log: vi.fn(),
 		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 	} as any
 }
 
@@ -187,6 +189,8 @@ describe('layerGroupSpeedChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('50'),
+			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupSpeedChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -214,6 +218,8 @@ describe('layerGroupVolumeChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('-12'),
+			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),
@@ -237,6 +243,8 @@ describe('layerGroupVolumeChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('6'),
+			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),

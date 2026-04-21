@@ -48,11 +48,11 @@ export function layerTransitionDurationChange(
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+				const layer = (await resolumeArenaInstance.resolveInt(options.layer)) ?? 0;
 				const layerFromState = theLayerUtils.getLayerFromCompositionState(layer);
 				const layerTransitionDurationId = layerFromState?.transition?.duration?.id + '';
 
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0);
 				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).transition?.duration?.value;
 
 				if (currentValue !== undefined) {

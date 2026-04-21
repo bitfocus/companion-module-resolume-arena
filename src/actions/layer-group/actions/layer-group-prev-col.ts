@@ -31,8 +31,8 @@ export function layerGroupPrevCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const lastColumn = +await resolumeArenaModuleInstance.parseVariablesInString(options.lastColumn);
+			const layerGroup = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
+			const lastColumn = (await resolumeArenaModuleInstance.resolveInt(options.lastColumn)) ?? 0;
 			oscApi()?.groupPrevCol(layerGroup, lastColumn);
 		},
 	};

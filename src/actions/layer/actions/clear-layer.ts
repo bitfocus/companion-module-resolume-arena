@@ -16,7 +16,7 @@ export function clearLayer(
 		options: [...getLayerOption()],
 		callback: async ({options}: {options: any}) => {
 			let rest = restApi();
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
 			if (rest) {
 				websocketApi()?.triggerPath('/composition/layers/' + layer + '/clear');
 			} else {

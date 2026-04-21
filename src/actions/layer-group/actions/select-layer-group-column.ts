@@ -50,8 +50,8 @@ export function selectLayerGroupColumn(
 				const action = options.action;
 				if (action != undefined) {
 					let column: number | undefined;
-					const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layerGroup);
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					const layerGroup = (await resolumeArenaModuleInstance.resolveInt(options.layerGroup)) ?? 0;
+					const value = (await resolumeArenaModuleInstance.resolveInt(options.value)) ?? 0;
 					switch (options.action) {
 						case 'set':
 							column = value;

@@ -18,7 +18,7 @@ export function selectLayer(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
 				thewebsocketApi?.triggerPath('/composition/layers/' + layer + '/select');
 			}
 		},

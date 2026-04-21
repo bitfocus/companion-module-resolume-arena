@@ -46,8 +46,8 @@ export function layerGroupSpeedChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+				const layerGroup = (await resolumeArenaInstance.resolveInt(options.layer)) ?? 0;
+				const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0)/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 				let value: number | undefined;
 				switch (options.action) {

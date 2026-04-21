@@ -31,7 +31,7 @@ export function layerGroupNextCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layerGroup = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
 			oscApi()?.layerGroupNextCol(layerGroup, options.lastColumn);
 		},
 	};

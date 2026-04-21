@@ -19,6 +19,8 @@ function makeInstance(...results: string[]) {
 	return {
 		log: vi.fn(),
 		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
+		resolveInt: vi.fn().mockImplementation(() => { const s = results[idx++] ?? '1'; const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation(() => { const s = results[idx++] ?? '0'; const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 	} as any
 }
 
@@ -97,7 +99,7 @@ describe('connectLayerGroupColumn', () => {
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
 
-	it('options.value is resolved through parseVariablesInString (#143)', async () => {
+	it('options.value expression is resolved to a number (#143)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
 		const instance = makeInstance('1', '5')
@@ -172,6 +174,8 @@ describe('clipSpeedChange — REST path', () => {
 				.mockResolvedValueOnce('50')  // value
 				.mockResolvedValueOnce('1')   // layer
 				.mockResolvedValueOnce('2'),  // column
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipSpeedChange(
 			() => restApi as any,
@@ -194,6 +198,8 @@ describe('clipSpeedChange — OSC path', () => {
 				.mockResolvedValueOnce('100')
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('2'),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipSpeedChange(
 			() => null,
@@ -214,6 +220,8 @@ describe('clipSpeedChange — OSC path', () => {
 				.mockResolvedValueOnce('10')
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('2'),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipSpeedChange(
 			() => null,
@@ -247,6 +255,8 @@ describe('clipVolumeChange — REST path', () => {
 				.mockResolvedValueOnce('-12') // value
 				.mockResolvedValueOnce('1')   // layer
 				.mockResolvedValueOnce('1'),  // column
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipVolumeChange(
 			() => restApi as any,
@@ -269,6 +279,8 @@ describe('clipVolumeChange — REST path', () => {
 				.mockResolvedValueOnce('-12')
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('1'),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipVolumeChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
@@ -297,6 +309,8 @@ describe('clipOpacityChange — REST path', () => {
 				.mockResolvedValueOnce('80') // value
 				.mockResolvedValueOnce('1')  // layer
 				.mockResolvedValueOnce('1'), // column
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -326,6 +340,8 @@ describe('clipOpacityChange — REST path', () => {
 				.mockResolvedValueOnce('20') // value
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('2'),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -357,6 +373,8 @@ describe('clipOpacityChange — REST path', () => {
 				.mockResolvedValueOnce('50')
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('1'),
+		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
+		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipOpacityChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })

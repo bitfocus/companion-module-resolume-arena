@@ -41,7 +41,7 @@ export function soloLayer(
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
 				let solo;
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
 				if (options.solo == 'toggle') {
 					solo = !parameterStates.get()['/composition/layers/' + layer + '/solo']?.value;
 				} else {
