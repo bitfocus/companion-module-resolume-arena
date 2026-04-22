@@ -23,6 +23,7 @@ export class LayerUtils implements MessageSubscriber {
 	private layerTransitionDurationIds: Set<number> = new Set<number>();
 	private layerVolumeIds: Set<number> = new Set<number>();
 	private layerOpacityIds: Set<number> = new Set<number>();
+	private lastKnownLayerCount: number = 0;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -98,6 +99,11 @@ export class LayerUtils implements MessageSubscriber {
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerActive');
 			this.resolumeArenaInstance.checkFeedbacks('layerTransportPosition');
+
+			if (layersObject.length !== this.lastKnownLayerCount) {
+				this.lastKnownLayerCount = layersObject.length;
+				this.resolumeArenaInstance.setupVariables();
+			}
 
 			const varUpdates: Record<string, string> = {}
 			for (const [layerIndex, _layerObject] of layersObject.entries()) {

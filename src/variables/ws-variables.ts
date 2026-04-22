@@ -1,4 +1,5 @@
 import {CompanionVariableDefinition} from '@companion-module/base'
+import {compositionState} from '../state'
 
 export const WS_DEFAULT_LAYERS = 10
 export const WS_DEFAULT_LAYER_GROUPS = 5
@@ -26,11 +27,14 @@ export function getWsLayerVariables(layer: number): CompanionVariableDefinition[
 }
 
 export function getAllWsVariables(): CompanionVariableDefinition[] {
+	const state = compositionState.get()
+	const layerCount = state?.layers?.length ?? WS_DEFAULT_LAYERS
+	const groupCount = state?.layergroups?.length ?? WS_DEFAULT_LAYER_GROUPS
 	const variables: CompanionVariableDefinition[] = []
-	for (let l = 1; l <= WS_DEFAULT_LAYERS; l++) {
+	for (let l = 1; l <= layerCount; l++) {
 		variables.push(...getWsLayerVariables(l))
 	}
-	for (let g = 1; g <= WS_DEFAULT_LAYER_GROUPS; g++) {
+	for (let g = 1; g <= groupCount; g++) {
 		variables.push(...getWsLayerGroupVariables(g))
 	}
 	return variables

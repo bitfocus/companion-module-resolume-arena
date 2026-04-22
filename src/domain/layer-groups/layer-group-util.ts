@@ -14,6 +14,7 @@ export class LayerGroupUtils implements MessageSubscriber {
 	private layerGroupSoloSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private activeLayerGroups: Set<number> = new Set<number>();
+	private lastKnownGroupCount: number = 0;
 
 	private layerGroupSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
@@ -180,6 +181,11 @@ export class LayerGroupUtils implements MessageSubscriber {
 				}
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupActive');
+
+			if (layerGroupsObject.length !== this.lastKnownGroupCount) {
+				this.lastKnownGroupCount = layerGroupsObject.length;
+				this.resolumeArenaInstance.setupVariables();
+			}
 
 			const varUpdates: Record<string, string> = {}
 			for (const [layerGroupIndex] of layerGroupsObject.entries()) {

@@ -12,6 +12,7 @@ function makeMockModule() {
 	const instance = {
 		checkFeedbacks: vi.fn(),
 		setVariableValues: vi.fn(),
+		setupVariables: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		_wsApi: wsApi,
