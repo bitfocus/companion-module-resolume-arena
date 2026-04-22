@@ -22,8 +22,6 @@ function makeMockInstance({
 	const instance = {
 		getOscState: vi.fn().mockReturnValue(oscState),
 		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		_oscState: oscState,
 	}
 	return instance as any

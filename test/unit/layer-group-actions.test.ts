@@ -22,8 +22,6 @@ function makeInstance(parseResult = '1') {
 	return {
 		log: vi.fn(),
 		parseVariablesInString: vi.fn().mockResolvedValue(parseResult),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 	} as any
 }
 
@@ -194,8 +192,6 @@ describe('layerGroupMasterChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')  // layer
 				.mockResolvedValueOnce('50'), // value
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupMasterChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -207,13 +203,9 @@ describe('layerGroupMasterChange', () => {
 		parameterStates.set({ '/composition/groups/1/master': { value: 0.5 } } as any)
 		const instance = {
 			log: vi.fn(),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('20'),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupMasterChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'add', value: '20' } })
@@ -244,8 +236,6 @@ describe('layerGroupOpacityChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('80'),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupOpacityChange(
 			() => ({} as any),
@@ -282,8 +272,6 @@ describe('layerGroupOpacityChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('50'),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupOpacityChange(
 			() => ({} as any),
@@ -311,8 +299,6 @@ describe('layerGroupVolumeChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('-6'),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),
@@ -335,8 +321,6 @@ describe('layerGroupVolumeChange', () => {
 			parseVariablesInString: vi.fn()
 				.mockResolvedValueOnce('1')
 				.mockResolvedValueOnce('-6'),
-			resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-			resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),

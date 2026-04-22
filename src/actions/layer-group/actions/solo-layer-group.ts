@@ -9,7 +9,7 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 export function soloLayerGroup(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
-	_oscApi: () => (ArenaOscApi | null), resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_oscApi: () => (ArenaOscApi | null), _resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Solo Layer Group',
@@ -41,7 +41,7 @@ export function soloLayerGroup(
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
 				let solo;
-				const layerGroup = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
+				const layerGroup = +(options.layer);
 				if (options.solo == 'toggle') {
 					solo = !parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 				} else {

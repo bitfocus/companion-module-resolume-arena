@@ -10,7 +10,7 @@ export function layerGroupSpeedChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
-	resolumeArenaInstance: ResolumeArenaModuleInstance
+	_resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Group Speed Change',
@@ -46,8 +46,8 @@ export function layerGroupSpeedChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layerGroup = (await resolumeArenaInstance.resolveInt(options.layer)) ?? 0;
-				const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0)/100;
+				const layerGroup = +(options.layer);
+				const inputValue: number = +(options.value)/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 				let value: number | undefined;
 				switch (options.action) {

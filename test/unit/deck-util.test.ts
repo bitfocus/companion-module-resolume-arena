@@ -13,8 +13,6 @@ function makeMockModule() {
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		_wsApi: wsApi,
 	}
 	return instance as any

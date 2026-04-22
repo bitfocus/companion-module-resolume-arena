@@ -1,8 +1,6 @@
 import ArenaOscApi from './arena-api/osc'
 import ArenaRestApi from './arena-api/rest'
 import { configFields, ResolumeArenaConfig } from './config-fields'
-import { resolveExpression, resolveNumber, resolveInt } from './util/expression'
-
 import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from '@companion-module/base'
 import { getActions } from './actions'
 import { getApiFeedbacks } from './api-feedback'
@@ -106,18 +104,6 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	registerOscVariables(): void {
 		this.setupVariables()
 		this.setupPresets()
-	}
-
-	async resolveExpression(input: string): Promise<string> {
-		return resolveExpression(input, (s) => this.parseVariablesInString(s))
-	}
-
-	async resolveNumber(input: string): Promise<number | undefined> {
-		return resolveNumber(input, (s) => this.parseVariablesInString(s))
-	}
-
-	async resolveInt(input: string): Promise<number | undefined> {
-		return resolveInt(input, (s) => this.parseVariablesInString(s))
 	}
 
 	async configUpdated(config: ResolumeArenaConfig): Promise<void> {

@@ -70,7 +70,7 @@ export function getOscTransportFeedbacks(
 				const oscState = resolumeArenaInstance.getOscState();
 				if (!oscState) return {};
 
-				const layer = (await resolumeArenaInstance.resolveInt(feedback.options.layer)) ?? 0;
+				const layer = +(feedback.options.layer as string);
 				const remaining = oscState.getLayerRemainingSeconds(layer);
 				const duration = oscState.getLayerDurationSeconds(layer);
 				const progress = oscState.getLayerProgress(layer);
@@ -80,8 +80,8 @@ export function getOscTransportFeedbacks(
 				}
 
 				// Determine bar color: green → orange → red
-				const orangeThreshold = (await resolumeArenaInstance.resolveNumber(String(feedback.options.orangeSeconds ?? '30'))) ?? 30
-				const redThreshold = (await resolumeArenaInstance.resolveNumber(String(feedback.options.redSeconds ?? '10'))) ?? 10
+				const orangeThreshold = +(feedback.options.orangeSeconds ?? 30)
+				const redThreshold = +(feedback.options.redSeconds ?? 10)
 
 				let barColor: number
 				if (remaining <= redThreshold) {
@@ -147,7 +147,7 @@ export function getOscTransportFeedbacks(
 				const oscState = resolumeArenaInstance.getOscState();
 				if (!oscState) return {};
 
-				const column = (await resolumeArenaInstance.resolveInt(feedback.options.column)) ?? 0;
+				const column = +(feedback.options.column as string);
 				if (oscState.activeColumn === column) {
 					return { bgcolor: feedback.options.bg_active, color: feedback.options.text_active };
 				}

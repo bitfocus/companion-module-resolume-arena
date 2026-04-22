@@ -14,14 +14,8 @@ function makeOscApi() {
 	return { customOsc: vi.fn() }
 }
 
-function makeInstance(...results: string[]) {
-	let idx = 0
-	return {
-		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
-		resolveInt: vi.fn().mockImplementation(() => { const s = results[idx++] ?? '1'; const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation(() => { const s = results[idx++] ?? '0'; const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-	} as any
+function makeInstance() {
+	return { log: vi.fn() } as any
 }
 
 beforeEach(() => {
@@ -35,7 +29,7 @@ describe('connectLayerGroupColumn', () => {
 	it('action=set triggers column connect path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('1', '3')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -54,7 +48,7 @@ describe('connectLayerGroupColumn', () => {
 			calculateNextConnectedLayerGroupColumn: vi.fn().mockReturnValue(4),
 			calculatePreviousConnectedLayerGroupColumn: vi.fn(),
 		}
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -87,7 +81,7 @@ describe('connectLayerGroupColumn', () => {
 			calculateNextConnectedLayerGroupColumn: vi.fn().mockReturnValue(undefined),
 			calculatePreviousConnectedLayerGroupColumn: vi.fn(),
 		}
-		const instance = makeInstance('1', '1')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -99,18 +93,17 @@ describe('connectLayerGroupColumn', () => {
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
 
-	it('options.value expression is resolved to a number (#143)', async () => {
+	it('options.value is used directly as Companion pre-resolves variables (#143)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('1', '5')
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
 			() => null,
 			() => lgu as any,
-			instance
+			makeInstance()
 		)
-		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '$(var:foo)' } })
+		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '5' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', false)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', true)
 	})
@@ -122,7 +115,7 @@ describe('selectLayerGroupColumn', () => {
 	it('action=set triggers select path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextSelectedLayerGroupColumn: vi.fn(), calculatePreviousSelectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('2', '2')
+		const instance = makeInstance()
 		const action = selectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -141,7 +134,7 @@ describe('selectLayerGroupColumn', () => {
 			calculateNextSelectedLayerGroupColumn: vi.fn(),
 			calculatePreviousSelectedLayerGroupColumn: vi.fn().mockReturnValue(2),
 		}
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = selectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -169,13 +162,9 @@ describe('clipSpeedChange — REST path', () => {
 			},
 		}
 		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')  // value
+			log: vi.fn()
 				.mockResolvedValueOnce('1')   // layer
 				.mockResolvedValueOnce('2'),  // column
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipSpeedChange(
 			() => restApi as any,
@@ -192,15 +181,7 @@ describe('clipSpeedChange — REST path', () => {
 describe('clipSpeedChange — OSC path', () => {
 	it('set via OSC calls customOsc', async () => {
 		const osc = makeOscApi()
-		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('100')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		} as any
+		const instance = { log: vi.fn() } as any
 		const action = clipSpeedChange(
 			() => null,
 			() => null,
@@ -214,15 +195,7 @@ describe('clipSpeedChange — OSC path', () => {
 
 	it('add via OSC logs warning', async () => {
 		const osc = makeOscApi()
-		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('10')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		} as any
+		const instance = { log: vi.fn() } as any
 		const action = clipSpeedChange(
 			() => null,
 			() => null,
@@ -250,13 +223,10 @@ describe('clipVolumeChange — REST path', () => {
 			},
 		}
 		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
+			log: vi.fn()
 				.mockResolvedValueOnce('-12') // value
 				.mockResolvedValueOnce('1')   // layer
 				.mockResolvedValueOnce('1'),  // column
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipVolumeChange(
 			() => restApi as any,
@@ -273,15 +243,7 @@ describe('clipVolumeChange — REST path', () => {
 		const ws = makeWsApi()
 		const clipUtils = { getClipFromCompositionState: vi.fn().mockReturnValue(undefined) }
 		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ audio: { volume: { value: -6 } } }) } }
-		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('-12')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('1'),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		} as any
+		const instance = { log: vi.fn() } as any
 		const action = clipVolumeChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
 		expect(ws.subscribeParam).not.toHaveBeenCalled()
@@ -304,13 +266,10 @@ describe('clipOpacityChange — REST path', () => {
 			},
 		}
 		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
+			log: vi.fn()
 				.mockResolvedValueOnce('80') // value
 				.mockResolvedValueOnce('1')  // layer
 				.mockResolvedValueOnce('1'), // column
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -334,15 +293,7 @@ describe('clipOpacityChange — REST path', () => {
 				getStatus: vi.fn().mockResolvedValue({ video: { opacity: { value: 0.5 } } }),
 			},
 		}
-		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('20') // value
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		} as any
+		const instance = { log: vi.fn() } as any
 		const action = clipOpacityChange(
 			() => restApi as any,
 			() => ws as any,
@@ -357,7 +308,7 @@ describe('clipOpacityChange — REST path', () => {
 
 	it('does nothing when restApi is null', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1', '1', '1')
+		const instance = makeInstance()
 		const action = clipOpacityChange(() => null, () => ws as any, () => null, () => null, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
@@ -367,15 +318,7 @@ describe('clipOpacityChange — REST path', () => {
 		const ws = makeWsApi()
 		const clipUtils = { getClipFromCompositionState: vi.fn().mockReturnValue(undefined) }
 		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ video: { opacity: { value: 0.5 } } }) } }
-		const instance = {
-			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('1'),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		} as any
+		const instance = { log: vi.fn() } as any
 		const action = clipOpacityChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })
 		expect(ws.subscribeParam).not.toHaveBeenCalled()

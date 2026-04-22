@@ -44,7 +44,7 @@ export function compositionVolumeChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0);
+				const inputValue: number = +(options.value);
 				const currentValue: number = +parameterStates.get()['/composition/audio/volume']?.value;
 				let value: number | undefined;
 				switch (options.action) {

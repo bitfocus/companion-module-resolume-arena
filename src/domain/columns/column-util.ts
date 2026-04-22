@@ -1,4 +1,3 @@
-import {evaluateExpression} from '../../util/expression';
 import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {compositionState, parameterStates} from '../../state';
@@ -97,8 +96,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// NAME
 	/////////////////////////////////////////////////
 
-	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
+	async columnNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const column = +(feedback.options.column as string);
 		if (column !== undefined) {
 			let text = parameterStates.get()['/composition/columns/' + column + '/name']?.value as string | undefined;
 			return {text: text?.replace('#', column.toString())};
@@ -110,8 +109,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// SELECTED
 	/////////////////////////////////////////////////
 
-	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
+	async columnSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const column = +(feedback.options.column as string);
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/select']?.value;
 		}
@@ -193,8 +192,8 @@ export class ColumnUtils implements MessageSubscriber {
 	// CONNECTED
 	/////////////////////////////////////////////////
 
-	async columnConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const column = +(evaluateExpression(await context.parseVariablesInString(feedback.options.column as string)));
+	async columnConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const column = +(feedback.options.column as string);
 		if (column !== undefined) {
 			return parameterStates.get()['/composition/columns/' + column + '/connect']?.value === 'Connected';
 		}

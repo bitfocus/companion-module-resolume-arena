@@ -49,8 +49,8 @@ export function layerGroupVolumeChange(
 			let theApi = restApi();
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
-				const layerGroup = (await resolumeArenaInstance.resolveInt(options.layer)) ?? 0;
-				const inputValue: number = ((await resolumeArenaInstance.resolveNumber(options.value)) ?? 0);
+				const layerGroup = +(options.layer);
+				const inputValue: number = +(options.value);
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 
 				let value: number | undefined;

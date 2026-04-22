@@ -10,7 +10,7 @@ export function selectColumn(
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
 	columnUtils: () => (ColumnUtils | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Select Column',
@@ -47,7 +47,7 @@ export function selectColumn(
 			let theColumnUtils = columnUtils();
 			if (theApi && theColumnUtils) {
 				const action = options.action;
-				const value = (await resolumeArenaModuleInstance.resolveInt(options.value)) ?? 0;
+				const value = +(options.value);
 				if (action != undefined) {
 					let column: number | undefined;
 					switch (options.action) {

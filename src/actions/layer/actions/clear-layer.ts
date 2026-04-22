@@ -9,14 +9,14 @@ export function clearLayer(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Clear Layer',
 		options: [...getLayerOption()],
 		callback: async ({options}: {options: any}) => {
 			let rest = restApi();
-			const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
+			const layer = +(options.layer);
 			if (rest) {
 				websocketApi()?.triggerPath('/composition/layers/' + layer + '/clear');
 			} else {

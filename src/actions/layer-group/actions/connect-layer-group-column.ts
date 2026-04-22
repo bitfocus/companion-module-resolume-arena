@@ -11,7 +11,7 @@ export function connectLayerGroupColumn(
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
 	layerGroupUtils: () => (LayerGroupUtils | null)
-	, resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
+	, _resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
 	return {
 		name: 'Connect Layer Group Column',
 		options: [
@@ -50,8 +50,8 @@ export function connectLayerGroupColumn(
 				const action = options.action;
 				if (action != undefined) {
 					let column: number | undefined;
-					const layerGroup = (await resolumeArenaModuleInstance.resolveInt(options.layerGroup)) ?? 0;
-					const value = (await resolumeArenaModuleInstance.resolveInt(options.value)) ?? 0;
+					const layerGroup = +(options.layerGroup);
+					const value = +(options.value);
 					switch (options.action) {
 						case 'set':
 							column = value;

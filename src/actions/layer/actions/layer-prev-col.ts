@@ -6,7 +6,7 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 export function layerPrevCol(
 	_restApi: () => (ArenaRestApi | null),
 	oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Previous Column',
@@ -23,7 +23,7 @@ export function layerPrevCol(
 		],
 
 		callback: async ({options}: {options: any}) => {
-			const layer = (await resolumeArenaModuleInstance.resolveInt(options.layer)) ?? 0;
+			const layer = +(options.layer);
 			oscApi()?.layerPrevCol(layer);
 		},
 	};

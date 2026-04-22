@@ -31,8 +31,6 @@ function makeInstance(parseResults: string[] | string = '1') {
 			}
 			return Promise.resolve(parseResults as string)
 		}),
-		resolveInt: vi.fn().mockImplementation((s: string) => { const n = parseInt(s, 10); return Promise.resolve(isNaN(n) ? undefined : n) }),
-		resolveNumber: vi.fn().mockImplementation((s: string) => { const n = parseFloat(s); return Promise.resolve(isNaN(n) ? undefined : n) }),
 		restApi: null as any,
 	} as any
 }
