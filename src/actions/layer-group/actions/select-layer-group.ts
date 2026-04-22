@@ -9,7 +9,7 @@ export function selectLayerGroup(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Select Layer Group',
@@ -18,7 +18,7 @@ export function selectLayerGroup(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layerGroup = +(options.layer);
 				thewebsocketApi?.triggerPath('/composition/layergroups/' + layerGroup + '/select');
 			}
 		},

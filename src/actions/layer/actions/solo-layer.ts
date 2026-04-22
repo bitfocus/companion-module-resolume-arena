@@ -10,7 +10,7 @@ export function soloLayer(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null)
-	, resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
+	, _resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinition {
 	return {
 		name: 'Solo Layer',
 		options: [
@@ -41,7 +41,7 @@ export function soloLayer(
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
 				let solo;
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layer = +(options.layer);
 				if (options.solo == 'toggle') {
 					solo = !parameterStates.get()['/composition/layers/' + layer + '/solo']?.value;
 				} else {

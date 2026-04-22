@@ -48,8 +48,8 @@ export function layerVolumeChange(
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const layer = +(options.layer);
+				const inputValue: number = +(options.value);
 				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).audio?.volume?.value;
 
 				if (currentValue !== undefined) {

@@ -45,8 +45,8 @@ export function layerMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+				const layer = +(options.layer);
+				const inputValue: number = +(options.value) / 100;
 				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).master?.value;
 
 				if (currentValue !== undefined) {

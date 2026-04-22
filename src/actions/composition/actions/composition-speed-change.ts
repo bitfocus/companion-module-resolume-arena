@@ -45,7 +45,7 @@ export function compositionSpeedChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			let theOscApi = oscApi();
-			const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value)) / 100;
+			const inputValue: number = +(options.value) / 100;
 			if (theApi) {
 				const currentValue: number = +parameterStates.get()['/composition/speed']?.value;
 				let value: number | undefined;

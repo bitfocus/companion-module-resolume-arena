@@ -9,7 +9,7 @@ export function selectLayer(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
 	_oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Select Layer',
@@ -18,7 +18,7 @@ export function selectLayer(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layer = +(options.layer);
 				thewebsocketApi?.triggerPath('/composition/layers/' + layer + '/select');
 			}
 		},

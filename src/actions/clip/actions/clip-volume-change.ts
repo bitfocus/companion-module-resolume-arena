@@ -49,9 +49,9 @@ export function clipVolumeChange(
 			let theApi = restApi();
 			let theClipUtils = clipUtils();
 			if (theApi && theClipUtils) {
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
-				const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
+				const inputValue: number = +(options.value);
+				const layerInput = +(options.layer);
+				const columnInput = +(options.column);
 				const currentValue: number | undefined = (await theApi.Clips.getStatus(new ClipId(layerInput, columnInput))).audio?.volume.value;
 
 				if (currentValue !== undefined) {

@@ -49,9 +49,9 @@ export function clipSpeedChange(
 			let theApi = restApi();
 			let theOscApi = oscApi();
 			let theClipUtils = clipUtils();
-			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-			const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-			const column = +await resolumeArenaInstance.parseVariablesInString(options.column);
+			const inputValue: number = +(options.value) / 100;
+			const layer = +(options.layer);
+			const column = +(options.column);
 			if (theApi && theClipUtils) {
 				const clip = theClipUtils.getClipFromCompositionState(layer, column);
 				const clipSpeedId = clip?.transport?.controls?.speed?.id + '';

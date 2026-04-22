@@ -213,16 +213,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// BYPASSED
 	/////////////////////////////////////////////////
 
-	async layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupBypassedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/bypassed']?.value;
 		}
 		return false;
 	}
 
-	async layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupBypassedSubscriptions.get(layerGroup)) {
 				this.layerGroupBypassedSubscriptions.set(layerGroup, new Set());
@@ -232,8 +232,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const layerByPassedSubscription = this.layerGroupBypassedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerByPassedSubscription) {
 			layerByPassedSubscription.delete(feedback.id);
@@ -248,16 +248,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SOLO
 	/////////////////////////////////////////////////
 
-	async layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSoloFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 		}
 		return false;
 	}
 
-	async layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSoloSubscriptions.get(layerGroup)) {
 				this.layerGroupSoloSubscriptions.set(layerGroup, new Set());
@@ -267,8 +267,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const layerSoloSubscription = this.layerGroupSoloSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerSoloSubscription) {
 			layerSoloSubscription.delete(feedback.id);
@@ -283,8 +283,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// ACTIVE
 	/////////////////////////////////////////////////
 
-	async layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupActiveFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return this.activeLayerGroups.has(+layerGroup as number);
 		}
@@ -295,16 +295,16 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED
 	/////////////////////////////////////////////////
 
-	async layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/select']?.value;
 		}
 		return false;
 	}
 
-	async layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSelectedSubscriptions.get(layerGroup)) {
 				this.layerGroupSelectedSubscriptions.set(layerGroup, new Set());
@@ -314,8 +314,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const layerGroupSelectedSubscriptions = this.layerGroupSelectedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupSelectedSubscriptions) {
 			layerGroupSelectedSubscriptions.delete(feedback.id);
@@ -330,9 +330,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupColumnNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const column = +(feedback.options.column as string);
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (column !== undefined) {
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value as string;
 			if (text) {
@@ -348,9 +348,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED COLUMN
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+	async layerGroupColumnsSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
+		const column = +(feedback.options.column as string);
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/select']?.value;
 		}
@@ -361,8 +361,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupColumnSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined) {
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.selectedLayerGroupColumns.get(layerGroup) + '/name']
 				?.value.replace('#', this.selectedLayerGroupColumns.get(layerGroup)?.toString());
@@ -385,9 +385,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// NEXT SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnNextSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnNextSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const add = feedback.options.next as number;
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculateNextSelectedLayerGroupColumn(layerGroup, add);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -409,9 +409,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// PREVIOUS SELECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnPreviousSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnPreviousSelectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const subtract = feedback.options.previous as number;
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.selectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			let column = this.calculatePreviousSelectedLayerGroupColumn(layerGroup, subtract);
 			return {text: parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/name']?.value};
@@ -433,9 +433,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// CONNECTED COLUMN
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnsConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+	async layerGroupColumnsConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<boolean> {
+		const layerGroup = +(feedback.options.layerGroup as string);
+		const column = +(feedback.options.column as string);
 		if (LayerGroupColumnId.isValid(layerGroup, column)) {
 			return parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + column + '/connect']?.value === 'Connected';
 		}
@@ -446,8 +446,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// CONNECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupColumnConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined) {
 			let text = parameterStates.get()['/composition/groups/' + layerGroup + '/columns/' + this.connectedLayerGroupColumns.get(layerGroup) + '/name']
 				?.value.replace('#', this.connectedLayerGroupColumns.get(layerGroup)?.toString());
@@ -470,9 +470,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// NEXT CONNECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnNextConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnNextConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const add = feedback.options.next as number;
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			const column = this.calculateNextConnectedLayerGroupColumn(layerGroup, add);
 			if (column === undefined) return {};
@@ -500,9 +500,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// PREVIOUS CONNECTED COLUMN NAME
 	/////////////////////////////////////////////////
 
-	async layerGroupColumnPreviousConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupColumnPreviousConnectedNameFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
 		const subtract = feedback.options.previous as number;
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (this.connectedLayerGroupColumns.get(layerGroup) !== undefined && this.lastLayerGroupColumns.get(layerGroup) != undefined) {
 			const column = this.calculatePreviousConnectedLayerGroupColumn(layerGroup, subtract);
 			if (column === undefined) return {};
@@ -531,8 +531,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const master = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 		if (layerGroup !== undefined && master !== undefined) {
 			return {
@@ -544,8 +544,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	async layerGroupMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupMasterSubscriptions.get(layerGroup)) {
 				this.layerGroupMasterSubscriptions.set(layerGroup, new Set());
@@ -555,8 +555,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const layerGroupMasterSubscription = this.layerGroupMasterSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupMasterSubscription) {
 			layerGroupMasterSubscription.delete(feedback.id);
@@ -572,8 +572,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Volume
 	/////////////////////////////////////////////////
 
-	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const volume = parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
@@ -585,8 +585,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	async layerGroupVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupVolumeSubscriptions.get(layerGroup)) {
 				this.layerGroupVolumeSubscriptions.set(layerGroup, new Set());
@@ -595,8 +595,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+	async layerGroupVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layer = +(feedback.options.layer as string);
 		const layerGroupVolumeSubscription = this.layerGroupVolumeSubscriptions.get(layer);
 		if (layer !== undefined && layerGroupVolumeSubscription) {
 			layerGroupVolumeSubscription.delete(feedback.id);
@@ -624,8 +624,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
@@ -637,8 +637,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	async layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupOpacitySubscriptions.get(layerGroup)) {
 				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
@@ -676,8 +676,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 		if (layerGroup !== undefined && speed !== undefined) {
 			return {
@@ -689,8 +689,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		return {text: '?'};
 	}
 
-	async layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupSpeedSubscriptions.get(layerGroup)) {
 				this.layerGroupSpeedSubscriptions.set(layerGroup, new Set());
@@ -700,8 +700,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 		}
 	}
 
-	async layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layerGroup = +await context.parseVariablesInString(feedback.options.layerGroup as string);
+	async layerGroupSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, _context: CompanionCommonCallbackContext) {
+		const layerGroup = +(feedback.options.layerGroup as string);
 		const layerGroupSpeedSubscription = this.layerGroupSpeedSubscriptions.get(layerGroup);
 		if (layerGroup !== undefined && layerGroupSpeedSubscription) {
 			layerGroupSpeedSubscription.delete(feedback.id);

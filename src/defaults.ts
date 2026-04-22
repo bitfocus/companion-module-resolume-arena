@@ -1,4 +1,4 @@
-import {SomeCompanionFeedbackInputField, combineRgb, Regex} from '@companion-module/base';
+import {SomeCompanionFeedbackInputField, combineRgb} from '@companion-module/base';
 
 export function getDeckOption(): SomeCompanionFeedbackInputField[] {
 	return [
@@ -8,7 +8,6 @@ export function getDeckOption(): SomeCompanionFeedbackInputField[] {
 			label: 'Deck',
 			default: '1',
 			useVariables: true,
-			regex: Regex.NUMBER
 		}
 	];
 }
@@ -21,7 +20,6 @@ export function getColumnOption(): SomeCompanionFeedbackInputField[] {
 			label: 'Column',
 			default: '1',
 			useVariables: true,
-			regex: Regex.NUMBER,
 		}
 	];
 }
@@ -34,7 +32,6 @@ export function getLayerOption(): SomeCompanionFeedbackInputField[] {
 			label: 'Layer',
 			default: '1',
 			useVariables: true,
-			regex: Regex.NUMBER
 		}
 	];
 }
@@ -54,7 +51,6 @@ export function getLayerGroupOption(): SomeCompanionFeedbackInputField[] {
 			label: 'Layer Group',
 			default: '1',
 			useVariables: true,
-			regex: Regex.NUMBER
 		}
 	];
 }

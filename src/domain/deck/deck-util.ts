@@ -66,7 +66,7 @@ export class DeckUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async deckSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
-		const deck = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.deck as string);
+		const deck = +(feedback.options.deck as string);
 		if (deck !== undefined) {
 			return parameterStates.get()['/composition/decks/' + deck + '/select']?.value;
 		}
@@ -78,7 +78,7 @@ export class DeckUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async deckNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
-		const deck = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.deck as string);
+		const deck = +(feedback.options.deck as string);
 		if (deck !== undefined) {
 			return {text: parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
 		}

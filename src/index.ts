@@ -1,7 +1,6 @@
 import ArenaOscApi from './arena-api/osc'
 import ArenaRestApi from './arena-api/rest'
 import { configFields, ResolumeArenaConfig } from './config-fields'
-
 import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from '@companion-module/base'
 import { getActions } from './actions'
 import { getApiFeedbacks } from './api-feedback'

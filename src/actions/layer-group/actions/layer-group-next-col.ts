@@ -6,7 +6,7 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 export function layerGroupNextCol(
 	_restApi: () => (ArenaRestApi | null),
 	oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Group Next Column',
@@ -31,7 +31,7 @@ export function layerGroupNextCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layerGroup = +(options.layer);
 			oscApi()?.layerGroupNextCol(layerGroup, options.lastColumn);
 		},
 	};

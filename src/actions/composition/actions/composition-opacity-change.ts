@@ -44,7 +44,7 @@ export function compositionOpacityChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+                const inputValue: number = +(options.value)/100;
 				const currentValue: number = +parameterStates.get()['/composition/video/opacity']?.value;
 				let value: number | undefined;
 				switch (options.action) {

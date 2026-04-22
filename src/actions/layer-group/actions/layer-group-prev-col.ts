@@ -6,7 +6,7 @@ import {ResolumeArenaModuleInstance} from '../../../index';
 export function layerGroupPrevCol(
 	_restApi: () => (ArenaRestApi | null),
 	oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Group Previous Column',
@@ -31,8 +31,8 @@ export function layerGroupPrevCol(
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const lastColumn = +await resolumeArenaModuleInstance.parseVariablesInString(options.lastColumn);
+			const layerGroup = +(options.layer);
+			const lastColumn = +(options.lastColumn);
 			oscApi()?.groupPrevCol(layerGroup, lastColumn);
 		},
 	};

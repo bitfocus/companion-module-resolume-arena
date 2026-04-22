@@ -41,7 +41,7 @@ export function bypassLayerGroup(
 			let theApi = restApi();
 			let theOscApi = oscApi();
 			let thewebsocketApi = websocketApi();
-			const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+			const layerGroup = +(options.layer);
 
 			if (theApi) {
 				let bypassed;

@@ -85,7 +85,7 @@ export function connectColumn(
 				let column: number | undefined;
 
 				if (options.lookupMode === 'byName') {
-					const name = await resolumeArenaModuleInstance.parseVariablesInString(options.name ?? '');
+					const name = options.name ?? '';
 					column = lookupColumnIndexByName(name);
 					if (column === undefined) {
 						resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
@@ -93,7 +93,7 @@ export function connectColumn(
 					}
 				} else {
 					const action = options.action;
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					const value = +(options.value);
 					if (action == undefined) {
 						return;
 					}

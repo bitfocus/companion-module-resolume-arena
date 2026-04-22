@@ -49,8 +49,8 @@ export function layerGroupOpacityChange(
 			let theApi = restApi();
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
-				const layerGroupInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+				const layerGroupInput = +(options.layer);
+				const inputValue: number = +(options.value) / 100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroupInput + '/video/opacity']?.value;
 
 				let value: number | undefined;
