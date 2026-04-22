@@ -183,10 +183,19 @@ describe('ClipUtils — ws_layer_N_elapsed timecode format', () => {
 // ── ws-variables definitions ──────────────────────────────────────────────────
 
 describe('getAllWsVariables', () => {
-	it('returns 6 variables per layer for 10 layers', async () => {
+	it('falls back to defaults (10 layers × 8 + 5 groups × 2) when compositionState is undefined', async () => {
+		compositionState.set(undefined)
 		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
 		const vars = getAllWsVariables()
-		expect(vars).toHaveLength(60)
+		expect(vars).toHaveLength(90) // 10 × 8 + 5 × 2
+	})
+
+	it('uses actual layer and group counts from compositionState', async () => {
+		compositionState.set({ layers: [{}, {}, {}], layergroups: [{}, {}] } as any)
+		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
+		const vars = getAllWsVariables()
+		expect(vars).toHaveLength(3 * 8 + 2 * 2) // 3 layers × 8 + 2 groups × 2
+		compositionState.set(undefined)
 	})
 
 	it('includes elapsed_seconds and remaining_seconds for layer 1', async () => {
