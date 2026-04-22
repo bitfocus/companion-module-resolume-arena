@@ -291,33 +291,36 @@ describe.skipIf(!resolume)('effect control — effectParameterSet action: increa
 // ── WS bypass toggle round-trip — clip effect ─────────────────────────────────
 
 describe.skipIf(!resolume)('effect control — WS: clip effect bypass toggle round-trip', () => {
-	let bypassPath: string;
+	let bypassId: number;
+	let bypassKey: string;
 	let originalBypassed: boolean;
 
 	beforeAll(async () => {
 		const clip = (await api.Clips.getStatus(new ClipId(TEST_LAYER, TEST_COLUMN))) as any;
 		const effects: any[] = clip?.video?.effects ?? [];
-		const idx = effects.findIndex((e: any) => e.bypassed?.id !== undefined);
-		if (idx === -1) return;
-		bypassPath = `/composition/layers/${TEST_LAYER}/clips/${TEST_COLUMN}/video/effects/${idx + 1}/bypassed`;
+		const effect = effects.find((e: any) => e.bypassed?.id !== undefined);
+		if (!effect) return;
+		bypassId = effect.bypassed.id;
+		bypassKey = '/parameter/by-id/' + bypassId;
 		parameterStates.set({});
-		ws.subscribePath(bypassPath);
-		await waitFor(() => parameterStates.get()[bypassPath] !== undefined, 3000);
-		originalBypassed = !!parameterStates.get()[bypassPath]?.value;
+		ws.subscribeParam(bypassId);
+		await waitFor(() => parameterStates.get()[bypassKey] !== undefined, 3000);
+		originalBypassed = !!parameterStates.get()[bypassKey]?.value;
 	});
 
 	afterAll(async () => {
-		if (bypassPath) {
-			await ws.setPath(bypassPath, originalBypassed);
+		if (bypassId) {
+			ws.setParam(String(bypassId), originalBypassed);
 			await pause(300);
+			ws.unsubscribeParam(bypassId);
 		}
 	});
 
 	it('toggling bypass updates parameterStates via WS', async () => {
-		if (!bypassPath) return;
+		if (!bypassId) return;
 		const toggled = !originalBypassed;
-		await ws.setPath(bypassPath, toggled);
-		await waitFor(() => parameterStates.get()[bypassPath]?.value === toggled, 3000);
-		expect(parameterStates.get()[bypassPath]?.value).toBe(toggled);
+		ws.setParam(String(bypassId), toggled);
+		await waitFor(() => !!parameterStates.get()[bypassKey]?.value === toggled, 3000);
+		expect(!!parameterStates.get()[bypassKey]?.value).toBe(toggled);
 	});
 });

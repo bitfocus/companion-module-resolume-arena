@@ -46,7 +46,7 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance,
 			parameterStates.update((state) => {
 				state[path] = {value: bypassed} as any;
 			});
-			resolumeArenaInstance.checkFeedbacks('effectBypassed');
+			eu.checkAllBypassFeedbacks();
 		},
 	};
 }

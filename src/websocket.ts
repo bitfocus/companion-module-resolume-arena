@@ -86,6 +86,13 @@ export class WebsocketInstance {
 						// console.log('state update', message);
 						compositionState.set(message);
 						this.updateNeededSubscribers(message, true);
+					} else if (message.path !== undefined) {
+						// subscribePath response — no type field, but has a path (e.g. effect bypass)
+						const parameter = message as {path: string; value: string | boolean | number};
+						parameterStates.update((state) => {
+							state[parameter.path] = parameter;
+						});
+						this.updateNeededSubscribers(message, false);
 					} else {
 						this.resolumeArenaInstance.log('warn', 'state does not contain a composition: ' + JSON.stringify(message, null, 4));
 					}
@@ -116,6 +123,9 @@ export class WebsocketInstance {
 					}
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
+						if ((message as any).id) {
+							state['/parameter/by-id/' + (message as any).id] = parameter;
+						}
 					});
 					this.updateNeededSubscribers(message, false);
 				}

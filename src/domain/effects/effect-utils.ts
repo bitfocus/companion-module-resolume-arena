@@ -64,7 +64,7 @@ export class EffectUtils implements MessageSubscriber {
 		}
 	}
 
-	private checkAllBypassFeedbacks(): void {
+	checkAllBypassFeedbacks(): void {
 		for (const id of ['effectBypassedLayer', 'effectBypassedClip', 'effectBypassedClipList', 'effectBypassedGroup', 'effectBypassedComposition']) {
 			this.resolumeArenaInstance.checkFeedbacks(id);
 		}
