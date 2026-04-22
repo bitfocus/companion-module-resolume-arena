@@ -12,3 +12,5 @@ package-lock.json
 coverage/
 
 test/integration/config.ts
+
+memory/
