@@ -180,6 +180,17 @@ export class LayerGroupUtils implements MessageSubscriber {
 				}
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupActive');
+
+			const varUpdates: Record<string, string> = {}
+			for (const [layerGroupIndex] of layerGroupsObject.entries()) {
+				const group = layerGroupIndex + 1;
+				const prefix = `ws_layergroup_${group}`;
+				const active = this.activeLayerGroups.has(group);
+				const col = this.connectedLayerGroupColumns.get(group) ?? 0;
+				varUpdates[`${prefix}_active`] = active ? '1' : '0';
+				varUpdates[`${prefix}_connected_column`] = String(col);
+			}
+			this.resolumeArenaInstance.setVariableValues(varUpdates);
 		}
 	}
 

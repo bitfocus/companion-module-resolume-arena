@@ -1,6 +1,15 @@
 import {CompanionVariableDefinition} from '@companion-module/base'
 
 export const WS_DEFAULT_LAYERS = 10
+export const WS_DEFAULT_LAYER_GROUPS = 5
+
+export function getWsLayerGroupVariables(group: number): CompanionVariableDefinition[] {
+	const prefix = `ws_layergroup_${group}`
+	return [
+		{ variableId: `${prefix}_active`, name: `WS Layer Group ${group} / Active (1 if any clip is playing, 0 if not)` },
+		{ variableId: `${prefix}_connected_column`, name: `WS Layer Group ${group} / Connected Column (0 if none)` },
+	]
+}
 
 export function getWsLayerVariables(layer: number): CompanionVariableDefinition[] {
 	const prefix = `ws_layer_${layer}`
@@ -20,6 +29,9 @@ export function getAllWsVariables(): CompanionVariableDefinition[] {
 	const variables: CompanionVariableDefinition[] = []
 	for (let l = 1; l <= WS_DEFAULT_LAYERS; l++) {
 		variables.push(...getWsLayerVariables(l))
+	}
+	for (let g = 1; g <= WS_DEFAULT_LAYER_GROUPS; g++) {
+		variables.push(...getWsLayerGroupVariables(g))
 	}
 	return variables
 }
