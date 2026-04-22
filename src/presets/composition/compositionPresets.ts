@@ -1,6 +1,7 @@
 import {CompanionPresetDefinitions} from '@companion-module/base';
 import {tapTempoPreset} from './presets/tapTempoPreset';
 import {resyncTempoPreset} from './presets/resyncTempoPreset';
+import {disconnectAllPreset} from './presets/disconnectAllPreset';
 import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100';
 import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10';
 import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10';
@@ -10,6 +11,7 @@ export function getCompositionApiPresets(category: string): CompanionPresetDefin
 	return {
 		tapTempo: tapTempoPreset(category),
 		resyncTempo: resyncTempoPreset(category),
+		disconnectAll: disconnectAllPreset(category),
 		changeCompositionSpeedSet100: changeTemplateSet100(category,'composition','Speed'),
 		changeCompositionSpeedAdd10: changeTemplateAdd10(category,'composition','Speed'),
 		changeCompositionSpeedSubtract10: changeTemplateSubtract10(category,'composition','Speed'),
