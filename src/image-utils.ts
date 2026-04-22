@@ -36,7 +36,7 @@ export function drawThumb(thumb: string): Uint8Array {
 		.scale(64, 64, ResizeMode.Fill)
 		.toBufferSync(PixelFormat.Rgb);
 
-	return new Uint8Array(out.buffer);
+	return out.buffer as Uint8Array;
 }
 
 function createColorBlock(fillColor: number, percentage: number = 0) {
