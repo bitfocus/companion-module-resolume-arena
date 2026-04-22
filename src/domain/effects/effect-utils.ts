@@ -382,19 +382,35 @@ export class EffectUtils implements MessageSubscriber {
 	// and the Companion SDK will call them as (feedback, context)
 	/////////////////////////////////////////////////
 
+	/**
+	 * Returns the canonical parameterStates key and the preferred WS mechanism for an effect's bypass.
+	 * When the bypass param ID is in compositionState, prefer subscribeParam/setParam (reliable).
+	 * Fall back to subscribePath/setPath when the ID is absent (e.g. clip effects in the WS message).
+	 */
+	resolveBypassKey(scope: EffectScope, location: EffectLocation, effectIdx: number): {key: string; paramId: number | undefined; path: string} {
+		const path = this.effectBypassPath(scope, location, effectIdx);
+		const paramId = this.getEffectBypassedParamId(scope, location, effectIdx);
+		return {key: paramId !== undefined ? '/parameter/by-id/' + paramId : path, paramId, path};
+	}
+
 	async effectBypassedFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		if (!resolved.effectIdx) return false;
-		return !!parameterStates.get()[this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx)]?.value;
+		const {key} = this.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
+		return !!parameterStates.get()[key]?.value;
 	}
 
 	async effectBypassedFeedbackSubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		if (!resolved.effectIdx) return;
-		const key = this.subscriptionKey(resolved.scope, resolved.location, resolved.effectIdx);
+		const {key, paramId, path} = this.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
 		if (!this.effectBypassedSubscriptions.has(key)) {
 			this.effectBypassedSubscriptions.set(key, new Set());
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx));
+			if (paramId !== undefined) {
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(paramId);
+			} else {
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath(path);
+			}
 		}
 		this.effectBypassedSubscriptions.get(key)!.add(feedback.id);
 	}
@@ -402,13 +418,17 @@ export class EffectUtils implements MessageSubscriber {
 	async effectBypassedFeedbackUnsubscribe(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<void> {
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		if (!resolved.effectIdx) return;
-		const key = this.subscriptionKey(resolved.scope, resolved.location, resolved.effectIdx);
+		const {key, paramId, path} = this.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
 		const subs = this.effectBypassedSubscriptions.get(key);
 		if (!subs) return;
 		subs.delete(feedback.id);
 		if (subs.size === 0) {
 			this.effectBypassedSubscriptions.delete(key);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(this.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx));
+			if (paramId !== undefined) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(paramId);
+			} else {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath(path);
+			}
 		}
 	}
 
@@ -530,7 +550,4 @@ export class EffectUtils implements MessageSubscriber {
 		return {scope, location, effectIdx};
 	}
 
-	private subscriptionKey(scope: EffectScope, location: EffectLocation, effectIdx: number): string {
-		return `${scope}:${location.layer ?? 0}:${location.column ?? 0}:${location.layerGroup ?? 0}:${effectIdx}`;
-	}
 }

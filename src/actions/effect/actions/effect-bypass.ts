@@ -35,16 +35,15 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance,
 			if (!ws) return;
 			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
 			if (!resolved.effectIdx) return;
-			const path = eu.effectBypassPath(resolved.scope, resolved.location, resolved.effectIdx);
-			let bypassed: boolean;
-			if (options.bypass === 'toggle') {
-				bypassed = !parameterStates.get()[path]?.value;
+			const {key, paramId, path} = eu.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
+			const bypassed = options.bypass === 'toggle' ? !parameterStates.get()[key]?.value : options.bypass === 'on';
+			if (paramId !== undefined) {
+				ws.setParam(String(paramId), bypassed);
 			} else {
-				bypassed = options.bypass === 'on';
+				ws.setPath(path, bypassed);
 			}
-			ws.setPath(path, bypassed);
 			parameterStates.update((state) => {
-				state[path] = {value: bypassed} as any;
+				state[key] = {value: bypassed} as any;
 			});
 			eu.checkAllBypassFeedbacks();
 		},
