@@ -6,6 +6,7 @@ import {compositionState, parameterStates} from './state.js';
 
 export interface MessageSubscriber {
 	messageUpdates(data: {path: string; value: string | boolean | number}, isComposition: boolean): void;
+	effectsUpdated?(): void;
 }
 
 export class WebsocketInstance {
@@ -85,6 +86,13 @@ export class WebsocketInstance {
 						// console.log('state update', message);
 						compositionState.set(message);
 						this.updateNeededSubscribers(message, true);
+					} else if (message.path !== undefined) {
+						// subscribePath response — no type field, but has a path (e.g. effect bypass)
+						const parameter = message as {path: string; value: string | boolean | number};
+						parameterStates.update((state) => {
+							state[parameter.path] = parameter;
+						});
+						this.updateNeededSubscribers(message, false);
 					} else {
 						this.resolumeArenaInstance.log('warn', 'state does not contain a composition: ' + JSON.stringify(message, null, 4));
 					}
@@ -92,8 +100,9 @@ export class WebsocketInstance {
 					// console.log('sources update', message.value);
 					// setSources(message.value);
 				} else if (message.type === 'effects_update') {
-					// console.log('effects update', message.value);
-					// setEffects(message.value);
+					for (const subscriber of this.resolumeArenaInstance.getWebSocketSubscribers()) {
+						subscriber.effectsUpdated?.();
+					}
 				} else if (message.type === 'thumbnail_update') {
 					// setComposition((composition: any) => {
 					// 	for (const layer of composition.layers) {
@@ -114,6 +123,9 @@ export class WebsocketInstance {
 					}
 					parameterStates.update((state) => {
 						state[parameter.path] = parameter;
+						if ((message as any).id) {
+							state['/parameter/by-id/' + (message as any).id] = parameter;
+						}
 					});
 					this.updateNeededSubscribers(message, false);
 				}

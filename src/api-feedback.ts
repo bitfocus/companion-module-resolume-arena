@@ -1,6 +1,7 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '.';
 import {getClipApiFeedbacks} from './feedbacks/clip/clipFeedbacks';
+import {getEffectApiFeedbacks} from './feedbacks/effect/effectFeedbacks';
 import {getLayerGroupApiFeedbacks} from './feedbacks/layer-group/layerGroupFeedbacks';
 import {getColumnApiFeedbacks} from './feedbacks/column/columnFeedbacks';
 import {getCompositionApiFeedbacks} from './feedbacks/composition/compositionFeedbacks';
@@ -13,6 +14,7 @@ export function getApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstan
 		...getColumnApiFeedbacks(resolumeArenaInstance),
 		...getCompositionApiFeedbacks(resolumeArenaInstance),
 		...getDeckApiFeedbacks(resolumeArenaInstance),
+		...getEffectApiFeedbacks(resolumeArenaInstance),
 		...getLayerApiFeedbacks(resolumeArenaInstance),
 		...getLayerGroupApiFeedbacks(resolumeArenaInstance),
 	};
