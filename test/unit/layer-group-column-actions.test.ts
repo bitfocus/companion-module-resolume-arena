@@ -156,16 +156,12 @@ describe('selectLayerGroupColumn', () => {
 // ── clipSpeedChange ────────────────────────────────────────────────────────────
 
 describe('clipSpeedChange — REST path', () => {
-	it('set — calls setParam with inputValue/100', async () => {
+	it('set — calls setParam with inputValue/100 without calling getStatus', async () => {
 		const ws = makeWsApi()
 		const clipUtils = {
 			getClipFromCompositionState: vi.fn().mockReturnValue({ transport: { controls: { speed: { id: 88 } } } }),
 		}
-		const restApi = {
-			Clips: {
-				getStatus: vi.fn().mockResolvedValue({ transport: { controls: { speed: { value: 1.0 } } } }),
-			},
-		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
 			parseVariablesInString: vi.fn()
@@ -182,6 +178,60 @@ describe('clipSpeedChange — REST path', () => {
 		)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '2', action: 'set' } })
 		expect(ws.setParam).toHaveBeenCalledWith('88', 0.5)
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
+	})
+
+	it('add — uses cached parameterStates value without calling getStatus', async () => {
+		const ws = makeWsApi()
+		const clipUtils = {
+			getClipFromCompositionState: vi.fn().mockReturnValue({ transport: { controls: { speed: { id: 88 } } } }),
+		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
+		parameterStates.update(s => { s['/parameter/by-id/88'] = { value: 1.0 } as any })
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('50')  // value
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('2'),
+		} as any
+		const action = clipSpeedChange(
+			() => restApi as any,
+			() => ws as any,
+			() => null,
+			() => clipUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { value: '50', layer: '1', column: '2', action: 'add' } })
+		expect(ws.setParam).toHaveBeenCalledWith('88', expect.closeTo(1.5, 5))
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
+	})
+
+	it('add — falls back to REST when parameterStates has no cached value', async () => {
+		const ws = makeWsApi()
+		const clipUtils = {
+			getClipFromCompositionState: vi.fn().mockReturnValue({ transport: { controls: { speed: { id: 88 } } } }),
+		}
+		const restApi = {
+			Clips: { getStatus: vi.fn().mockResolvedValue({ transport: { controls: { speed: { value: 1.0 } } } }) },
+		}
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('50')
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('2'),
+		} as any
+		const action = clipSpeedChange(
+			() => restApi as any,
+			() => ws as any,
+			() => null,
+			() => clipUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { value: '50', layer: '1', column: '2', action: 'add' } })
+		expect(restApi.Clips.getStatus).toHaveBeenCalledTimes(1)
+		expect(ws.setParam).toHaveBeenCalledWith('88', expect.closeTo(1.5, 5))
 	})
 })
 
@@ -231,16 +281,12 @@ describe('clipSpeedChange — OSC path', () => {
 // ── clipVolumeChange ───────────────────────────────────────────────────────────
 
 describe('clipVolumeChange — REST path', () => {
-	it('set — calls setParam with raw value', async () => {
+	it('set — calls setParam with raw value without calling getStatus', async () => {
 		const ws = makeWsApi()
 		const clipUtils = {
 			getClipFromCompositionState: vi.fn().mockReturnValue({ audio: { volume: { id: 33 } } }),
 		}
-		const restApi = {
-			Clips: {
-				getStatus: vi.fn().mockResolvedValue({ audio: { volume: { value: -6 } } }),
-			},
-		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
 			parseVariablesInString: vi.fn()
@@ -257,6 +303,33 @@ describe('clipVolumeChange — REST path', () => {
 		)
 		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
 		expect(ws.setParam).toHaveBeenCalledWith('33', -12)
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
+	})
+
+	it('add — uses cached parameterStates value without calling getStatus', async () => {
+		const ws = makeWsApi()
+		const clipUtils = {
+			getClipFromCompositionState: vi.fn().mockReturnValue({ audio: { volume: { id: 33 } } }),
+		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
+		parameterStates.update(s => { s['/parameter/by-id/33'] = { value: -6 } as any })
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('-6')
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('1'),
+		} as any
+		const action = clipVolumeChange(
+			() => restApi as any,
+			() => ws as any,
+			() => null,
+			() => clipUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { value: '-6', layer: '1', column: '1', action: 'add' } })
+		expect(ws.setParam).toHaveBeenCalledWith('33', -12)
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
 	})
 
 	it('logs warn and does not call setParam when clip has no volume id (#140)', async () => {
@@ -281,16 +354,12 @@ describe('clipVolumeChange — REST path', () => {
 // ── clipOpacityChange ──────────────────────────────────────────────────────────
 
 describe('clipOpacityChange — REST path', () => {
-	it('set — calls subscribeParam + setParam with inputValue/100', async () => {
+	it('set — calls subscribeParam + setParam with inputValue/100 without calling getStatus', async () => {
 		const ws = makeWsApi()
 		const clipUtils = {
 			getClipFromCompositionState: vi.fn().mockReturnValue({ video: { opacity: { id: 200 } } }),
 		}
-		const restApi = {
-			Clips: {
-				getStatus: vi.fn().mockResolvedValue({ video: { opacity: { value: 0.5 } } }),
-			},
-		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
 			parseVariablesInString: vi.fn()
@@ -308,6 +377,33 @@ describe('clipOpacityChange — REST path', () => {
 		await (action.callback as any)({ options: { value: '80', layer: '1', column: '1', action: 'set' } })
 		expect(ws.subscribeParam).toHaveBeenCalledWith(200)
 		expect(ws.setParam).toHaveBeenCalledWith('200', 0.8)
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
+	})
+
+	it('add — uses cached parameterStates value without calling getStatus', async () => {
+		const ws = makeWsApi()
+		const clipUtils = {
+			getClipFromCompositionState: vi.fn().mockReturnValue({ video: { opacity: { id: 200 } } }),
+		}
+		const restApi = { Clips: { getStatus: vi.fn() } }
+		parameterStates.update(s => { s['/parameter/by-id/200'] = { value: 0.5 } as any })
+		const instance = {
+			log: vi.fn(),
+			parseVariablesInString: vi.fn()
+				.mockResolvedValueOnce('20')
+				.mockResolvedValueOnce('1')
+				.mockResolvedValueOnce('2'),
+		} as any
+		const action = clipOpacityChange(
+			() => restApi as any,
+			() => ws as any,
+			() => null,
+			() => clipUtils as any,
+			instance
+		)
+		await (action.callback as any)({ options: { value: '20', layer: '1', column: '2', action: 'add' } })
+		expect(ws.setParam).toHaveBeenCalledWith('200', expect.closeTo(0.7, 5))
+		expect(restApi.Clips.getStatus).not.toHaveBeenCalled()
 	})
 
 	it('add — adds inputValue/100 to current opacity', async () => {
