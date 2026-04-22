@@ -8,7 +8,7 @@ export function effectBypassClipTogglePreset(category: string): CompanionButtonP
 		name: 'Toggle Effect Bypass (Clip)',
 		style: {
 			size: '14',
-			text: 'FX Bypass',
+			text: 'FX Bypass\nL1 / C1',
 			color: combineRgb(255, 255, 255),
 			bgcolor: combineRgb(0, 0, 0),
 		},

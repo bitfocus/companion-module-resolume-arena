@@ -8,7 +8,7 @@ export function effectParamClipListDecreasePreset(category: string): CompanionBu
 		name: 'Decrease Effect Parameter (Clip — from list)',
 		style: {
 			size: '14',
-			text: 'FX -',
+			text: 'FX -0.1\nClip',
 			color: combineRgb(255, 255, 255),
 			bgcolor: combineRgb(0, 0, 0),
 		},

@@ -8,7 +8,7 @@ export function effectBypassTogglePreset(category: string): CompanionButtonPrese
 		name: 'Toggle Effect Bypass (Layer)',
 		style: {
 			size: '14',
-			text: 'FX Bypass',
+			text: 'FX Bypass\nLayer 1',
 			color: combineRgb(255, 255, 255),
 			bgcolor: combineRgb(0, 0, 0),
 		},

@@ -8,7 +8,7 @@ export function effectBypassClipListTogglePreset(category: string): CompanionBut
 		name: 'Toggle Effect Bypass (Clip — from list)',
 		style: {
 			size: '14',
-			text: 'FX Bypass',
+			text: 'FX Bypass\nClip',
 			color: combineRgb(255, 255, 255),
 			bgcolor: combineRgb(0, 0, 0),
 		},

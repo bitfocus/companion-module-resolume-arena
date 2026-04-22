@@ -8,7 +8,7 @@ export function effectParamIncreasePreset(category: string): CompanionButtonPres
 		name: 'Increase Effect Parameter (Layer)',
 		style: {
 			size: '14',
-			text: 'FX +',
+			text: 'FX +0.1\nLayer 1',
 			color: combineRgb(255, 255, 255),
 			bgcolor: combineRgb(0, 0, 0),
 		},
