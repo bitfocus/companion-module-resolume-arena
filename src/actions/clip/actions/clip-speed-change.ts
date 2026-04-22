@@ -75,8 +75,8 @@ export function clipSpeedChange(
 				}
 
 				if (value !== undefined) {
-					websocketApi()?.subscribeParam(id);
-					websocketApi()?.setParam(String(id), value);
+					await websocketApi()?.subscribeParam(id);
+					await websocketApi()?.setParam(String(id), value);
 				}
 			} else {
 				switch (options.action) {
