@@ -1,6 +1,7 @@
 import {CompanionActionDefinitions} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../index';
 import {clearAllLayers} from './actions/clear-all-layers';
+import {disconnectAll} from './actions/disconnect-all';
 import {tempoTap} from './actions/tempo-tap';
 import {tempoResync} from './actions/tempo-resync';
 import {compositionMasterChange} from './actions/composition-master-change';
@@ -14,6 +15,7 @@ export function getCompositionActions(resolumeArenaModuleInstance: ResolumeArena
 	const oscApi = resolumeArenaModuleInstance.getOscApi.bind(resolumeArenaModuleInstance);
 	return {
 		clearAll: clearAllLayers(restApi, websocketApi, oscApi),
+		disconnectAll: disconnectAll(restApi, websocketApi, oscApi),
 		tempoTap: tempoTap(restApi, websocketApi, oscApi),
 		resyncTap: tempoResync(restApi, websocketApi, oscApi),
 		compositionMasterChange: compositionMasterChange(restApi, websocketApi, oscApi, resolumeArenaModuleInstance),
