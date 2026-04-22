@@ -243,7 +243,7 @@ describe('EffectUtils.buildEffectChoices — # placeholder in names', () => {
 		const labels = choices.map((c) => c.label);
 		expect(labels.some((l) => l.startsWith('Group 1'))).toBe(true);
 		expect(labels.some((l) => l.startsWith('Layer 1'))).toBe(true);
-		expect(labels.some((l) => l.includes('Clip 1'))).toBe(true);
+		expect(labels.some((l) => l.includes('Col 1'))).toBe(true);
 		// Name portion (before '–') should not contain a bare '#'
 		const nameParts = labels.map((l) => l.split('–')[0].trim());
 		expect(nameParts.some((n) => n.includes('#'))).toBe(false);

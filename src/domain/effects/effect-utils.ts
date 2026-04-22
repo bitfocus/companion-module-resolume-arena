@@ -199,8 +199,7 @@ export class EffectUtils implements MessageSubscriber {
 					(clip.video?.effects ?? []).forEach((eff, ei) => {
 						const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
 						const layerLabel = resolveName((layer.name as any)?.value, li + 1, 'Layer');
-						const clipLabel = resolveName((clip.name as any)?.value, ci + 1, 'Clip');
-						choices.push({id: `clip:${li + 1}:${ci + 1}:0:${ei + 1}`, label: `${layerLabel}/${clipLabel} – ${label} (#${ei + 1})`});
+						choices.push({id: `clip:${li + 1}:${ci + 1}:0:${ei + 1}`, label: `${layerLabel} / Col ${ci + 1} – ${label} (#${ei + 1})`});
 					});
 				});
 			}
@@ -243,10 +242,10 @@ export class EffectUtils implements MessageSubscriber {
 		const addFromEffect = (eff: VideoEffect) => {
 			const coll = eff[collection] as ParameterCollection | undefined;
 			if (!coll) return;
-			for (const name of Object.keys(coll)) {
-				if (!seen.has(name)) {
-					seen.add(name);
-					choices.push({id: name, label: name});
+			for (const [key, param] of Object.entries(coll)) {
+				if (!seen.has(key)) {
+					seen.add(key);
+					choices.push({id: key, label: (param as any).name ?? key});
 				}
 			}
 		};
