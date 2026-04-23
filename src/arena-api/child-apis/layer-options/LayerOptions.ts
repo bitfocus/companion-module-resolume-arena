@@ -1,4 +1,4 @@
-import {CommonLayerOptions, CommonLayerWriteOptions} from '../common-options/CommonLayerOptions';
+import {CommonLayerOptions, CommonLayerWriteOptions} from '../common-options/CommonLayerOptions.js';
 
 export interface LayerOptions extends CommonLayerOptions {
 	clips: Array<{connected: {value: 'Disconected' | 'Empty' | 'Connected'}}>;

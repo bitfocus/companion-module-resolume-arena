@@ -1,7 +1,7 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
 
 export class DeckUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -66,7 +66,7 @@ export class DeckUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async deckSelectedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<boolean> {
-		const deck = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.deck as string);
+		const deck = +(feedback.options.deck as string);
 		if (deck !== undefined) {
 			return parameterStates.get()['/composition/decks/' + deck + '/select']?.value;
 		}
@@ -78,7 +78,7 @@ export class DeckUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async deckNameFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
-		const deck = +await this.resolumeArenaInstance.parseVariablesInString(feedback.options.deck as string);
+		const deck = +(feedback.options.deck as string);
 		if (deck !== undefined) {
 			return {text: parameterStates.get()['/composition/decks/' + deck + '/name']?.value};
 		}

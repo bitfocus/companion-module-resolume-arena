@@ -1,5 +1,5 @@
-import {OSC_DEFAULT_LAYERS} from './variables/osc-variables'
-import type {ResolumeArenaModuleInstance} from './index'
+import {OSC_DEFAULT_LAYERS} from './variables/osc-variables.js'
+import type {ResolumeArenaModuleInstance} from './index.js'
 
 interface ClipState {
 	activeClip: number

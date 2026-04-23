@@ -1,7 +1,7 @@
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope} from '../../../domain/effects/effect-utils';
-import {buildScopedEffectOptions, buildParamNameOptions} from '../../../actions/effect/effect-action-options';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {EffectScope} from '../../../domain/effects/effect-utils.js';
+import {buildScopedEffectOptions, buildParamNameOptions} from '../../../actions/effect/effect-action-options.js';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',
@@ -21,7 +21,6 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 			...buildParamNameOptions(eu),
 		],
 		callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
-		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),
 		unsubscribe: eu.effectParameterFeedbackUnsubscribe.bind(eu, scope),
 	};
 }

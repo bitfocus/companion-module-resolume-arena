@@ -1,6 +1,6 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getDeckOption, getDefaultStyleGreen} from '../../../defaults';
+import {getDeckOption, getDefaultStyleGreen} from '../../../defaults.js';
 
 export function deckSelected(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

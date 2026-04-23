@@ -1,5 +1,5 @@
-import {ArenaFetchFunction} from '../rest';
-import {LayerOptions, LayerWriteOptions} from './layer-options/LayerOptions';
+import {ArenaFetchFunction} from '../rest.js';
+import {LayerOptions, LayerWriteOptions} from './layer-options/LayerOptions.js';
 
 export class ArenaLayersApi {
 	private arenaFetch: ArenaFetchFunction;

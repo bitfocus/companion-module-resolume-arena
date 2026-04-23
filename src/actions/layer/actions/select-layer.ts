@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function selectLayer(
 	restApi: () => (ArenaRestApi | null),
@@ -18,7 +18,7 @@ export function selectLayer(
 			let theApi = restApi();
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layer = +(options.layer);
 				thewebsocketApi?.triggerPath('/composition/layers/' + layer + '/select');
 			}
 		},

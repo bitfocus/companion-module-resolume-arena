@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getClipOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getClipOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function selectClip(
 	restApi: () => (ArenaRestApi | null),
@@ -15,18 +15,13 @@ export function selectClip(
 		name: 'Select Clip',
 		options: [...getClipOption()],
 		callback: async ({options}: {options: any}): Promise<void> => {
-			let rest = restApi();
-			let websocket = websocketApi();
-
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-			const column = +await resolumeArenaModuleInstance.parseVariablesInString(options.column);
-
-			if (rest) {
-				await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/select`, true);
-				await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/select`, false);
-			} else {
-				oscApi()?.selectClip(layer, column);
-			}
+			const rest = restApi();
+			if (!rest) return;
+			const websocket = websocketApi();
+			const layer = +(options.layer);
+			const column = +(options.column);
+			await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/select`, true);
+			await websocket?.triggerPath(`/composition/layers/${layer}/clips/${column}/select`, false);
 		}
 	};
 }

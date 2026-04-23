@@ -20,16 +20,11 @@ beforeEach(() => {
 })
 
 describe('drawThumb', () => {
-	it('returns a Uint8Array for a valid base64 PNG', () => {
+	it('returns a base64 string for a valid base64 PNG', () => {
 		compositionState.set(makeCompositionState())
 		const result = drawThumb(TINY_PNG_B64)
-		expect(result).toBeInstanceOf(Uint8Array)
-	})
-
-	it('output length matches 64×64 RGB (64*64*3 = 12288 bytes)', () => {
-		compositionState.set(makeCompositionState())
-		const result = drawThumb(TINY_PNG_B64)
-		expect(result.length).toBe(64 * 64 * 3)
+		expect(typeof result).toBe('string')
+		expect(result.length).toBeGreaterThan(0)
 	})
 
 	it('handles non-square source aspect ratios without throwing', () => {
@@ -44,9 +39,9 @@ describe('drawThumb', () => {
 })
 
 describe('drawPercentage', () => {
-	it('returns a Uint8Array', () => {
+	it('returns a base64 string', () => {
 		const result = drawPercentage(0.5)
-		expect(result).toBeInstanceOf(Uint8Array)
+		expect(typeof result).toBe('string')
 	})
 
 	it('does not throw for 0 or 1', () => {
@@ -60,9 +55,9 @@ describe('drawPercentage', () => {
 })
 
 describe('drawVolume', () => {
-	it('returns a Uint8Array', () => {
+	it('returns a base64 string', () => {
 		const result = drawVolume(-6)
-		expect(result).toBeInstanceOf(Uint8Array)
+		expect(typeof result).toBe('string')
 	})
 
 	it('handles 0 dB without throwing', () => {

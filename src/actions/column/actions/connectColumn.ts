@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ColumnUtils} from '../../../domain/columns/column-util';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {parameterStates} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ColumnUtils} from '../../../domain/columns/column-util.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {parameterStates} from '../../../state.js';
 
 function lookupColumnIndexByName(name: string): number | undefined {
 	const states = parameterStates.get();
@@ -41,82 +41,74 @@ export function connectColumn(
 					{id: 'byName', label: 'By name'},
 				],
 				default: 'byIndex',
+				// API 2.0 requires the referenced field to opt out of auto-expression mode
+				// so other fields can use isVisibleExpression against it.
+				disableAutoExpression: true,
 			},
 			{
 				id: 'action',
 				type: 'dropdown',
 				choices: [
-					{
-						id: 'add',
-						label: '+'
-					},
-					{
-						id: 'subtract',
-						label: '-'
-					},
-					{
-						id: 'set',
-						label: '='
-					}
+					{id: 'add', label: '+'},
+					{id: 'subtract', label: '-'},
+					{id: 'set', label: '='},
 				],
 				default: 'set',
 				label: 'Action',
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'name',
 				label: 'Column name',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byName',
-			}
+				isVisibleExpression: '$(options:lookupMode) == "byName"',
+			},
 		],
 		callback: async ({options}: {options: any}) => {
-			let theApi = restApi();
-			let theColumnUtils = columnUtils();
-			if (theApi && theColumnUtils) {
-				let column: number | undefined;
+			const theApi = restApi();
+			const theColumnUtils = columnUtils();
+			if (!theApi || !theColumnUtils) return;
 
-				if (options.lookupMode === 'byName') {
-					const name = await resolumeArenaModuleInstance.parseVariablesInString(options.name ?? '');
-					column = lookupColumnIndexByName(name);
-					if (column === undefined) {
-						resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
-						return;
-					}
-				} else {
-					const action = options.action;
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
-					if (action == undefined) {
-						return;
-					}
-					switch (action) {
-						case 'set':
-							column = value;
-							break;
-						case 'add':
-							column = theColumnUtils.calculateConnectedNextColumn(value);
-							break;
-						case 'subtract':
-							column = theColumnUtils.calculateConnectedPreviousColumn(value);
-							break;
-						default:
-							break;
-					}
+			let column: number | undefined;
+
+			if (options.lookupMode === 'byName') {
+				const name = String(options.name ?? '');
+				column = lookupColumnIndexByName(name);
+				if (column === undefined) {
+					resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
+					return;
 				}
-
-				if (column != undefined) {
-					websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', false);
-					websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', true);
+			} else {
+				const action = options.action;
+				const value = +(options.value);
+				if (action == undefined) return;
+				switch (action) {
+					case 'set':
+						column = value;
+						break;
+					case 'add':
+						column = theColumnUtils.calculateConnectedNextColumn(value);
+						break;
+					case 'subtract':
+						column = theColumnUtils.calculateConnectedPreviousColumn(value);
+						break;
+					default:
+						break;
 				}
 			}
-		}
+
+			if (column != undefined) {
+				websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', false);
+				websocketApi()?.triggerPath('/composition/columns/' + column + '/connect', true);
+			}
+		},
 	};
 }

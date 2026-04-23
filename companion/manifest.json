@@ -1,9 +1,11 @@
 {
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"type": "connection",
 	"id": "resolume-arena",
 	"name": "resolume-arena",
 	"shortname": "arena",
 	"description": "Resolume Arena 6 & 7 module for companion",
-	"version": "3.13.0",
+	"version": "4.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-resolume-arena.git",
 	"bugs": "https://github.com/bitfocus/companion-module-resolume-arena/issues",
@@ -19,12 +21,21 @@
 	],
 	"legacyIds": [],
 	"runtime": {
-		"type": "node18",
+		"type": "node22",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
-		"entrypoint": "../dist/index.js"
+		"entrypoint": "../dist/index.js",
+		"permissions": {
+			"native-addons": true
+		}
 	},
 	"manufacturer": "Resolume",
-	"products": ["Arena"],
-	"keywords": ["Video", "Software", "Graphics"]
+	"products": [
+		"Arena"
+	],
+	"keywords": [
+		"Video",
+		"Software",
+		"Graphics"
+	]
 }

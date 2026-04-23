@@ -43,7 +43,7 @@ export function configFields(): SomeCompanionConfigField[] {
 			min: 1,
 			max: 65536,
 			default: 8080,
-			isVisible: (config) => !!config.useRest,
+			isVisibleExpression: '!!$(options:useRest)',
 		},
 		{
 			type: 'checkbox',
@@ -51,7 +51,7 @@ export function configFields(): SomeCompanionConfigField[] {
 			label: 'Use SSL for web api calls',
 			width: 6,
 			default: false,
-			isVisible: (config) => !!config.useRest,
+			isVisibleExpression: '!!$(options:useRest)',
 		},
 		{
 			type: 'checkbox',
@@ -59,7 +59,7 @@ export function configFields(): SomeCompanionConfigField[] {
 			label: 'Hide black banners on thumbnails (might be slower)',
 			width: 6,
 			default: false,
-			isVisible: (config) => !!config.useRest,
+			isVisibleExpression: '!!$(options:useRest)',
 		},
 		{
 			type: 'static-text',
@@ -92,7 +92,7 @@ export function configFields(): SomeCompanionConfigField[] {
 			min: 1,
 			max: 65536,
 			default: 7001,
-			isVisible: (config) => !!config.useOscListener,
+			isVisibleExpression: '!!$(options:useOscListener)',
 		},
 		{
 			type: 'static-text',
@@ -101,7 +101,7 @@ export function configFields(): SomeCompanionConfigField[] {
 			value:
 				'Configure Resolume Preferences > OSC: Enable OSC Output, set output destination to this machine IP, and set port to match the Receive Port above.',
 			width: 12,
-			isVisible: (config) => !!config.useOscListener,
+			isVisibleExpression: '!!$(options:useOscListener)',
 		},
 	]
 }

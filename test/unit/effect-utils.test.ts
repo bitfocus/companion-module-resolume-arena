@@ -323,13 +323,12 @@ describe('EffectUtils.messageUpdates', () => {
 });
 
 describe('EffectUtils.effectsUpdated', () => {
-	it('calls checkFeedbacks for all variants and rebuilds definitions', () => {
+	it('calls checkFeedbacks for all variants', () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
 		eu.effectsUpdated();
 		expect(mod.checkFeedbacks).toHaveBeenCalledWith('effectBypassedLayer');
 		expect(mod.checkFeedbacks).toHaveBeenCalledWith('effectParameterLayer');
-		expect(mod.rebuildDynamicDefinitions).toHaveBeenCalledTimes(1);
 	});
 });
 

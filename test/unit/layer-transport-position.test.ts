@@ -6,7 +6,6 @@ function makeMockModule() {
 	return {
 		checkFeedbacks: vi.fn(),
 		setVariableValues: vi.fn(),
-		setupVariables: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue({
 			subscribePath: vi.fn(),

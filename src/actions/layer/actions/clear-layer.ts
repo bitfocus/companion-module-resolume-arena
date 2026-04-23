@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function clearLayer(
 	restApi: () => (ArenaRestApi | null),
@@ -15,8 +15,8 @@ export function clearLayer(
 		name: 'Clear Layer',
 		options: [...getLayerOption()],
 		callback: async ({options}: {options: any}) => {
-			let rest = restApi();
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const rest = restApi();
+			const layer = +(options.layer);
 			if (rest) {
 				websocketApi()?.triggerPath('/composition/layers/' + layer + '/clear');
 			} else {

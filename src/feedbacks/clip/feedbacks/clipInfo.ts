@@ -1,6 +1,6 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getColumnOption, getLayerOption} from '../../../defaults';
+import {getColumnOption, getLayerOption} from '../../../defaults.js';
 
 export function clipInfo(resolumeArenaInstance: ResolumeArenaModuleInstance):CompanionFeedbackDefinition{
 	return {
@@ -28,8 +28,6 @@ export function clipInfo(resolumeArenaInstance: ResolumeArenaModuleInstance):Com
 				default: false
 			}
 		],
-		callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
-		subscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackSubscribe.bind(resolumeArenaInstance.getClipUtils()!),
-		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
+		callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
 	}
 }

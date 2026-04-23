@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleRed, getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleRed, getLayerGroupOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerGroupBypassed(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
@@ -8,8 +8,6 @@ export function layerGroupBypassed(resolumeArenaInstance: ResolumeArenaModuleIns
 		name: 'Layer Group Bypassed',
 		defaultStyle: getDefaultStyleRed(),
 		options: [...getLayerGroupOption()],
-		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupBypassedFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-		subscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupBypassedFeedbackSubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupBypassedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
+		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupBypassedFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupBypassedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};
 }

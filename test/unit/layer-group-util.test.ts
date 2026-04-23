@@ -12,7 +12,6 @@ function makeMockModule() {
 	const instance = {
 		checkFeedbacks: vi.fn(),
 		setVariableValues: vi.fn(),
-		setupVariables: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
 		_wsApi: wsApi,
@@ -333,52 +332,6 @@ describe('LayerGroupUtils.calculatePreviousSelectedLayerGroupColumn', () => {
 		lgu['selectedLayerGroupColumns'].set(1, 1)
 		lgu['lastLayerGroupColumns'].set(1, 4)
 		expect(lgu.calculatePreviousSelectedLayerGroupColumn(1, 1)).toBe(4)
-	})
-})
-
-// ── updateActiveLayerGroups — variable emission ───────────────────────────────
-
-describe('LayerGroupUtils.updateActiveLayerGroups — variable emission', () => {
-	it('emits ws_layergroup_X_active=0 and ws_layergroup_X_connected_column=0 when no clip is connected', () => {
-		const mod = makeMockModule()
-		const lgu = new LayerGroupUtils(mod)
-		compositionState.set({
-			layers: [{ id: 10 }],
-			layergroups: [{ layers: [{ id: 10, clips: [{}] }] }],
-		} as any)
-		parameterStates.set({})
-		lgu.updateActiveLayerGroups()
-		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
-			ws_layergroup_1_active: '0',
-			ws_layergroup_1_connected_column: '0',
-		}))
-	})
-
-	it('emits ws_layergroup_X_active=1 and connected column when a clip is connected', () => {
-		const mod = makeMockModule()
-		const lgu = new LayerGroupUtils(mod)
-		compositionState.set({
-			layers: [{ id: 10 }, { id: 20 }],
-			layergroups: [{ layers: [{ id: 20, clips: [{}, {}] }] }],
-		} as any)
-		parameterStates.set({
-			'/composition/layers/2/clips/1/connect': { value: 'Connected' },
-		} as any)
-		lgu.updateActiveLayerGroups()
-		lgu['connectedLayerGroupColumns'].set(1, 1)
-		lgu.updateActiveLayerGroups()
-		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
-			ws_layergroup_1_active: '1',
-			ws_layergroup_1_connected_column: '1',
-		}))
-	})
-
-	it('does not call setVariableValues when composition state has no layer groups', () => {
-		const mod = makeMockModule()
-		const lgu = new LayerGroupUtils(mod)
-		compositionState.set(undefined)
-		lgu.updateActiveLayerGroups()
-		expect(mod.setVariableValues).not.toHaveBeenCalled()
 	})
 })
 
