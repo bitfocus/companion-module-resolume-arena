@@ -40,7 +40,8 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 					{id: 'toggle', label: 'Toggle — flip boolean on/off'},
 				],
 				default: 'set',
-			},
+				disableAutoExpression: true,
+			} as any,
 			{
 				id: 'valueChoice_params',
 				type: 'dropdown',
@@ -48,7 +49,8 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				choices: eu.buildValueChoicesForCollection('params'),
 				default: '__manual_value__',
 				isVisibleExpression: '$(options:mode) == "set" && $(options:collection) == "params"',
-			},
+				disableAutoExpression: true,
+			} as any,
 			{
 				id: 'valueChoice_mixer',
 				type: 'dropdown',
@@ -56,7 +58,8 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				choices: eu.buildValueChoicesForCollection('mixer'),
 				default: '__manual_value__',
 				isVisibleExpression: '$(options:mode) == "set" && $(options:collection) == "mixer"',
-			},
+				disableAutoExpression: true,
+			} as any,
 			{
 				id: 'valueChoice_effect',
 				type: 'dropdown',
@@ -64,7 +67,8 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 				choices: eu.buildValueChoicesForCollection('effect'),
 				default: '__manual_value__',
 				isVisibleExpression: '$(options:mode) == "set" && $(options:collection) == "effect"',
-			},
+				disableAutoExpression: true,
+			} as any,
 			{
 				id: 'value',
 				type: 'textinput',

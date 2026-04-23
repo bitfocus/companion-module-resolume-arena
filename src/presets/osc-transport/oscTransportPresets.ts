@@ -1,6 +1,8 @@
 import {combineRgb} from '@companion-module/base'
 import type {CompanionPresetDefinitions, CompanionPresetDefinition as CompanionButtonPresetDefinition, CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
 import type {DomainPresetBundle, PresetSubGroup} from '../types.js'
+import {compositionState} from '../../state.js'
+import {WS_DEFAULT_LAYERS, WS_DEFAULT_LAYER_GROUPS} from '../../variables/ws-variables.js'
 
 // ── Shared Colors ──
 const white = combineRgb(255, 255, 255)
@@ -57,14 +59,17 @@ function btn(
 
 export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<number>): CompanionPresetDefinitions {
 	const moduleId = instanceLabel || 'resolume-arena'
+	const state = compositionState.get()
+	const layerCount = state?.layers?.length ?? WS_DEFAULT_LAYERS
+	const groupCount = state?.layergroups?.length ?? WS_DEFAULT_LAYER_GROUPS
 	const presets: CompanionPresetDefinitions = {}
-	for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l, moduleId));
+	for (let l = 1; l <= layerCount; l++) Object.assign(presets, getLayerPresets(l, moduleId));
 	if (extraLayers) {
 		for (const l of extraLayers) {
-			if (l > 10) Object.assign(presets, getLayerPresets(l, moduleId));
+			if (l > layerCount) Object.assign(presets, getLayerPresets(l, moduleId));
 		}
 	}
-	for (let g = 1; g <= 3; g++) Object.assign(presets, getGroupPresets(g));
+	for (let g = 1; g <= groupCount; g++) Object.assign(presets, getGroupPresets(g));
 	Object.assign(presets, getCompositionPresets(moduleId));
 	return presets
 }
@@ -258,13 +263,15 @@ export function getOscTransportPresetBundle(instanceLabel: string, extraLayers?:
 	const presets = getOscTransportPresets(instanceLabel, extraLayers)
 	const ids = Object.keys(presets)
 
-	const compIds = ids.filter(id => id.startsWith('oscComp_'))
-	const extraLayerIds = ids.filter(id => /^osc_layer_/.test(id))
+	const state = compositionState.get()
+	const layerCount = state?.layers?.length ?? WS_DEFAULT_LAYERS
+	const groupCount = state?.layergroups?.length ?? WS_DEFAULT_LAYER_GROUPS
 
+	const compIds = ids.filter(id => id.startsWith('oscComp_'))
 	const groups: PresetSubGroup[] = []
 	if (compIds.length) groups.push({id: 'osc_comp', type: 'simple', name: 'Composition', presets: compIds})
 
-	for (let l = 1; l <= 10; l++) {
+	for (let l = 1; l <= layerCount; l++) {
 		const layerIds = ids.filter(id => id.startsWith(`oscL${l}_`))
 		if (layerIds.length) {
 			groups.push({
@@ -276,7 +283,16 @@ export function getOscTransportPresetBundle(instanceLabel: string, extraLayers?:
 		}
 	}
 
-	for (let g = 1; g <= 3; g++) {
+	// Extra layers beyond the composition count (discovered via OSC in pure-OSC setups)
+	const extraLayerIds = ids.filter(id => {
+		const m = id.match(/^oscL(\d+)_/)
+		return m && +m[1] > layerCount
+	})
+	if (extraLayerIds.length) {
+		groups.push({id: 'osc_extra', type: 'simple', name: 'Additional Layers', presets: extraLayerIds})
+	}
+
+	for (let g = 1; g <= groupCount; g++) {
 		const groupIds = ids.filter(id => id.startsWith(`oscG${g}_`))
 		if (groupIds.length) {
 			groups.push({
@@ -286,10 +302,6 @@ export function getOscTransportPresetBundle(instanceLabel: string, extraLayers?:
 				presets: groupIds,
 			})
 		}
-	}
-
-	if (extraLayerIds.length) {
-		groups.push({id: 'osc_extra', type: 'simple', name: 'Additional Layers', presets: extraLayerIds})
 	}
 
 	return {

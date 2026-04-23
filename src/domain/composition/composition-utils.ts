@@ -17,12 +17,15 @@ export class CompositionUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.audio?.volume?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.audio?.volume?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.video?.opacity?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.video?.opacity?.id!);
+			const ws = this.resolumeArenaInstance.getWebsocketApi();
+			const state = compositionState.get();
+			const tempoId = state?.tempoController?.tempo?.id;
+			const volumeId = state?.audio?.volume?.id;
+			const opacityId = state?.video?.opacity?.id;
+			if (tempoId) { ws?.unsubscribeParam(tempoId); ws?.subscribeParam(tempoId); }
+			if (volumeId) { ws?.unsubscribeParam(volumeId); ws?.subscribeParam(volumeId); }
+			if (opacityId) { ws?.unsubscribeParam(opacityId); ws?.subscribeParam(opacityId); }
+			this.resolumeArenaInstance.setupPresets();
 		}
 
 		if (data.path) {
