@@ -15,6 +15,7 @@ export class LayerUtils implements MessageSubscriber {
 	private layerSoloSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 
 	private activeLayers: Map<number, number> = new Map<number, number>();
+	private lastKnownLayerCount: number = 0;
 
 	private layerSelectedSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
 	private layerMasterSubscriptions: Map<number, Set<string>> = new Map<number, Set<string>>();
@@ -96,6 +97,20 @@ export class LayerUtils implements MessageSubscriber {
 					}
 				}
 			}
+			if (layersObject.length !== this.lastKnownLayerCount) {
+				this.lastKnownLayerCount = layersObject.length;
+				this.resolumeArenaInstance.setupVariables();
+			}
+
+			const varUpdates: Record<string, string> = {};
+			for (const [layerIndex] of layersObject.entries()) {
+				const layer = layerIndex + 1;
+				const prefix = `ws_layer_${layer}`;
+				const col = this.activeLayers.get(layer) ?? 0;
+				varUpdates[`${prefix}_active`] = col > 0 ? '1' : '0';
+				varUpdates[`${prefix}_connected_column`] = String(col);
+			}
+			this.resolumeArenaInstance.setVariableValues(varUpdates);
 			this.resolumeArenaInstance.checkFeedbacks('layerActive');
 			this.resolumeArenaInstance.checkFeedbacks('layerTransportPosition');
 		}
