@@ -25,6 +25,8 @@ export class CompositionUtils implements MessageSubscriber {
 			if (tempoId) { ws?.unsubscribeParam(tempoId); ws?.subscribeParam(tempoId); }
 			if (volumeId) { ws?.unsubscribeParam(volumeId); ws?.subscribeParam(volumeId); }
 			if (opacityId) { ws?.unsubscribeParam(opacityId); ws?.subscribeParam(opacityId); }
+			ws?.unsubscribePath('/composition/master'); ws?.subscribePath('/composition/master');
+			ws?.unsubscribePath('/composition/speed'); ws?.subscribePath('/composition/speed');
 			this.resolumeArenaInstance.setupPresets();
 		}
 

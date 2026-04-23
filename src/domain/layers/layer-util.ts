@@ -36,6 +36,7 @@ export class LayerUtils implements MessageSubscriber {
 			this.updateLayerTransitionDurations();
 			this.updateLayerVolumes();
 			this.updateLayerOpacities();
+			this.updateLayerMasters();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
@@ -136,8 +137,8 @@ export class LayerUtils implements MessageSubscriber {
 			for (const layerVolumeId of this.layerVolumeIds) {
 				this.layerVolumeWebsocketUnsubscribe(layerVolumeId);
 			}
-			for (const [layer, _subscriptionId] of this.layerVolumeSubscriptions.entries()) {
-				this.layerWebsocketFeedbackSubscribe(layer);
+			for (const [layerIndex] of layersObject.entries()) {
+				this.layerWebsocketFeedbackSubscribe(layerIndex + 1);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerVolume');
 		}
@@ -149,10 +150,22 @@ export class LayerUtils implements MessageSubscriber {
 			for (const layerOpacityId of this.layerOpacityIds) {
 				this.layerOpacityWebsocketUnsubscribe(layerOpacityId);
 			}
-			for (const [layer, _subscriptionId] of this.layerOpacitySubscriptions.entries()) {
-				this.layerOpacityWebsocketSubscribe(layer);
+			for (const [layerIndex] of layersObject.entries()) {
+				this.layerOpacityWebsocketSubscribe(layerIndex + 1);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerOpacity');
+		}
+	}
+
+	updateLayerMasters() {
+		const layersObject = this.getLayersFromCompositionState();
+		if (layersObject) {
+			for (const [layerIndex] of layersObject.entries()) {
+				const layer = layerIndex + 1;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layers/' + layer + '/master');
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layers/' + layer + '/master');
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerMaster');
 		}
 	}
 

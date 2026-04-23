@@ -119,3 +119,96 @@ describe('LayerUtils.layerActiveFeedbackCallback', () => {
 		expect(result).toBe(true)
 	})
 })
+
+// ── updateActiveLayers — variable writes ──────────────────────────────────────
+
+describe('LayerUtils.updateActiveLayers — variable writes', () => {
+	it('sets ws_layer_N_active=1 and ws_layer_N_connected_column=column for a connected layer', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [{}, {}] }, { clips: [{}, {}] }] } as any)
+		parameterStates.set({ '/composition/layers/1/clips/2/connect': { value: 'Connected' } } as any)
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layer_1_active: '1',
+			ws_layer_1_connected_column: '2',
+			ws_layer_2_active: '0',
+			ws_layer_2_connected_column: '0',
+		}))
+	})
+
+	it('sets ws_layer_N_active=0 and connected_column=0 when no clip is connected', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [{}] }] } as any)
+		parameterStates.set({} as any)
+		lu.updateActiveLayers()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layer_1_active: '0',
+			ws_layer_1_connected_column: '0',
+		}))
+	})
+
+	it('calls setupVariables when layer count changes', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ clips: [] }, { clips: [] }, { clips: [] }] } as any)
+		lu.updateActiveLayers()
+		expect(mod.setupVariables).toHaveBeenCalledTimes(1)
+		lu.updateActiveLayers()
+		expect(mod.setupVariables).toHaveBeenCalledTimes(1) // same count, no re-call
+	})
+})
+
+// ── updateLayerVolumes / updateLayerOpacities / updateLayerMasters — unconditional subscribe ──
+
+describe('LayerUtils — unconditional WS subscription on composition update', () => {
+	function makeCompositionWithOpacity(layers: number) {
+		return {
+			layers: Array.from({ length: layers }, (_, i) => ({
+				audio: { volume: { id: 100 + i } },
+				video: { opacity: { id: 200 + i } },
+				clips: [],
+			})),
+		} as any
+	}
+
+	it('updateLayerVolumes subscribes all layers regardless of active feedback subscriptions', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set(makeCompositionWithOpacity(3))
+		lu.updateLayerVolumes()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(100)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(101)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(102)
+	})
+
+	it('updateLayerOpacities subscribes all layers regardless of active feedback subscriptions', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set(makeCompositionWithOpacity(2))
+		lu.updateLayerOpacities()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(200)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(201)
+	})
+
+	it('updateLayerMasters subscribes /composition/layers/N/master for all layers', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{}, {}, {}] } as any)
+		lu.updateLayerMasters()
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/1/master')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/2/master')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/3/master')
+	})
+
+	it('messageUpdates(isComposition=true) triggers subscribe for all layers', () => {
+		const mod = makeMockModule()
+		const lu = new LayerUtils(mod)
+		compositionState.set({ layers: [{ audio: { volume: { id: 10 } }, video: { opacity: { id: 20 } }, clips: [] }] } as any)
+		lu.messageUpdates({ path: undefined }, true)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(10)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(20)
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/1/master')
+	})
+})

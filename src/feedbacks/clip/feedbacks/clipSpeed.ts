@@ -7,6 +7,7 @@ export function clipSpeed(resolumeArenaInstance: ResolumeArenaModuleInstance): C
 		type: 'advanced',
 		name: 'Clip Speed',
 		options: [...getLayerOption(), ...getColumnOption()],
-		callback: resolumeArenaInstance.getClipUtils()!.clipSpeedFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipSpeedFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
-	};
+		callback: resolumeArenaInstance.getClipUtils()!.clipSpeedFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		subscribe: resolumeArenaInstance.getClipUtils()!.clipSpeedFeedbackSubscribe.bind(resolumeArenaInstance.getClipUtils()!),
+		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipSpeedFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
+	} as any;
 }

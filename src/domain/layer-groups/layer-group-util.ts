@@ -42,6 +42,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 			this.initConnectedFromComposition();
 			this.updateLayerGroupOpacities();
 			this.updateLayerGroupVolumes();
+			this.updateLayerGroupMasters();
+			this.updateLayerGroupSpeeds();
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
@@ -205,8 +207,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 			for (const layerGroupVolumeId of this.layerGroupVolumeIds) {
 				this.layerGroupVolumeWebsocketUnsubscribe(layerGroupVolumeId);
 			}
-			for (const [layerGroup, _subscriptionId] of this.layerGroupVolumeSubscriptions.entries()) {
-				this.layerWebsocketFeedbackSubscribe(layerGroup);
+			for (const [layerGroupIndex] of layerGroupsObject.entries()) {
+				this.layerWebsocketFeedbackSubscribe(layerGroupIndex + 1);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupVolume');
 		}
@@ -218,10 +220,34 @@ export class LayerGroupUtils implements MessageSubscriber {
 			for (const layerGroupOpacityId of this.layerGroupOpacityIds) {
 				this.layerGroupOpacityWebsocketUnsubscribe(layerGroupOpacityId);
 			}
-			for (const [layerGroup, _subscriptionId] of this.layerGroupOpacitySubscriptions.entries()) {
-				this.layerGroupOpacityWebsocketSubscribe(layerGroup);
+			for (const [layerGroupIndex] of layerGroupsObject.entries()) {
+				this.layerGroupOpacityWebsocketSubscribe(layerGroupIndex + 1);
 			}
 			this.resolumeArenaInstance.checkFeedbacks('layerGroupOpacity');
+		}
+	}
+
+	updateLayerGroupMasters() {
+		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
+		if (layerGroupsObject) {
+			for (const [layerGroupIndex] of layerGroupsObject.entries()) {
+				const group = layerGroupIndex + 1;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + group + '/master');
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + group + '/master');
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerGroupMaster');
+		}
+	}
+
+	updateLayerGroupSpeeds() {
+		const layerGroupsObject = this.getLayerGroupsFromCompositionState();
+		if (layerGroupsObject) {
+			for (const [layerGroupIndex] of layerGroupsObject.entries()) {
+				const group = layerGroupIndex + 1;
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/layergroups/' + group + '/speed');
+				this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/layergroups/' + group + '/speed');
+			}
+			this.resolumeArenaInstance.checkFeedbacks('layerGroupSpeed');
 		}
 	}
 

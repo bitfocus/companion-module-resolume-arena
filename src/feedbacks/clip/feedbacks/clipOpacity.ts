@@ -7,6 +7,7 @@ export function clipOpacity(resolumeArenaInstance: ResolumeArenaModuleInstance):
 		type: 'advanced',
 		name: 'Clip Opacity',
 		options: [...getClipOption()],
-		callback: resolumeArenaInstance.getClipUtils()!.clipOpacityFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipOpacityFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
-	};
+		callback: resolumeArenaInstance.getClipUtils()!.clipOpacityFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		subscribe: resolumeArenaInstance.getClipUtils()!.clipOpacityFeedbackSubscribe.bind(resolumeArenaInstance.getClipUtils()!),
+		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipOpacityFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
+	} as any;
 }

@@ -234,9 +234,13 @@ export class ClipUtils implements MessageSubscriber {
 		for (const clipVolumeId of this.clipVolumeIds) {
 			this.clipVolumeWebsocketUnsubscribe(clipVolumeId);
 		}
-		for (const [clipIdString, _subscriptionId] of this.clipVolumeSubscriptions.entries()) {
-			let clipId = ClipId.fromId(clipIdString);
-			this.clipVolumeWebsocketFeedbackSubscribe(clipId.getLayer(), clipId.getColumn());
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layerIdx, layerObj] of layers.entries()) {
+				for (const [clipIdx] of (layerObj.clips ?? []).entries()) {
+					this.clipVolumeWebsocketFeedbackSubscribe(layerIdx + 1, clipIdx + 1);
+				}
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipVolume');
 	}
@@ -245,9 +249,13 @@ export class ClipUtils implements MessageSubscriber {
 		for (const clipOpacityId of this.clipOpacityIds) {
 			this.clipOpacityWebsocketUnsubscribe(clipOpacityId);
 		}
-		for (const [clipIdString, _subscriptionId] of this.clipOpacitySubscriptions.entries()) {
-			let clipId = ClipId.fromId(clipIdString);
-			this.clipOpacityWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layerIdx, layerObj] of layers.entries()) {
+				for (const [clipIdx] of (layerObj.clips ?? []).entries()) {
+					this.clipOpacityWebsocketSubscribe(layerIdx + 1, clipIdx + 1);
+				}
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
 	}

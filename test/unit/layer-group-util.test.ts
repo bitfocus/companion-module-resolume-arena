@@ -358,3 +358,110 @@ describe('LayerGroupUtils.getLayerGroupFromCompositionState', () => {
 		expect(lgu.getLayerGroupFromCompositionState(1)).toBeUndefined()
 	})
 })
+
+// ── updateActiveLayerGroups — variable writes ─────────────────────────────────
+
+describe('LayerGroupUtils.updateActiveLayerGroups — variable writes', () => {
+	it('sets ws_layergroup_N_active=1 when a clip in the group is connected', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({
+			layers: [{ id: 10, clips: [{ id: 1 }, { id: 2 }] }],
+			layergroups: [{ layers: [{ id: 10, clips: [{ id: 1 }, { id: 2 }] }] }],
+		} as any)
+		parameterStates.set({ '/composition/layers/1/clips/1/connect': { value: 'Connected' } } as any)
+		lgu.updateActiveLayerGroups()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layergroup_1_active: '1',
+		}))
+	})
+
+	it('sets ws_layergroup_N_active=0 when no clip in the group is connected', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({
+			layers: [{ id: 10, clips: [{}] }],
+			layergroups: [{ layers: [{ id: 10, clips: [{}] }] }],
+		} as any)
+		parameterStates.set({} as any)
+		lgu.updateActiveLayerGroups()
+		expect(mod.setVariableValues).toHaveBeenCalledWith(expect.objectContaining({
+			ws_layergroup_1_active: '0',
+			ws_layergroup_1_connected_column: '0',
+		}))
+	})
+
+	it('calls setupVariables when group count changes', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({ layers: [], layergroups: [{}, {}] } as any)
+		lgu.updateActiveLayerGroups()
+		expect(mod.setupVariables).toHaveBeenCalledTimes(1)
+		lgu.updateActiveLayerGroups()
+		expect(mod.setupVariables).toHaveBeenCalledTimes(1)
+	})
+})
+
+// ── unconditional WS subscription on composition update ───────────────────────
+
+describe('LayerGroupUtils — unconditional WS subscription on composition update', () => {
+	function makeGroupComposition(groups: number) {
+		return {
+			layers: [],
+			layergroups: Array.from({ length: groups }, (_, i) => ({
+				audio: { volume: { id: 300 + i } },
+				video: { opacity: { id: 400 + i } },
+				layers: [],
+			})),
+		} as any
+	}
+
+	it('updateLayerGroupVolumes subscribes all groups regardless of active subscriptions', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set(makeGroupComposition(3))
+		lgu.updateLayerGroupVolumes()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(300)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(301)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(302)
+	})
+
+	it('updateLayerGroupOpacities subscribes all groups regardless of active subscriptions', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set(makeGroupComposition(2))
+		lgu.updateLayerGroupOpacities()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(400)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(401)
+	})
+
+	it('updateLayerGroupMasters subscribes /composition/layergroups/N/master for all groups', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({ layers: [], layergroups: [{}, {}, {}] } as any)
+		lgu.updateLayerGroupMasters()
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/1/master')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/2/master')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/3/master')
+	})
+
+	it('updateLayerGroupSpeeds subscribes /composition/layergroups/N/speed for all groups', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({ layers: [], layergroups: [{}, {}] } as any)
+		lgu.updateLayerGroupSpeeds()
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/1/speed')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/2/speed')
+	})
+
+	it('messageUpdates(isComposition=true) triggers subscribe for all groups', () => {
+		const mod = makeMockModule()
+		const lgu = new LayerGroupUtils(mod)
+		compositionState.set({ layers: [], layergroups: [{ audio: { volume: { id: 50 } }, video: { opacity: { id: 60 } }, layers: [] }] } as any)
+		lgu.messageUpdates({ path: undefined, value: false }, true)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(50)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(60)
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/1/master')
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/1/speed')
+	})
+})

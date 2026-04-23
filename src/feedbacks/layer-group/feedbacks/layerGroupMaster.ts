@@ -7,6 +7,7 @@ export function layerGroupMaster(resolumeArenaInstance: ResolumeArenaModuleInsta
 		type: 'advanced',
 		name: 'Layer Group Master',
 		options: [...getLayerGroupOption()],
-		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupMasterFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupMasterFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
-	};
+		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupMasterFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),		subscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupMasterFeedbackSubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupMasterFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
+	} as any;
 }

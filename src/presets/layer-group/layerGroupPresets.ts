@@ -23,6 +23,7 @@ export function getLayerGroupApiPresetBundle(category: string): DomainPresetBund
 	const masterIds: string[] = [];
 	const opacityIds: string[] = [];
 	const volumeIds: string[] = [];
+	const speedIds: string[] = [];
 	const columnDisplayIds: string[] = [];
 	const columnConnectIds: string[] = [];
 	const columnSelectIds: string[] = [];
@@ -51,6 +52,12 @@ export function getLayerGroupApiPresetBundle(category: string): DomainPresetBund
 	presets.changeLayerGroupVolumeSubtract10 = changeTemplateSubtract10(category, 'layerGroup', 'Volume', true); volumeIds.push('changeLayerGroupVolumeSubtract10');
 	presets.changeLayerGroupVolumeSet0 = changeTemplateSet0(category, 'layerGroup', 'Volume', true);             volumeIds.push('changeLayerGroupVolumeSet0');
 
+	// Speed
+	presets.changeLayerGroupSpeedSet100 = changeTemplateSet100(category, 'layerGroup', 'Speed');        speedIds.push('changeLayerGroupSpeedSet100');
+	presets.changeLayerGroupSpeedAdd10 = changeTemplateAdd10(category, 'layerGroup', 'Speed');          speedIds.push('changeLayerGroupSpeedAdd10');
+	presets.changeLayerGroupSpeedSubtract10 = changeTemplateSubtract10(category, 'layerGroup', 'Speed'); speedIds.push('changeLayerGroupSpeedSubtract10');
+	presets.changeLayerGroupSpeedSet0 = changeTemplateSet0(category, 'layerGroup', 'Speed');             speedIds.push('changeLayerGroupSpeedSet0');
+
 	// Column displays
 	presets.selectedLayerGroupColumnName = selectedLayerGroupColumnNamePreset(category);   columnDisplayIds.push('selectedLayerGroupColumnName');
 	presets.connectedLayerGroupColumnName = connectedLayerGroupColumnNamePreset(category); columnDisplayIds.push('connectedLayerGroupColumnName');
@@ -70,6 +77,7 @@ export function getLayerGroupApiPresetBundle(category: string): DomainPresetBund
 	if (masterIds.length)        groups.push({id: 'lg_master',        type: 'simple', name: 'Master',          presets: masterIds});
 	if (opacityIds.length)       groups.push({id: 'lg_opacity',       type: 'simple', name: 'Opacity',         presets: opacityIds});
 	if (volumeIds.length)        groups.push({id: 'lg_volume',        type: 'simple', name: 'Volume',          presets: volumeIds});
+	if (speedIds.length)         groups.push({id: 'lg_speed',         type: 'simple', name: 'Speed',           presets: speedIds});
 	if (columnDisplayIds.length) groups.push({id: 'lg_col_displays',  type: 'simple', name: 'Column Displays', presets: columnDisplayIds});
 	if (columnConnectIds.length) groups.push({id: 'lg_col_connect',   type: 'simple', name: 'Column Connect',  presets: columnConnectIds});
 	if (columnSelectIds.length)  groups.push({id: 'lg_col_select',    type: 'simple', name: 'Column Select',   presets: columnSelectIds});
