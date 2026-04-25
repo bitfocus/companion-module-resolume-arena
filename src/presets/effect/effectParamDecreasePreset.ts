@@ -1,10 +1,9 @@
-import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {combineRgb, CompanionPresetDefinition} from '@companion-module/base';
 
-export function effectParamDecreasePreset(category: string): CompanionButtonPresetDefinition {
+export function effectParamDecreasePreset(category: string): CompanionPresetDefinition {
 	return {
-		type: 'button',
-		category,
+		type: 'simple',
+		
 		name: 'Decrease Effect Parameter (Layer)',
 		style: {
 			size: '14',

@@ -1,11 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {CompanionOptionValues} from '@companion-module/base/dist/module-api/input';
+import {CompanionPresetDefinition} from '@companion-module/base';
+import {CompanionOptionValues} from '@companion-module/base';
 
-export function changeTemplateAdd10(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CompanionButtonPresetDefinition {
+export function changeTemplateAdd10(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CompanionPresetDefinition {
 	return {
-		type: 'button',
-		category,
+		type: 'simple',
 		name: paramName + ' Add ' + (isDecibels ? '3db' : '10%'),
 		style: {
 			size: 'auto',

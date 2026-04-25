@@ -1,10 +1,9 @@
-import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {combineRgb, CompanionPresetDefinition} from '@companion-module/base';
 
-export function effectParamClipListDecreasePreset(category: string): CompanionButtonPresetDefinition {
+export function effectParamClipListDecreasePreset(category: string): CompanionPresetDefinition {
 	return {
-		type: 'button',
-		category,
+		type: 'simple',
+		
 		name: 'Decrease Effect Parameter (Clip — from list)',
 		style: {
 			size: '14',

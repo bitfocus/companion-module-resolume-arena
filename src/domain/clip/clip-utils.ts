@@ -1,18 +1,17 @@
-import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, CompanionVariableDefinition} from '@companion-module/base';
-import {drawPercentage, drawThumb, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {Clip, RangeParameter} from '../api';
-import {ClipId} from './clip-id';
-import {getOtherClipFeedbacks} from '../../feedbacks/clip/clipFeedbacks';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
-import {getLayerApiFeedbacks} from '../../feedbacks/layer/layerFeedbacks';
+import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, CompanionCommonCallbackContext} from '@companion-module/base';
+import {drawPercentage, drawThumb, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {Clip, RangeParameter} from '../api.js';
+import {ClipId} from './clip-id.js';
+import {getOtherClipFeedbacks} from '../../feedbacks/clip/clipFeedbacks.js';
+import {getLayerApiFeedbacks} from '../../feedbacks/layer/layerFeedbacks.js';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
 
-	private clipThumbs: Map<string, Uint8Array> = new Map<string, Uint8Array>();
+	private clipThumbs: Map<string, string> = new Map<string, string>();
 	private clipBase64Thumbs: Map<string, string> = new Map<string, string>();
 	private initalLoadDone = false;
 
@@ -127,8 +126,8 @@ export class ClipUtils implements MessageSubscriber {
 		this.resolumeArenaInstance.setVariableValues(values);
 	}
 
-	public getClipNameVariableDefinitions(): CompanionVariableDefinition[] {
-		const defs: CompanionVariableDefinition[] = [];
+	public getClipNameVariableDefinitions(): Array<{variableId: string; name: string}> {
+		const defs: Array<{variableId: string; name: string}> = [];
 		for (let layer = 1; layer <= this.clipNameLayerCount; layer++) {
 			for (let column = 1; column <= this.clipNameColumnCount; column++) {
 				defs.push({
@@ -234,9 +233,13 @@ export class ClipUtils implements MessageSubscriber {
 		for (const clipVolumeId of this.clipVolumeIds) {
 			this.clipVolumeWebsocketUnsubscribe(clipVolumeId);
 		}
-		for (const [clipIdString, _subscriptionId] of this.clipVolumeSubscriptions.entries()) {
-			let clipId = ClipId.fromId(clipIdString);
-			this.clipVolumeWebsocketFeedbackSubscribe(clipId.getLayer(), clipId.getColumn());
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layerIdx, layerObj] of layers.entries()) {
+				for (const [clipIdx] of (layerObj.clips ?? []).entries()) {
+					this.clipVolumeWebsocketFeedbackSubscribe(layerIdx + 1, clipIdx + 1);
+				}
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipVolume');
 	}
@@ -245,9 +248,13 @@ export class ClipUtils implements MessageSubscriber {
 		for (const clipOpacityId of this.clipOpacityIds) {
 			this.clipOpacityWebsocketUnsubscribe(clipOpacityId);
 		}
-		for (const [clipIdString, _subscriptionId] of this.clipOpacitySubscriptions.entries()) {
-			let clipId = ClipId.fromId(clipIdString);
-			this.clipOpacityWebsocketSubscribe(clipId.getLayer(), clipId.getColumn());
+		const layers = compositionState.get()?.layers;
+		if (layers) {
+			for (const [layerIdx, layerObj] of layers.entries()) {
+				for (const [clipIdx] of (layerObj.clips ?? []).entries()) {
+					this.clipOpacityWebsocketSubscribe(layerIdx + 1, clipIdx + 1);
+				}
+			}
 		}
 		this.resolumeArenaInstance.checkFeedbacks('clipOpacity');
 	}
@@ -272,8 +279,8 @@ export class ClipUtils implements MessageSubscriber {
 
 
 	async clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
 			return {text: '?'};
 		}
@@ -299,8 +306,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipVolumeSubscriptions.get(idString)) {
@@ -311,8 +318,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			const clipVolumeSubscription = this.clipVolumeSubscriptions.get(idString);
@@ -344,8 +351,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
 			return {text: '?'};
 		}
@@ -373,8 +380,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipOpacitySubscriptions.get(idString)) {
@@ -385,8 +392,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
 			const clipOpacitySubscription = this.clipOpacitySubscriptions.get(idString);
@@ -418,8 +425,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		if (ClipId.isValid(layer, column)) {
 			var key = new ClipId(layer, column);
@@ -454,8 +461,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipDetailsFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		if (ClipId.isValid(layer, column)) {
 			const clipId = new ClipId(layer, column);
@@ -487,8 +494,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipDetailsFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		const clipDetailsSubscriptions = this.clipDetailsSubscriptions.get(new ClipId(layer, column).getIdString());
 		if (ClipId.isValid(layer, column) && clipDetailsSubscriptions) {
@@ -509,8 +516,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipConnectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
@@ -523,7 +530,7 @@ export class ClipUtils implements MessageSubscriber {
 			this.resolumeArenaInstance.setVariableValues({previewedClipLayer: layer});
 			this.resolumeArenaInstance.setVariableValues({previewedClipColumn: column});
 			this.resolumeArenaInstance.setVariableValues({previewedClipName: clipName});
-			this.resolumeArenaInstance.checkFeedbacks(...getOtherClipFeedbacks(this.resolumeArenaInstance, 'connectedClip'));
+			;(this.resolumeArenaInstance as any).checkFeedbacks(...getOtherClipFeedbacks(this.resolumeArenaInstance, 'connectedClip'));
 		}
 
 		switch (connectedState) {
@@ -559,8 +566,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		let value = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		if (value) {
@@ -569,7 +576,7 @@ export class ClipUtils implements MessageSubscriber {
 			this.resolumeArenaInstance.setVariableValues({selectedClipLayer: layer});
 			this.resolumeArenaInstance.setVariableValues({selectedClipColumn: column});
 			this.resolumeArenaInstance.setVariableValues({selectedClipName: clipName});
-			this.resolumeArenaInstance.checkFeedbacks(...getOtherClipFeedbacks(this.resolumeArenaInstance, 'selectedClip'), ...Object.keys(getLayerApiFeedbacks(this.resolumeArenaInstance)));
+			;(this.resolumeArenaInstance as any).checkFeedbacks(...getOtherClipFeedbacks(this.resolumeArenaInstance, 'selectedClip'), ...Object.keys(getLayerApiFeedbacks(this.resolumeArenaInstance)));
 		}
 		return value;
 	}
@@ -587,8 +594,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
 			return {text: '?'};
 		}
@@ -616,8 +623,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipSpeedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		if (ClipId.isValid(layer, column)) {
 			const idString = new ClipId(layer, column).getIdString();
@@ -640,8 +647,8 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	async clipSpeedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		const clipSpeedSubscriptions = this.clipSpeedSubscriptions.get(new ClipId(layer, column).getIdString());
 		if (ClipId.isValid(layer, column) && clipSpeedSubscriptions) {
@@ -668,8 +675,8 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
-		const column = +await context.parseVariablesInString(feedback.options.column as string);
+		const layer = +(feedback.options.layer as string);
+		const column = +(feedback.options.column as string);
 
 		var view = feedback.options.view;
 		var timeRemaining = feedback.options.timeRemaining;

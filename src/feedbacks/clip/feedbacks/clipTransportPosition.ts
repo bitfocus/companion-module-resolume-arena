@@ -1,6 +1,6 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getColumnOption, getLayerOption} from '../../../defaults';
+import {getColumnOption, getLayerOption} from '../../../defaults.js';
 
 export function clipTransportPosition(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

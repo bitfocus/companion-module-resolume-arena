@@ -1,12 +1,11 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getClipOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {parameterStates} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getClipOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
 
 export function clipVolumeChange(
 	restApi: () => ArenaRestApi | null,
@@ -47,36 +46,40 @@ export function clipVolumeChange(
 			}
 		],
 		callback: async ({options}: {options: any}) => {
-			const theApi = restApi();
-			const theClipUtils = clipUtils();
-			if (!theApi || !theClipUtils) return;
+			let theApi = restApi();
+			let theClipUtils = clipUtils();
+			if (theApi && theClipUtils) {
+				const inputValue: number = (+(options.value));
+				const layerInput = +(options.layer);
+				const columnInput = +(options.column);
+				const currentValue: number | undefined = (await theApi.Clips.getStatus(new ClipId(layerInput, columnInput))).audio?.volume.value;
 
-			const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value));
-			const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-			const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
-
-			const clip = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
-			const id = clip?.audio?.volume?.id;
-			if (id === undefined) {
-				resolumeArenaInstance.log('warn', 'clipVolumeChange: paramId should not be undefined');
-				return;
-			}
-
-			let value: number | undefined;
-			if (options.action === 'set') {
-				value = inputValue;
-			} else {
-				const cached = parameterStates.get()[`/parameter/by-id/${id}`]?.value;
-				const currentValue = cached !== undefined
-					? +cached
-					: (await theApi.Clips.getStatus(new ClipId(layerInput, columnInput))).audio?.volume.value;
-				if (currentValue === undefined) return;
-				value = options.action === 'add' ? currentValue + inputValue : currentValue - inputValue;
-			}
-
-			if (value !== undefined) {
-				websocketApi()?.subscribeParam(id);
-				await websocketApi()?.setParam(String(id), value);
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						const layer = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
+						const id = layer?.audio?.volume?.id;
+						if (id !== undefined) {
+							await websocketApi()?.subscribeParam(id);
+							await websocketApi()?.setParam(String(id), value);
+						} else {
+							resolumeArenaInstance.log('warn', 'clipVolumeChange: paramId should not be undefined');
+						}
+					}
+				}
 			}
 		}
 	};

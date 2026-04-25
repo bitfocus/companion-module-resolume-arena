@@ -293,3 +293,56 @@ describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 		expect(result).toBeFalsy()
 	})
 })
+
+// ── updateLayerVolumes / updateLayerOpacities — unconditional clip subscription ─
+
+describe('ClipUtils — unconditional WS subscription on composition update', () => {
+	function makeCompositionWithClips(layers: number, clipsPerLayer: number) {
+		return {
+			layers: Array.from({ length: layers }, (_, li) => ({
+				clips: Array.from({ length: clipsPerLayer }, (_, ci) => ({
+					audio: { volume: { id: 1000 + li * 10 + ci } },
+					video: { opacity: { id: 2000 + li * 10 + ci } },
+				})),
+			})),
+		} as any
+	}
+
+	it('updateLayerVolumes subscribes all clips regardless of active feedback subscriptions', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set(makeCompositionWithClips(2, 2))
+		cu.updateLayerVolumes()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(1000)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(1001)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(1010)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(1011)
+	})
+
+	it('updateLayerOpacities subscribes all clips regardless of active feedback subscriptions', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set(makeCompositionWithClips(2, 2))
+		cu.updateLayerOpacities()
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(2000)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(2001)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(2010)
+		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(2011)
+	})
+
+	it('updateLayerVolumes calls checkFeedbacks("clipVolume")', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set(makeCompositionWithClips(1, 1))
+		cu.updateLayerVolumes()
+		expect(mod.checkFeedbacks).toHaveBeenCalledWith('clipVolume')
+	})
+
+	it('updateLayerOpacities calls checkFeedbacks("clipOpacity")', () => {
+		const mod = makeMockModule()
+		const cu = new ClipUtils(mod)
+		compositionState.set(makeCompositionWithClips(1, 1))
+		cu.updateLayerOpacities()
+		expect(mod.checkFeedbacks).toHaveBeenCalledWith('clipOpacity')
+	})
+})

@@ -1,12 +1,11 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getClipOption, getSpeedValue} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {parameterStates} from '../../../state';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getClipOption, getSpeedValue} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
 
 export function clipSpeedChange(
 	restApi: () => ArenaRestApi | null,
@@ -47,36 +46,35 @@ export function clipSpeedChange(
 			}
 		],
 		callback: async ({options}: {options: any}) => {
-			const theApi = restApi();
-			const theOscApi = oscApi();
-			const theClipUtils = clipUtils();
-			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-			const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-			const column = +await resolumeArenaInstance.parseVariablesInString(options.column);
-
+			let theApi = restApi();
+			let theOscApi = oscApi();
+			let theClipUtils = clipUtils();
+			const inputValue: number = (+(options.value)) / 100;
+			const layer = +(options.layer);
+			const column = +(options.column);
 			if (theApi && theClipUtils) {
 				const clip = theClipUtils.getClipFromCompositionState(layer, column);
-				const id = clip?.transport?.controls?.speed?.id;
-				if (id === undefined) {
-					resolumeArenaInstance.log('warn', 'clipSpeedChange: paramId should not be undefined');
-					return;
-				}
-
-				let value: number | undefined;
-				if (options.action === 'set') {
-					value = inputValue;
-				} else {
-					const cached = parameterStates.get()[`/parameter/by-id/${id}`]?.value;
-					const currentValue = cached !== undefined
-						? +cached
-						: (await theApi.Clips.getStatus(new ClipId(layer, column))).transport?.controls?.speed?.value;
-					if (currentValue === undefined) return;
-					value = options.action === 'add' ? currentValue + inputValue : currentValue - inputValue;
-				}
-
-				if (value !== undefined) {
-					await websocketApi()?.subscribeParam(id);
-					await websocketApi()?.setParam(String(id), value);
+				const clipSpeedId = clip?.transport?.controls?.speed?.id + '';
+				const currentValue: number | undefined = (await theApi!.Clips.getStatus(new ClipId(layer, column))).transport?.controls?.speed?.value;
+				if (currentValue !== undefined) {
+					let value: number | undefined;
+					switch (options.action) {
+						case 'set':
+							value = inputValue;
+							break;
+						case 'add':
+							value = currentValue + inputValue;
+							break;
+						case 'subtract':
+							value = currentValue - inputValue;
+							break;
+						default:
+							break;
+					}
+					if (value != undefined) {
+						websocketApi()?.subscribeParam(+clipSpeedId);
+						websocketApi()?.setParam(clipSpeedId, value);
+					}
 				}
 			} else {
 				switch (options.action) {

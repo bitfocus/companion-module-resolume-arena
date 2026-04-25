@@ -1,10 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition} from '@companion-module/base';
 
-export function connectedLayerGroupColumnNamePreset(category: string): CompanionButtonPresetDefinition {
+export function connectedLayerGroupColumnNamePreset(category: string): CompanionPresetDefinition {
 	return {
-		type: 'button',
-		category,
+		type: 'simple',
 		name: 'Connected Layer Group Column Name',
 		style: {
 			size: '14',

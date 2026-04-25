@@ -1,8 +1,8 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
+import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
 
 export class CompositionUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -17,12 +17,17 @@ export class CompositionUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.audio?.volume?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.audio?.volume?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.video?.opacity?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.video?.opacity?.id!);
+			const ws = this.resolumeArenaInstance.getWebsocketApi();
+			const state = compositionState.get();
+			const tempoId = state?.tempoController?.tempo?.id;
+			const volumeId = state?.audio?.volume?.id;
+			const opacityId = state?.video?.opacity?.id;
+			if (tempoId) { ws?.unsubscribeParam(tempoId); ws?.subscribeParam(tempoId); }
+			if (volumeId) { ws?.unsubscribeParam(volumeId); ws?.subscribeParam(volumeId); }
+			if (opacityId) { ws?.unsubscribeParam(opacityId); ws?.subscribeParam(opacityId); }
+			ws?.unsubscribePath('/composition/master'); ws?.subscribePath('/composition/master');
+			ws?.unsubscribePath('/composition/speed'); ws?.subscribePath('/composition/speed');
+			this.resolumeArenaInstance.setupPresets();
 		}
 
 		if (data.path) {

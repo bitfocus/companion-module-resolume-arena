@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {compositionState, parameterStates} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {compositionState, parameterStates} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
 
 export function compositionVolumeChange(
 	restApi: () => ArenaRestApi | null,
@@ -44,7 +44,7 @@ export function compositionVolumeChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const inputValue: number = (+(options.value));
 				const currentValue: number = +parameterStates.get()['/composition/audio/volume']?.value;
 				let value: number | undefined;
 				switch (options.action) {

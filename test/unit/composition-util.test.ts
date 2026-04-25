@@ -129,3 +129,30 @@ describe('CompositionUtils — master subscribe / unsubscribe', () => {
 		expect(mod._wsApi.unsubscribePath).not.toHaveBeenCalled()
 	})
 })
+
+// ── messageUpdates(isComposition=true) — unconditional path subscriptions ─────
+
+describe('CompositionUtils.messageUpdates(isComposition=true) — unconditional subscriptions', () => {
+	it('subscribes /composition/master on composition update', () => {
+		const mod = { ...makeMockModule(), setupPresets: vi.fn() }
+		const cu = new CompositionUtils(mod)
+		compositionState.set({} as any)
+		cu.messageUpdates({ path: undefined }, true)
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/master')
+	})
+
+	it('subscribes /composition/speed on composition update', () => {
+		const mod = { ...makeMockModule(), setupPresets: vi.fn() }
+		const cu = new CompositionUtils(mod)
+		compositionState.set({} as any)
+		cu.messageUpdates({ path: undefined }, true)
+		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/speed')
+	})
+
+	it('does NOT subscribe master/speed on non-composition path update', () => {
+		const mod = { ...makeMockModule(), setupPresets: vi.fn() }
+		const cu = new CompositionUtils(mod)
+		cu.messageUpdates({ path: '/composition/master' }, false)
+		expect(mod._wsApi.subscribePath).not.toHaveBeenCalledWith('/composition/master')
+	})
+})

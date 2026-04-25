@@ -1,13 +1,6 @@
-import {SomeCompanionFeedbackInputField, Regex, CompanionOptionValues} from '@companion-module/base';
-import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE} from '../../domain/effects/effect-utils';
+import {SomeCompanionFeedbackInputField, Regex} from '@companion-module/base';
+import {EffectUtils, EffectScope, MANUAL_EFFECT_CHOICE} from '../../domain/effects/effect-utils.js';
 
-/**
- * Builds options for an effect action or feedback for the given scope.
- *
- * For composition/layergroup/layer: always shows a dynamic effect dropdown.
- * For clip: shows manual inputs only by default. Pass withClipList=true to
- * include the full clip-effects dropdown (only suitable for small compositions).
- */
 export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, withClipList = false): SomeCompanionFeedbackInputField[] {
 	const showDropdown = scope !== 'clip' || withClipList;
 	const fields: SomeCompanionFeedbackInputField[] = [];
@@ -22,22 +15,21 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			label: 'Effect — select from loaded effects or choose Manual to enter an index',
 			choices: filtered,
 			default: MANUAL_EFFECT_CHOICE,
-		});
+			// referenced by isVisibleExpression on other fields — must opt out of auto-expression
+			disableAutoExpression: true,
+		} as any);
 	}
 
-	// IMPORTANT: isVisible is serialized via .toString() — do NOT reference imported constants.
-	const isManual = showDropdown
-		? (opts: CompanionOptionValues) => opts['effectChoice'] === '__manual__'
-		: () => true;
+	const manualExpr = showDropdown ? '$(options:effectChoice) == "__manual__"' : 'true';
 
 	if (showDropdown) {
 		fields.push({
 			id: '_hint_manual',
 			type: 'static-text',
 			label: '',
-			value: 'Manual mode: enter the location and effect index below. Use Companion variables ($(module:var)) in any field.',
-			isVisible: isManual,
-		});
+			value: 'Manual mode: enter the location and effect index below. Use Companion variables in any field.',
+			isVisibleExpression: manualExpr,
+		} as any);
 	}
 
 	if (scope === 'layer') {
@@ -48,8 +40,8 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: isManual,
-		});
+			isVisibleExpression: manualExpr,
+		} as any);
 	}
 
 	if (scope === 'clip') {
@@ -68,8 +60,8 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: isManual,
-		});
+			isVisibleExpression: manualExpr,
+		} as any);
 		fields.push({
 			id: 'column',
 			type: 'textinput',
@@ -77,8 +69,8 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: isManual,
-		});
+			isVisibleExpression: manualExpr,
+		} as any);
 	}
 
 	if (scope === 'layergroup') {
@@ -89,8 +81,8 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			default: '1',
 			useVariables: true,
 			regex: Regex.NUMBER,
-			isVisible: isManual,
-		});
+			isVisibleExpression: manualExpr,
+		} as any);
 	}
 
 	fields.push({
@@ -100,20 +92,12 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 		default: '1',
 		useVariables: true,
 		regex: Regex.NUMBER,
-		isVisible: isManual,
-	});
+		isVisibleExpression: manualExpr,
+	} as any);
 
 	return fields;
 }
 
-/**
- * Builds the two-level parameter picker:
- *   1. Collection dropdown (params / mixer / effect) — always visible
- *   2. Per-collection parameter dropdown — visible for the matching collection
- *   3. Manual text input — visible when the active param dropdown is set to Manual
- *
- * IMPORTANT: isVisible callbacks are serialized via .toString() — do NOT use imported constants.
- */
 export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInputField[] {
 	return [
 		{
@@ -126,41 +110,42 @@ export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInp
 				{id: 'effect', label: 'effect — effect-level flags'},
 			],
 			default: 'params',
-		},
+			disableAutoExpression: true,
+		} as any,
 		{
 			id: 'paramChoice_params',
 			type: 'dropdown',
 			label: 'Parameter',
 			choices: eu.buildParamChoicesForCollection('params'),
 			default: '__manual_param__',
-			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'params',
-		},
+			isVisibleExpression: '$(options:collection) == "params"',
+			disableAutoExpression: true,
+		} as any,
 		{
 			id: 'paramChoice_mixer',
 			type: 'dropdown',
 			label: 'Parameter',
 			choices: eu.buildParamChoicesForCollection('mixer'),
 			default: '__manual_param__',
-			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'mixer',
-		},
+			isVisibleExpression: '$(options:collection) == "mixer"',
+			disableAutoExpression: true,
+		} as any,
 		{
 			id: 'paramChoice_effect',
 			type: 'dropdown',
 			label: 'Parameter',
 			choices: eu.buildParamChoicesForCollection('effect'),
 			default: '__manual_param__',
-			isVisible: (opts: CompanionOptionValues) => opts['collection'] === 'effect',
-		},
+			isVisibleExpression: '$(options:collection) == "effect"',
+			disableAutoExpression: true,
+		} as any,
 		{
 			id: 'paramName',
 			type: 'textinput',
 			label: 'Parameter name (manual, supports variables)',
 			default: '',
 			useVariables: true,
-			isVisible: (opts: CompanionOptionValues) =>
-				(opts['collection'] === 'params' && opts['paramChoice_params'] === '__manual_param__') ||
-				(opts['collection'] === 'mixer' && opts['paramChoice_mixer'] === '__manual_param__') ||
-				(opts['collection'] === 'effect' && opts['paramChoice_effect'] === '__manual_param__'),
-		},
+			isVisibleExpression: '($(options:collection) == "params" && $(options:paramChoice_params) == "__manual_param__") || ($(options:collection) == "mixer" && $(options:paramChoice_mixer) == "__manual_param__") || ($(options:collection) == "effect" && $(options:paramChoice_effect) == "__manual_param__")',
+		} as any,
 	];
 }

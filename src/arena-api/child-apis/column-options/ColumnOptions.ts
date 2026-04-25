@@ -1,6 +1,6 @@
-import { CommonOptionsPropertyBoolean } from '../common-options/properties/CommonOptionsPropertyBoolean';
-import { CommonOptionsPropertyChoice } from '../common-options/properties/CommonOptionsPropertyChoice';
-import { CommonOptionsPropertyString } from '../common-options/properties/CommonOptionsPropertyString';
+import { CommonOptionsPropertyBoolean } from '../common-options/properties/CommonOptionsPropertyBoolean.js';
+import { CommonOptionsPropertyChoice } from '../common-options/properties/CommonOptionsPropertyChoice.js';
+import { CommonOptionsPropertyString } from '../common-options/properties/CommonOptionsPropertyString.js';
 
 export interface ColumnOptions {
 	id: number;

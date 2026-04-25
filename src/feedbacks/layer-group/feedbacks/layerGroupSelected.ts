@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleGreen, getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleGreen, getLayerGroupOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerGroupSelected(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
@@ -8,8 +8,6 @@ export function layerGroupSelected(resolumeArenaInstance: ResolumeArenaModuleIns
 		name: 'Layer Group Selected',
 		defaultStyle: getDefaultStyleGreen(),
 		options: [...getLayerGroupOption()],
-		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupSelectedFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-		subscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupSelectedFeedbackSubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
-		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupSelectedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
+		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupSelectedFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupSelectedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};
 }

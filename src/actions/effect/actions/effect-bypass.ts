@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope} from '../../../domain/effects/effect-utils';
-import {parameterStates} from '../../../state';
-import {buildScopedEffectOptions} from '../effect-action-options';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {EffectScope} from '../../../domain/effects/effect-utils.js';
+import {parameterStates} from '../../../state.js';
+import {buildScopedEffectOptions} from '../effect-action-options.js';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',
@@ -33,7 +33,7 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance,
 		callback: async ({options}) => {
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
-			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
+			const resolved = eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
 			if (!resolved.effectIdx) return;
 			const {key, paramId, path} = eu.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
 			const bypassed = options.bypass === 'toggle' ? !parameterStates.get()[key]?.value : options.bypass === 'on';

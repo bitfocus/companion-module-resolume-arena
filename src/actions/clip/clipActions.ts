@@ -1,10 +1,10 @@
-import {ResolumeArenaModuleInstance} from '../../index';
+import {ResolumeArenaModuleInstance} from '../../index.js';
 import {CompanionActionDefinitions} from '@companion-module/base';
-import {selectClip} from './actions/select-clip';
-import {connectClip} from './actions/connect-clip';
-import {clipSpeedChange} from './actions/clip-speed-change';
-import {clipOpacityChange} from './actions/clip-opacity-change';
-import {clipVolumeChange} from './actions/clip-volume-change';
+import {selectClip} from './actions/select-clip.js';
+import {connectClip} from './actions/connect-clip.js';
+import {clipSpeedChange} from './actions/clip-speed-change.js';
+import {clipOpacityChange} from './actions/clip-opacity-change.js';
+import {clipVolumeChange} from './actions/clip-volume-change.js';
 
 export function getClipActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);

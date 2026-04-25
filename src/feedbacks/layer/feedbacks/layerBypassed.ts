@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleRed, getLayerOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleRed, getLayerOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerBypassed(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
@@ -8,8 +8,6 @@ export function layerBypassed(resolumeArenaInstance: ResolumeArenaModuleInstance
 		name: 'Layer Bypassed',
 		defaultStyle: getDefaultStyleRed(),
 		options: [...getLayerOption()],
-		callback: resolumeArenaInstance.getLayerUtils()!.layerBypassedFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),
-		subscribe: resolumeArenaInstance.getLayerUtils()!.layerBypassedFeedbackSubscribe.bind(resolumeArenaInstance.getLayerUtils()!),
-		unsubscribe: resolumeArenaInstance.getLayerUtils()!.layerBypassedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerUtils()!)
+		callback: resolumeArenaInstance.getLayerUtils()!.layerBypassedFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),		unsubscribe: resolumeArenaInstance.getLayerUtils()!.layerBypassedFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerUtils()!)
 	};
 }
