@@ -193,11 +193,10 @@ export class ClipUtils implements MessageSubscriber {
 					this.clipBase64Thumbs.set(clipId.getIdString(), thumb);
 				}
 			} else {
-				this.resolumeArenaInstance.log('warn', 'thumb is not');
-				return;
+				this.resolumeArenaInstance.log('warn', 'thumb is not available for ' + clipId.getIdString());
 			}
 		}
-		if (thumbPromiseMap.length < 0) {
+		if (thumbPromiseMap.length > 0) {
 			Promise.allSettled(thumbPromiseMap).then(_ => {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 			});
@@ -459,12 +458,27 @@ export class ClipUtils implements MessageSubscriber {
 		const column = +await context.parseVariablesInString(feedback.options.column as string);
 
 		if (ClipId.isValid(layer, column)) {
-			const idString = new ClipId(layer, column).getIdString();
-			if (!this.clipDetailsSubscriptions.get(idString)) {
+			const clipId = new ClipId(layer, column);
+			const idString = clipId.getIdString();
+			const isNewClip = !this.clipDetailsSubscriptions.get(idString);
+			if (isNewClip) {
 				this.clipDetailsSubscriptions.set(idString, new Set());
 				this.clipDetailsWebsocketSubscribe(layer, column);
 			}
 			this.clipDetailsSubscriptions.get(idString)?.add(feedback.id);
+
+			// Composition already loaded before this subscription arrived — fetch the thumb now.
+			if (isNewClip && this.initalLoadDone) {
+				const thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
+				if (thumb) {
+					if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+						await this.getThumbs(clipId, feedback.id);
+					} else {
+						this.clipBase64Thumbs.set(idString, thumb);
+						this.resolumeArenaInstance.checkFeedbacks('clipInfo');
+					}
+				}
+			}
 		}
 	}
 
