@@ -3,7 +3,7 @@
 	"name": "resolume-arena",
 	"shortname": "arena",
 	"description": "Resolume Arena 6 & 7 module for companion",
-	"version": "3.13.0",
+	"version": "3.13.0-beta.2",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-resolume-arena.git",
 	"bugs": "https://github.com/bitfocus/companion-module-resolume-arena/issues",
@@ -25,6 +25,12 @@
 		"entrypoint": "../dist/index.js"
 	},
 	"manufacturer": "Resolume",
-	"products": ["Arena"],
-	"keywords": ["Video", "Software", "Graphics"]
+	"products": [
+		"Arena"
+	],
+	"keywords": [
+		"Video",
+		"Software",
+		"Graphics"
+	]
 }
