@@ -7,7 +7,7 @@ export function clipVolume(resolumeArenaInstance: ResolumeArenaModuleInstance): 
 		type: 'advanced',
 		name: 'Clip Volume',
 		options: [...getClipOption()],
-		callback: resolumeArenaInstance.getClipUtils()!.clipVolumeFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		subscribe: resolumeArenaInstance.getClipUtils()!.clipVolumeFeedbackSubscribe.bind(resolumeArenaInstance.getClipUtils()!),
+		callback: resolumeArenaInstance.getClipUtils()!.clipVolumeFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
 		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipVolumeFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
 	} as any;
 }

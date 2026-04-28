@@ -6,7 +6,7 @@ export function compositionSpeed(resolumeArenaInstance: ResolumeArenaModuleInsta
 		type: 'advanced',
 		name: 'Composition Speed',
 		options: [],
-		callback: resolumeArenaInstance.getCompositionUtils()!.compositionSpeedFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),		subscribe: resolumeArenaInstance.getCompositionUtils()!.compositionSpeedFeedbackSubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
+		callback: resolumeArenaInstance.getCompositionUtils()!.compositionSpeedFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
 		unsubscribe: resolumeArenaInstance.getCompositionUtils()!.compositionSpeedFeedbackUnsubscribe.bind(resolumeArenaInstance.getCompositionUtils()!)
 	} as any;
 }

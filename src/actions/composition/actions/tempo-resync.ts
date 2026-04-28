@@ -15,9 +15,17 @@ export function tempoResync(
 		callback: async ({}: {options: any}) => {
 			const theApi = restApi();
 			if (theApi) {
-				const tapTempoId = compositionState.get()?.tempocontroller?.resync?.id!
-				websocketApi()?.triggerParam(tapTempoId+'', true)
-				websocketApi()?.triggerParam(tapTempoId+'', false)
+				// Tolerate camelCase or lowercase tempocontroller key — see tempoTap.
+				const tc: any = compositionState.get()?.tempocontroller
+					?? (compositionState.get() as any)?.tempoController;
+				const resyncId = tc?.resync?.id;
+				if (resyncId !== undefined) {
+					websocketApi()?.triggerParam(resyncId + '', true);
+					websocketApi()?.triggerParam(resyncId + '', false);
+				} else {
+					console.warn('tempoResync: could not resolve param id. tempocontroller =', tc);
+					oscApi()?.tempoTap();
+				}
 			} else {
 				oscApi()?.tempoTap();
 			}

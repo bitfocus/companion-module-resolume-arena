@@ -24,6 +24,11 @@ export class LayerUtils implements MessageSubscriber {
 	private layerTransitionDurationIds: Set<number> = new Set<number>();
 	private layerVolumeIds: Set<number> = new Set<number>();
 	private layerOpacityIds: Set<number> = new Set<number>();
+	// Snapshot of layer count. Resolume re-sends composition payloads during
+	// initial state load; without this gate the update* methods below
+	// unsubscribe+resubscribe every layer's params on each composition
+	// message → stampede. Re-fan-out only when the layer count changes.
+	private lastLayerCountForBulk: number | null = null;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -32,11 +37,19 @@ export class LayerUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
+			// updateActiveLayers reads parameterStates and recalculates
+			// variables — must run on every composition message because
+			// connected-clip state can change. It does NOT subscribe.
 			this.updateActiveLayers();
-			this.updateLayerTransitionDurations();
-			this.updateLayerVolumes();
-			this.updateLayerOpacities();
-			this.updateLayerMasters();
+			const layers = this.getLayersFromCompositionState();
+			const layerCount = layers?.length ?? 0;
+			if (layerCount !== this.lastLayerCountForBulk) {
+				this.lastLayerCountForBulk = layerCount;
+				this.updateLayerTransitionDurations();
+				this.updateLayerVolumes();
+				this.updateLayerOpacities();
+				this.updateLayerMasters();
+			}
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/select/)) {
@@ -292,6 +305,9 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerMasterFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerMasterFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
@@ -344,6 +360,9 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerVolumeFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
@@ -373,9 +392,10 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined) {
 			if (!this.layerVolumeSubscriptions.get(layer)) {
 				this.layerVolumeSubscriptions.set(layer, new Set());
+				// MUST be inside the guard. See note on layerGroupVolumeFeedbackSubscribe.
+				this.layerWebsocketFeedbackSubscribe(layer);
 			}
 			this.layerVolumeSubscriptions.get(layer)?.add(feedback.id);
-			this.layerWebsocketFeedbackSubscribe(layer);
 		}
 	}
 
@@ -410,6 +430,9 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerOpacityFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
@@ -438,9 +461,10 @@ export class LayerUtils implements MessageSubscriber {
 		if (layer !== undefined) {
 			if (!this.layerOpacitySubscriptions.get(layer)) {
 				this.layerOpacitySubscriptions.set(layer, new Set());
+				// MUST be inside the guard. See note on layerGroupVolumeFeedbackSubscribe.
+				this.layerOpacityWebsocketSubscribe(layer);
 			}
 			this.layerOpacitySubscriptions.get(layer)?.add(feedback.id);
-			this.layerOpacityWebsocketSubscribe(layer);
 		}
 	}
 

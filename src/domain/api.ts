@@ -551,9 +551,10 @@ export interface Composition {
      * @type {TempoController}
      * @memberof Composition
      */
-    // NOTE: lowercase to match Resolume's WebSocket JSON. The Swagger spec
-    // declares this in camelCase but the running server emits all-lowercase
-    // keys matching the OSC paths.
+    // Resolume's WebSocket JSON uses lowercase field names matching the OSC paths.
+    // The Swagger generator declared this as `tempoController` (camelCase); at
+    // runtime that property is always undefined — every tempo action / feedback
+    // silently no-op'd. Lowercased to match reality.
     tempocontroller?: TempoController;
 }
 /**
@@ -1528,8 +1529,9 @@ export interface VideoEffect {
      * @type {string}
      * @memberof VideoEffect
      */
-    // NOTE: lowercase per Resolume JSON convention. Wrong casing here meant
-    // every effect dropdown silently fell through to `eff.name` (internal id).
+    // Lowercase per Resolume JSON; was `displayName` in Swagger and silently
+    // returned undefined, causing effect dropdowns to fall back to the internal
+    // id (e.g. "stageflow") instead of the human label (e.g. "StageFlow").
     displayname?: string;
     /**
      *

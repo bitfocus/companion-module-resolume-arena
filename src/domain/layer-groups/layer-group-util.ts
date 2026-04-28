@@ -30,6 +30,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 
 	private layerGroupVolumeIds: Set<number> = new Set<number>();
 	private layerGroupOpacityIds: Set<number> = new Set<number>();
+	// Gate for bulk subscribe fan-out — re-runs only when layer-group count
+	// changes. See note in layer-util.ts.
+	private lastLayerGroupCountForBulk: number | null = null;
 
 	constructor(resolumeArenaInstance: ResolumeArenaModuleInstance) {
 		this.resolumeArenaInstance = resolumeArenaInstance;
@@ -38,12 +41,18 @@ export class LayerGroupUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any; value: boolean}, isComposition: boolean) {
 		if (isComposition) {
+			// updateActiveLayerGroups recalculates from current
+			// parameterStates without subscribing — safe to run every time.
 			this.updateActiveLayerGroups();
-			this.initConnectedFromComposition();
-			this.updateLayerGroupOpacities();
-			this.updateLayerGroupVolumes();
-			this.updateLayerGroupMasters();
-			this.updateLayerGroupSpeeds();
+			const groupCount = this.getLayerGroupsFromCompositionState()?.length ?? 0;
+			if (groupCount !== this.lastLayerGroupCountForBulk) {
+				this.lastLayerGroupCountForBulk = groupCount;
+				this.initConnectedFromComposition();
+				this.updateLayerGroupOpacities();
+				this.updateLayerGroupVolumes();
+				this.updateLayerGroupMasters();
+				this.updateLayerGroupSpeeds();
+			}
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/groups\/\d+\/bypassed/)) {
@@ -574,6 +583,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerGroupMasterFeedbackSubscribe(feedback, context);
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const master = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 		if (layerGroup !== undefined && master !== undefined) {
@@ -615,6 +627,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerGroupVolumeFeedbackSubscribe(feedback, context);
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const volume = parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 		if (volume !== undefined) {
@@ -632,10 +647,12 @@ export class LayerGroupUtils implements MessageSubscriber {
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupVolumeSubscriptions.get(layerGroup)) {
 				this.layerGroupVolumeSubscriptions.set(layerGroup, new Set());
+				// MUST be inside the guard. Callback-driven subscribe means
+				// this method runs on every feedback callback invocation;
+				// firing subscribeParam each time floods Resolume and OOMs.
+				this.layerWebsocketFeedbackSubscribe(layerGroup);
 			}
 			this.layerGroupVolumeSubscriptions.get(layerGroup)?.add(feedback.id);
-			// Actually register the WebSocket param subscription so updates arrive.
-			this.layerWebsocketFeedbackSubscribe(layerGroup);
 		}
 	}
 
@@ -669,6 +686,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerGroupOpacityFeedbackSubscribe(feedback, context);
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/video/opacity']?.value;
 		if (opacity !== undefined) {
@@ -686,10 +706,10 @@ export class LayerGroupUtils implements MessageSubscriber {
 		if (layerGroup !== undefined) {
 			if (!this.layerGroupOpacitySubscriptions.get(layerGroup)) {
 				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
+				// MUST be inside the guard. See note on layerGroupVolumeFeedbackSubscribe.
+				this.layerGroupOpacityWebsocketSubscribe(layerGroup);
 			}
 			this.layerGroupOpacitySubscriptions.get(layerGroup)?.add(feedback.id);
-			// Actually register the WebSocket param subscription so updates arrive.
-			this.layerGroupOpacityWebsocketSubscribe(layerGroup);
 		}
 	}
 
@@ -723,6 +743,9 @@ export class LayerGroupUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.layerGroupSpeedFeedbackSubscribe(feedback, context);
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 		if (layerGroup !== undefined && speed !== undefined) {

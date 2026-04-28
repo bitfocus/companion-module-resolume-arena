@@ -28,10 +28,14 @@ export function triggerClipPreset(category: string): CompanionPresetDefinition {
 				feedbackId: 'connectedClip',
 				options: {
 					...getDefaultLayerColumnOptions(),
-					color_connected: 'rgb(0, 255, 0)',
-					color_connected_selected: 'rgb(0,255,255)',
-					color_connected_preview: 'rgb(255, 255, 0)',
-					color_preview: 'rgb(255, 0, 0)'
+					// Numeric values — preset bundles the feedback option values
+					// as the user sees them on first drop. Bundling the legacy
+					// `'rgb(...)'` string form left the bgcolor as a string in
+					// 4.3 and the button never colored. See feedback def above.
+					color_connected: combineRgb(0, 255, 0),
+					color_connected_selected: combineRgb(0, 255, 255),
+					color_connected_preview: combineRgb(255, 255, 0),
+					color_preview: combineRgb(255, 0, 0),
 				}
 			},
 			{

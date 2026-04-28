@@ -7,7 +7,7 @@ export function layerOpacity(resolumeArenaInstance: ResolumeArenaModuleInstance)
 		type: 'advanced',
 		name: 'Layer Opacity',
 		options: [...getLayerOption()],
-		callback: resolumeArenaInstance.getLayerUtils()!.layerOpacityFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),		subscribe: resolumeArenaInstance.getLayerUtils()!.layerOpacityFeedbackSubscribe.bind(resolumeArenaInstance.getLayerUtils()!),
+		callback: resolumeArenaInstance.getLayerUtils()!.layerOpacityFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),
 		unsubscribe: resolumeArenaInstance.getLayerUtils()!.layerOpacityFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerUtils()!)
 	} as any;
 }

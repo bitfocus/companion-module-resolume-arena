@@ -23,7 +23,7 @@ function makeComposition() {
 						{
 							id: 101,
 							name: 'stageflow',
-							displayName: 'StageFlow',
+							displayname: 'StageFlow',
 							bypassed: {id: 201, value: false, valuetype: 'ParamBoolean'},
 							params: {
 								look: {id: 301, value: 0, valuetype: 'ParamChoice'},
@@ -33,7 +33,7 @@ function makeComposition() {
 						{
 							id: 102,
 							name: 'chaser',
-							displayName: 'Chaser',
+							displayname: 'Chaser',
 							bypassed: {id: 202, value: true, valuetype: 'ParamBoolean'},
 							params: {
 								speed: {id: 303, value: 1.0, valuetype: 'ParamRange', min: 0, max: 2},
@@ -122,21 +122,21 @@ describe('EffectUtils.getEffectParamId', () => {
 describe('EffectUtils.listEffectsForScope', () => {
 	function makeMultiScopeComposition() {
 		return {
-			video: {effects: [{id: 1, name: 'comp-effect', displayName: 'CompFX', bypassed: {id: 10}}]},
+			video: {effects: [{id: 1, name: 'comp-effect', displayname: 'CompFX', bypassed: {id: 10}}]},
 			layergroups: [
 				{
 					name: {value: 'Group 1'},
-					video: {effects: [{id: 2, name: 'group-effect', displayName: 'GroupFX', bypassed: {id: 20}}]},
+					video: {effects: [{id: 2, name: 'group-effect', displayname: 'GroupFX', bypassed: {id: 20}}]},
 				},
 			],
 			layers: [
 				{
 					name: {value: 'Layer 1'},
-					video: {effects: [{id: 3, name: 'layer-effect', displayName: 'LayerFX', bypassed: {id: 30}}]},
+					video: {effects: [{id: 3, name: 'layer-effect', displayname: 'LayerFX', bypassed: {id: 30}}]},
 					clips: [
 						{
 							name: {value: 'Clip 1'},
-							video: {effects: [{id: 4, name: 'clip-effect', displayName: 'ClipFX', bypassed: {id: 40}}]},
+							video: {effects: [{id: 4, name: 'clip-effect', displayname: 'ClipFX', bypassed: {id: 40}}]},
 						},
 					],
 				},
@@ -202,13 +202,13 @@ describe('EffectUtils.buildEffectChoices', () => {
 
 	it('includes effects from composition, layergroup and layer scopes (not clip)', () => {
 		compositionState.set({
-			video: {effects: [{id: 1, name: 'fx', displayName: 'FX'}]},
-			layergroups: [{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'gfx', displayName: 'GFX'}]}}],
+			video: {effects: [{id: 1, name: 'fx', displayname: 'FX'}]},
+			layergroups: [{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'gfx', displayname: 'GFX'}]}}],
 			layers: [
 				{
 					name: {value: 'L1'},
-					video: {effects: [{id: 3, name: 'lfx', displayName: 'LFX'}]},
-					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+					video: {effects: [{id: 3, name: 'lfx', displayname: 'LFX'}]},
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayname: 'CFX'}]}}],
 				},
 			],
 			columns: [],
@@ -228,12 +228,12 @@ describe('EffectUtils.buildEffectChoices', () => {
 describe('EffectUtils.buildEffectChoices — # placeholder in names', () => {
 	it('replaces # with the 1-based index in layer, group and clip labels', () => {
 		compositionState.set({
-			layergroups: [{name: {value: 'Group #'}, video: {effects: [{id: 1, name: 'gfx', displayName: 'GFX', bypassed: {id: 10}}]}}],
+			layergroups: [{name: {value: 'Group #'}, video: {effects: [{id: 1, name: 'gfx', displayname: 'GFX', bypassed: {id: 10}}]}}],
 			layers: [
 				{
 					name: {value: 'Layer #'},
-					video: {effects: [{id: 2, name: 'lfx', displayName: 'LFX', bypassed: {id: 20}}]},
-					clips: [{name: {value: 'Clip #'}, video: {effects: [{id: 3, name: 'cfx', displayName: 'CFX', bypassed: {id: 30}}]}}],
+					video: {effects: [{id: 2, name: 'lfx', displayname: 'LFX', bypassed: {id: 20}}]},
+					clips: [{name: {value: 'Clip #'}, video: {effects: [{id: 3, name: 'cfx', displayname: 'CFX', bypassed: {id: 30}}]}}],
 				},
 			],
 			columns: [],
@@ -257,7 +257,7 @@ describe('EffectUtils.buildEffectChoices — includeClips flag', () => {
 				{
 					name: {value: 'L1'},
 					video: {effects: []},
-					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayname: 'CFX'}]}}],
 				},
 			],
 			columns: [],
@@ -274,7 +274,7 @@ describe('EffectUtils.buildEffectChoices — includeClips flag', () => {
 				{
 					name: {value: 'L1'},
 					video: {effects: []},
-					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayName: 'CFX'}]}}],
+					clips: [{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'cfx', displayname: 'CFX'}]}}],
 				},
 			],
 			columns: [],
@@ -335,16 +335,16 @@ describe('EffectUtils.effectsUpdated', () => {
 describe('EffectUtils.buildParamChoicesForCollection', () => {
 	function makeParamComposition() {
 		return {
-			video: {effects: [{id: 1, name: 'comp-fx', displayName: 'CompFX', bypassed: {id: 10}, params: {brightness: {id: 100, value: 0}}, mixer: {opacity: {id: 101, value: 1}}}]},
+			video: {effects: [{id: 1, name: 'comp-fx', displayname: 'CompFX', bypassed: {id: 10}, params: {brightness: {id: 100, value: 0}}, mixer: {opacity: {id: 101, value: 1}}}]},
 			layergroups: [
-				{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'group-fx', displayName: 'GroupFX', bypassed: {id: 20}, params: {speed: {id: 200, value: 0.5}}}]}},
+				{name: {value: 'G1'}, video: {effects: [{id: 2, name: 'group-fx', displayname: 'GroupFX', bypassed: {id: 20}, params: {speed: {id: 200, value: 0.5}}}]}},
 			],
 			layers: [
 				{
 					name: {value: 'L1'},
-					video: {effects: [{id: 3, name: 'layer-fx', displayName: 'LayerFX', bypassed: {id: 30}, params: {amount: {id: 300, value: 0}}}]},
+					video: {effects: [{id: 3, name: 'layer-fx', displayname: 'LayerFX', bypassed: {id: 30}, params: {amount: {id: 300, value: 0}}}]},
 					clips: [
-						{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'clip-fx', displayName: 'ClipFX', bypassed: {id: 40}, params: {size: {id: 400, value: 1}}}]}},
+						{name: {value: 'C1'}, video: {effects: [{id: 4, name: 'clip-fx', displayname: 'ClipFX', bypassed: {id: 40}, params: {size: {id: 400, value: 1}}}]}},
 					],
 				},
 			],

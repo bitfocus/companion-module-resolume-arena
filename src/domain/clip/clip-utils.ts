@@ -14,6 +14,10 @@ export class ClipUtils implements MessageSubscriber {
 	private clipThumbs: Map<string, string> = new Map<string, string>();
 	private clipBase64Thumbs: Map<string, string> = new Map<string, string>();
 	private initalLoadDone = false;
+	// Snapshot of composition layout (layer count + clips-per-layer). Used
+	// to gate the subscribe fan-out so duplicate composition payloads don't
+	// trigger a re-fan-out, while genuine layout changes still do.
+	private lastCompositionShape: string | null = null;
 
 	private clipDetailsSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
 	private clipOpacitySubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
@@ -24,6 +28,10 @@ export class ClipUtils implements MessageSubscriber {
 	private clipOpacityIds: Set<number> = new Set<number>();
 
 	private clipNameSubscribedPaths: Set<string> = new Set<string>();
+	// Track which (layer,column) clips we've already issued WS subscribes for
+	// from the connected/selected callback path. Without this guard, every
+	// feedback callback invocation re-issues subscribePath, flooding Resolume.
+	private clipConnectedSelectedSubscribed: Set<string> = new Set<string>();
 	private clipNameLayerCount = 0;
 	private clipNameColumnCount = 0;
 
@@ -34,15 +42,25 @@ export class ClipUtils implements MessageSubscriber {
 	}
 
 	messageUpdates(data: {path: string; value: string | number | boolean}, isComposition: boolean) {
-		if (isComposition || !this.initalLoadDone) {
-			if (compositionState.get() !== undefined) {
-				this.initalLoadDone = true;
-				this.initComposition();
-			}
-		}
+		// Resolume re-sends composition payloads during initial state load.
+		// The original `isComposition || !initalLoadDone` guard re-ran
+		// initComposition + updateLayerVolumes/Opacities for every payload,
+		// each of which loops every clip and does unsubscribe+resubscribe →
+		// ~14k subscribes per startup, visibly laggy. Gate by composition
+		// SHAPE (layer/clip counts) so identical re-pushes are skipped but
+		// genuine layout changes still re-fan-out.
 		if (isComposition) {
-			this.updateLayerVolumes();
-			this.updateLayerOpacities();
+			const comp = compositionState.get();
+			if (comp !== undefined) {
+				const shape = (comp.layers ?? []).map((l: any) => l.clips?.length ?? 0).join(',');
+				if (shape !== this.lastCompositionShape) {
+					this.lastCompositionShape = shape;
+					this.initalLoadDone = true;
+					this.initComposition();
+					this.updateLayerVolumes();
+					this.updateLayerOpacities();
+				}
+			}
 		}
 		if (data.path) {
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/connect/)) {
@@ -187,16 +205,23 @@ export class ClipUtils implements MessageSubscriber {
 			if (thumb) {
 				if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
 					thumbPromiseMap.push(this.getThumbs(clipId, clipDetailsSubscription[0]));
-					this.resolumeArenaInstance.checkFeedbacks('clipInfo');
+					// Don't checkFeedbacks here — the loop runs N times so this
+					// fires N callbacks per iteration = O(N²). getThumbs uses
+					// checkFeedbacksById per resolved thumb, and the post-loop
+					// Promise.allSettled fires a single checkFeedbacks for all.
 				} else {
 					this.clipBase64Thumbs.set(clipId.getIdString(), thumb);
 				}
 			} else {
-				this.resolumeArenaInstance.log('warn', 'thumb is not');
-				return;
+				// Upstream PR #184: log-and-continue. Previously this returned,
+				// aborting the entire loop on one missing thumb and skipping
+				// every clip after it.
+				this.resolumeArenaInstance.log('warn', 'thumb is not available for ' + clipId.getIdString());
 			}
 		}
-		if (thumbPromiseMap.length < 0) {
+		// Upstream PR #184: was `< 0` (never true), so cropped thumbs never
+		// triggered checkFeedbacks after their REST resolves.
+		if (thumbPromiseMap.length > 0) {
 			Promise.allSettled(thumbPromiseMap).then(_ => {
 				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
 			});
@@ -280,6 +305,9 @@ export class ClipUtils implements MessageSubscriber {
 
 
 	async clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.clipVolumeFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
@@ -313,10 +341,12 @@ export class ClipUtils implements MessageSubscriber {
 			const idString = new ClipId(layer, column).getIdString();
 			if (!this.clipVolumeSubscriptions.get(idString)) {
 				this.clipVolumeSubscriptions.set(idString, new Set());
+				// MUST be inside the guard. Callback-driven subscribe means
+				// this method runs on every feedback callback invocation;
+				// firing the WS subscribe each time floods Resolume and OOMs.
+				this.clipVolumeWebsocketFeedbackSubscribe(layer, column);
 			}
 			this.clipVolumeSubscriptions.get(idString)?.add(feedback.id);
-			// Actually register the WebSocket param subscription so updates arrive.
-			this.clipVolumeWebsocketFeedbackSubscribe(layer, column);
 		}
 	}
 
@@ -354,6 +384,9 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.clipOpacityFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
@@ -428,6 +461,14 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipDetailsFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0 pattern: call subscribe from the callback. Companion 4.3's
+		// `subscribe:` field on advanced feedback definitions is unreliable
+		// (does not always fire on cold start), so the callback registers its
+		// subscription idempotently on every invocation. Without this,
+		// clipDetailsSubscriptions never populates, initDetailsFromComposition
+		// iterates empty, and thumbnails never load.
+		await this.clipDetailsFeedbackSubscribe(feedback, context);
+
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 
@@ -468,12 +509,37 @@ export class ClipUtils implements MessageSubscriber {
 		const column = +(feedback.options.column as string);
 
 		if (ClipId.isValid(layer, column)) {
-			const idString = new ClipId(layer, column).getIdString();
-			if (!this.clipDetailsSubscriptions.get(idString)) {
+			const clipId = new ClipId(layer, column);
+			const idString = clipId.getIdString();
+			const isNewClip = !this.clipDetailsSubscriptions.get(idString);
+			if (isNewClip) {
 				this.clipDetailsSubscriptions.set(idString, new Set());
 				this.clipDetailsWebsocketSubscribe(layer, column);
 			}
 			this.clipDetailsSubscriptions.get(idString)?.add(feedback.id);
+
+			// Race: on cold start the WS composition message can arrive before
+			// Companion calls subscribe() for each button. When that happens,
+			// initDetailsFromComposition iterates an empty subscription map and
+			// no thumbs are ever fetched. If the composition is already loaded
+			// by the time we get here, fetch the thumb now. (Upstream PR #184.)
+			if (isNewClip && this.initalLoadDone) {
+				const thumb = await this.resolumeArenaInstance.restApi?.Clips.getThumb(clipId);
+				if (thumb) {
+					if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
+						await this.getThumbs(clipId, feedback.id);
+					} else {
+						this.clipBase64Thumbs.set(idString, thumb);
+						// Only re-render THIS button. checkFeedbacks('clipInfo')
+						// fires every clipInfo callback in parallel; with N buttons
+						// cold-starting at once, each one fetches its thumb and
+						// re-fires checkFeedbacks → O(N²) callbacks pending in
+						// the microtask queue plus N parallel REST fetches in
+						// flight. That stacks fast enough to OOM the 4GB Node heap.
+						this.resolumeArenaInstance.checkFeedbacksById(feedback.id);
+					}
+				}
+			}
 		}
 	}
 
@@ -507,6 +573,22 @@ export class ClipUtils implements MessageSubscriber {
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 
+		// API-2.0 cold-start: initConnectedFromComposition only runs on the
+		// first composition message; if Companion fires this callback before
+		// that (or for a button added later), parameterStates is empty and the
+		// switch falls through to black. Guard with a per-clip flag because
+		// subscribePath is NOT idempotent on Resolume's side at the volume
+		// that Companion calls feedback callbacks — repeated subscribes flood
+		// the WS and lock up the module.
+		if (ClipId.isValid(layer, column)) {
+			const key = layer + ':' + column;
+			if (!this.clipConnectedSelectedSubscribed.has(key)) {
+				this.clipConnectedSelectedSubscribed.add(key);
+				this.clipConnectedWebsocketSubscribe(layer, column);
+				this.clipSelectedWebsocketSubscribe(layer, column);
+			}
+		}
+
 		const connectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/connect']?.value;
 		const selectedState = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		// this.resolumeArenaInstance.log('debug', 'connectedState layer:' + layer + 'col: ' + column + ' connectedState:' + connectedState);
@@ -521,17 +603,30 @@ export class ClipUtils implements MessageSubscriber {
 			;(this.resolumeArenaInstance as any).checkFeedbacks(...getOtherClipFeedbacks(this.resolumeArenaInstance, 'connectedClip'));
 		}
 
+		// Legacy buttons created under module-api 1.x persisted these colors as
+		// the string form 'rgb(r,g,b)'. Companion 4.3 no longer auto-coerces it,
+		// so a raw `as number` cast yields NaN and renders black. Coerce here so
+		// existing buttons keep working without re-dropping the feedback.
+		const toRgbNumber = (v: unknown): number => {
+			if (typeof v === 'number') return v;
+			if (typeof v === 'string') {
+				const m = v.match(/rgb\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\)/i);
+				if (m) return combineRgb(+m[1], +m[2], +m[3]);
+			}
+			return combineRgb(0, 0, 0);
+		};
+
 		switch (connectedState) {
 			case 'Connected':
 				if (selectedState) {
-					return {bgcolor: feedback.options.color_connected_selected as number};
+					return {bgcolor: toRgbNumber(feedback.options.color_connected_selected)};
 				}
-				return {bgcolor: feedback.options.color_connected as number};
+				return {bgcolor: toRgbNumber(feedback.options.color_connected)};
 			case 'Connected & previewing':
-				return {bgcolor: feedback.options.color_connected_preview as number};
+				return {bgcolor: toRgbNumber(feedback.options.color_connected_preview)};
 			case 'Previewing':
 
-				return {bgcolor: feedback.options.color_preview as number};
+				return {bgcolor: toRgbNumber(feedback.options.color_preview)};
 			default:
 				return {bgcolor: combineRgb(0, 0, 0)};
 		}
@@ -556,6 +651,17 @@ export class ClipUtils implements MessageSubscriber {
 	async clipSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
+
+		// API-2.0 cold-start: ensure WS subscription on first call. Guard with
+		// the shared clipConnectedSelectedSubscribed set so we don't re-issue
+		// subscribePath on every callback invocation (would flood Resolume).
+		if (ClipId.isValid(layer, column)) {
+			const key = layer + ':' + column;
+			if (!this.clipConnectedSelectedSubscribed.has(key)) {
+				this.clipConnectedSelectedSubscribed.add(key);
+				this.clipSelectedWebsocketSubscribe(layer, column);
+			}
+		}
 
 		let value = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/select']?.value;
 		if (value) {
@@ -582,6 +688,9 @@ export class ClipUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Map-guarded).
+		this.clipSpeedFeedbackSubscribe(feedback, context);
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {

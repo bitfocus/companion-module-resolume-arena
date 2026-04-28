@@ -28,6 +28,11 @@ export function clipInfo(resolumeArenaInstance: ResolumeArenaModuleInstance):Com
 				default: false
 			}
 		],
-		callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
-	}
+		// Companion 4.3 / module-api 2.0 dropped support for `subscribe:` on
+		// advanced feedback definitions (it warns and ignores it). The callback
+		// itself registers its subscription on each invocation; see
+		// clipDetailsFeedbackCallback for the call into clipDetailsFeedbackSubscribe.
+		callback: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackCallback.bind(resolumeArenaInstance.getClipUtils()!),
+		unsubscribe: resolumeArenaInstance.getClipUtils()!.clipDetailsFeedbackUnsubscribe.bind(resolumeArenaInstance.getClipUtils()!)
+	} as any;
 }

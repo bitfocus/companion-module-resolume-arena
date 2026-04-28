@@ -54,6 +54,9 @@ export class CompositionUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	compositionMasterFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Set-guarded).
+		this.compositionMasterFeedbackSubscribe(_feedback);
 		const master = parameterStates.get()['/composition/master']?.value;
 		if (master !== undefined) {
 			return {
@@ -122,6 +125,9 @@ export class CompositionUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	compositionSpeedFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		// API-2.0: subscribe: on advanced feedback defs is ignored. Register
+		// the subscription from the callback; the handler is idempotent (Set-guarded).
+		this.compositionSpeedFeedbackSubscribe(_feedback);
 		const speed = parameterStates.get()['/composition/speed']?.value;
 		if (speed !== undefined) {
 			return {

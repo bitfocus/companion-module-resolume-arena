@@ -7,7 +7,7 @@ export function layerMaster(resolumeArenaInstance: ResolumeArenaModuleInstance):
 		type: 'advanced',
 		name: 'Layer Master',
 		options: [...getLayerOption()],
-		callback: resolumeArenaInstance.getLayerUtils()!.layerMasterFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),		subscribe: resolumeArenaInstance.getLayerUtils()!.layerMasterFeedbackSubscribe.bind(resolumeArenaInstance.getLayerUtils()!),
+		callback: resolumeArenaInstance.getLayerUtils()!.layerMasterFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!),
 		unsubscribe: resolumeArenaInstance.getLayerUtils()!.layerMasterFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerUtils()!)
 	} as any;
 }

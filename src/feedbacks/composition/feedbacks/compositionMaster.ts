@@ -6,7 +6,7 @@ export function compositionMaster(resolumeArenaInstance: ResolumeArenaModuleInst
 		type: 'advanced',
 		name: 'Composition Master',
 		options: [],
-		callback: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),		subscribe: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackSubscribe.bind(resolumeArenaInstance.getCompositionUtils()!),
+		callback: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!),
 		unsubscribe: resolumeArenaInstance.getCompositionUtils()!.compositionMasterFeedbackUnsubscribe.bind(resolumeArenaInstance.getCompositionUtils()!)
 	} as any;
 }

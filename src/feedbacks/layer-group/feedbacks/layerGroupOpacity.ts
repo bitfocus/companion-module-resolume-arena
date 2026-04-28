@@ -7,7 +7,7 @@ export function layerGroupOpacity(resolumeArenaInstance: ResolumeArenaModuleInst
 		type: 'advanced',
 		name: 'Layer Group Opacity',
 		options: [...getLayerGroupOption()],
-		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupOpacityFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),		subscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupOpacityFeedbackSubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!),
+		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupOpacityFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!),
 		unsubscribe: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupOpacityFeedbackUnsubscribe.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	} as any;
 }

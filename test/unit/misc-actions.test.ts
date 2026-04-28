@@ -108,7 +108,7 @@ describe('clearAllLayers — OSC path', () => {
 describe('tempoTap — REST path', () => {
 	it('triggers tempoTap param true then false', async () => {
 		const ws = makeWsApi()
-		compositionState.set({ tempoController: { tempoTap: { id: 42 } } } as any)
+		compositionState.set({ tempocontroller: { tempotap: { id: 42 } } } as any)
 		const action = tempoTap(() => ({} as any), () => ws as any, () => null)
 		await (action.callback as any)({})
 		expect(ws.triggerParam).toHaveBeenCalledWith('42', true)
