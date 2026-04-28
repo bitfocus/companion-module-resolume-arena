@@ -40,7 +40,10 @@ export function drawThumb(thumb: string): string {
 		.scale(64, 64, ResizeMode.Fill)
 		.toBufferSync(PixelFormat.Rgb);
 
-	return Buffer.from(out).toString('base64');
+	// @julusian/image-rs 1.1.1 returns a ComputedImage object whose `.buffer`
+	// holds the raw pixel bytes. (0.2.x returned a Buffer directly — keep this
+	// in mind if the dep is ever downgraded.)
+	return out.buffer.toString('base64');
 }
 
 function createColorBlock(fillColor: number, percentage: number = 0) {
