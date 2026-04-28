@@ -17,8 +17,9 @@ export class CompositionUtils implements MessageSubscriber {
 
 	messageUpdates(data: {path: any}, isComposition: boolean) {
 		if (isComposition) {
-			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
-			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()!.tempoController?.tempo?.id!);
+			const tempoId = compositionState.get()?.tempocontroller?.tempo?.id;
+			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(tempoId!);
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(tempoId!);
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.audio?.volume?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.subscribeParam(compositionState.get()?.audio?.volume?.id!);
 			this.resolumeArenaInstance.getWebsocketApi()?.unsubscribeParam(compositionState.get()?.video?.opacity?.id!);
@@ -155,7 +156,11 @@ export class CompositionUtils implements MessageSubscriber {
 	// Tempo
 	/////////////////////////////////////////////////
 
-	compositionTempoFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	private compositionTempoSubscriptions: Map<string, Set<string>> = new Map<string, Set<string>>();
+
+	compositionTempoFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		// API 2.0: subscribe-side WS registration runs from the callback (idempotent).
+		this.compositionTempoFeedbackSubscribe(feedback);
 		const tempo = parameterStates.get()['/composition/tempocontroller/tempo']?.value;
 		if (tempo !== undefined) {
 			return {
@@ -164,5 +169,28 @@ export class CompositionUtils implements MessageSubscriber {
 			};
 		}
 		return {text: '?'};
+	}
+
+	compositionTempoFeedbackSubscribe(feedback: CompanionFeedbackInfo) {
+		// The tempo path is what the callback reads; subscribe via path so the
+		// websocket update populates the path-keyed entry in parameterStates.
+		// (messageUpdates() also subscribes the param id, which is fine — it
+		// populates the by-id key but the callback is path-based.)
+		if (!this.compositionTempoSubscriptions.get('composition')) {
+			this.compositionTempoSubscriptions.set('composition', new Set());
+			this.resolumeArenaInstance.getWebsocketApi()?.subscribePath('/composition/tempocontroller/tempo');
+		}
+		this.compositionTempoSubscriptions.get('composition')?.add(feedback.id);
+	}
+
+	compositionTempoFeedbackUnsubscribe(feedback: CompanionFeedbackInfo) {
+		const sub = this.compositionTempoSubscriptions.get('composition');
+		if (sub) {
+			sub.delete(feedback.id);
+			if (sub.size === 0) {
+				this.resolumeArenaInstance.getWebsocketApi()?.unsubscribePath('/composition/tempocontroller/tempo');
+				this.compositionTempoSubscriptions.delete('composition');
+			}
+		}
 	}
 }

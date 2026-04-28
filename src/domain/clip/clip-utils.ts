@@ -307,6 +307,8 @@ export class ClipUtils implements MessageSubscriber {
 				this.clipVolumeSubscriptions.set(idString, new Set());
 			}
 			this.clipVolumeSubscriptions.get(idString)?.add(feedback.id);
+			// Actually register the WebSocket param subscription so updates arrive.
+			this.clipVolumeWebsocketFeedbackSubscribe(layer, column);
 		}
 	}
 
