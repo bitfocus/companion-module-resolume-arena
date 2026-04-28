@@ -1,11 +1,11 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {Layer, RangeParameter} from '../api';
-import {ClipId} from '../clip/clip-id';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
+import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {Layer, RangeParameter} from '../api.js';
+import {ClipId} from '../clip/clip-id.js';
+import {CompanionCommonCallbackContext} from '@companion-module/base';
 
 export class LayerUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -162,7 +162,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerBypassedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerBypassedFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			return parameterStates.get()['/composition/layers/' + layer + '/bypassed']?.value;
 		}
@@ -170,7 +171,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerBypassedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerBypassedSubscriptions.get(layer)) {
 				this.layerBypassedSubscriptions.set(layer, new Set());
@@ -181,7 +182,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerBypassedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerByPassedSubscription = this.layerBypassedSubscriptions.get(layer);
 		if (layer !== undefined && layerByPassedSubscription) {
 			layerByPassedSubscription.delete(feedback.id);
@@ -197,7 +198,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerSoloFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerSoloFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			return parameterStates.get()['/composition/layers/' + layer + '/solo']?.value;
 		}
@@ -205,7 +207,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerSoloFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerSoloSubscriptions.get(layer)) {
 				this.layerSoloSubscriptions.set(layer, new Set());
@@ -216,7 +218,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerSoloFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerSoloSubscription = this.layerSoloSubscriptions.get(layer);
 		if (layer !== undefined && layerSoloSubscription) {
 			layerSoloSubscription.delete(feedback.id);
@@ -232,7 +234,7 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerActiveFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			return this.activeLayers.has(+layer);
 			// TODO: #47 request feature return parameterStates.get()['/composition/layers/' + layer + '/active']?.value;
@@ -245,7 +247,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerSelectedFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerSelectedFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			return parameterStates.get()['/composition/layers/' + layer + '/select']?.value;
 		}
@@ -253,7 +256,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerSelectedFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerSelectedSubscriptions.get(layer)) {
 				this.layerSelectedSubscriptions.set(layer, new Set());
@@ -264,7 +267,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerSelectedFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerSelectedSubscription = this.layerSelectedSubscriptions.get(layer);
 		if (layer !== undefined && layerSelectedSubscription) {
 			layerSelectedSubscription.delete(feedback.id);
@@ -280,7 +283,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerMasterFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerMasterFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
@@ -305,7 +309,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerMasterFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerMasterSubscriptions.get(layer)) {
 				this.layerMasterSubscriptions.set(layer, new Set());
@@ -316,7 +320,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerMasterFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerMasterSubscription = this.layerMasterSubscriptions.get(layer);
 		if (layer !== undefined && layerMasterSubscription) {
 			layerMasterSubscription.delete(feedback.id);
@@ -332,7 +336,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerVolumeFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerVolumeFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
@@ -357,7 +362,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerVolumeFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerVolumeSubscriptions.get(layer)) {
 				this.layerVolumeSubscriptions.set(layer, new Set());
@@ -368,7 +373,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerVolumeFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerVolumeSubscription = this.layerVolumeSubscriptions.get(layer);
 		if (layer !== undefined && layerVolumeSubscription) {
 			layerVolumeSubscription.delete(feedback.id);
@@ -398,7 +403,8 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		await this.layerOpacityFeedbackSubscribe(feedback, context);
+		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
@@ -422,7 +428,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerOpacityFeedbackSubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer !== undefined) {
 			if (!this.layerOpacitySubscriptions.get(layer)) {
 				this.layerOpacitySubscriptions.set(layer, new Set());
@@ -433,7 +439,7 @@ export class LayerUtils implements MessageSubscriber {
 	}
 
 	async layerOpacityFeedbackUnsubscribe(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext) {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		const layerOpacitySubscription = this.layerOpacitySubscriptions.get(layer);
 		if (layer !== undefined && layerOpacitySubscription) {
 			layerOpacitySubscription.delete(feedback.id);
@@ -463,10 +469,11 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerTransitionDurationFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
+		this.layerTransitionDurationFeedbackSubscribe(layer);
 		const duration: number | undefined = (await this.resolumeArenaInstance.restApi!.Layers.getSettings(layer)).transition?.duration?.value;
 
 		if (layer !== undefined && duration !== undefined) {
@@ -497,7 +504,7 @@ export class LayerUtils implements MessageSubscriber {
 	/////////////////////////////////////////////////
 
 	async layerTransportPositionFeedbackCallback(feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
-		const layer = +await context.parseVariablesInString(feedback.options.layer as string);
+		const layer = +(feedback.options.layer as string);
 		var column = this.activeLayers.get(+layer)!;
 		var view = feedback.options.view;
 		var timeRemaining = feedback.options.timeRemaining;

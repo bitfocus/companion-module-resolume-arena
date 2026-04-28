@@ -3,12 +3,11 @@ import {
 	CompanionStaticUpgradeResult,
 	CompanionUpgradeContext
 } from '@companion-module/base';
-import {ResolumeArenaConfig} from '../config-fields';
 
 export function upgrade_v3_13_0(
-	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	_context: CompanionUpgradeContext<any>,
+	props: CompanionStaticUpgradeProps<any, any>
+): CompanionStaticUpgradeResult<any, any> {
 	const updatedActions = [];
 
 	for (const action of props.actions) {
@@ -16,8 +15,10 @@ export function upgrade_v3_13_0(
 			action.actionId = 'oscCustomCommand';
 			updatedActions.push(action);
 		}
+		// Upstream added a lookupMode option to connectColumn; default legacy
+		// buttons to 'byIndex'. API 2.0 stores each option as ExpressionOrValue.
 		if (action.actionId === 'connectColumn' && action.options['lookupMode'] === undefined) {
-			action.options['lookupMode'] = 'byIndex';
+			action.options['lookupMode'] = {isExpression: false, value: 'byIndex'};
 			updatedActions.push(action);
 		}
 	}

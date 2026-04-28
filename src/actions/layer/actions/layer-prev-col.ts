@@ -1,7 +1,7 @@
 import {CompanionActionDefinition, Regex} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function layerPrevCol(
 	_restApi: () => (ArenaRestApi | null),
@@ -17,13 +17,13 @@ export function layerPrevCol(
 				label: 'Layer Number',
 				id: 'layerN',
 				default: '1',
-				required: true,
+				minLength: 1,
 				useVariables: true
 			}
 		],
 
 		callback: async ({options}: {options: any}) => {
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layer = +(options.layer);
 			oscApi()?.layerPrevCol(layer);
 		},
 	};

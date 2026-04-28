@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {WebsocketInstance} from '../../../websocket';
-import {compositionState} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {compositionState} from '../../../state.js';
 
 export function tempoResync(
 	restApi: () => ArenaRestApi | null,
@@ -13,15 +13,11 @@ export function tempoResync(
 		name: 'Resync Tempo',
 		options: [],
 		callback: async ({}: {options: any}) => {
-			let theApi = restApi();
-			let thewebsocketApi = websocketApi();
-			if (theApi) {
-				let tapTempoId = compositionState.get()!.tempoController?.resync?.id!
-				thewebsocketApi?.triggerParam(tapTempoId+'', true)
-				thewebsocketApi?.triggerParam(tapTempoId+'', false)
-			} else {
-				oscApi()?.tempoTap();
-			}
+			const theApi = restApi();
+			if (!theApi) return;
+			const tapTempoId = compositionState.get()!.tempoController?.resync?.id!
+			websocketApi()?.triggerParam(tapTempoId+'', true)
+			websocketApi()?.triggerParam(tapTempoId+'', false)
 		},
 	};
 }

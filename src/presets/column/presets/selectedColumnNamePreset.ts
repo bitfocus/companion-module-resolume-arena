@@ -1,9 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition} from '@companion-module/base';
 
-export function selectedColumnNamePreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
-	category: 'Column',
+export function selectedColumnNamePreset(): CompanionPresetDefinition {return {
+	type: 'simple',
 	name: 'Selected Column Name',
 	style: {
 		size: '14',

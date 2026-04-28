@@ -1,8 +1,8 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
+import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
 
 export class CompositionUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;
@@ -48,7 +48,10 @@ export class CompositionUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	compositionMasterFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionMasterFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		// API 2.0 removed the feedback `subscribe:` callback; do it from inside
+		// the callback (idempotent — guarded by an internal subscription set).
+		this.compositionMasterFeedbackSubscribe(feedback);
 		const master = parameterStates.get()['/composition/master']?.value;
 		if (master !== undefined) {
 			return {
@@ -116,7 +119,8 @@ export class CompositionUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	compositionSpeedFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+		this.compositionSpeedFeedbackSubscribe(feedback);
 		const speed = parameterStates.get()['/composition/speed']?.value;
 		if (speed !== undefined) {
 			return {

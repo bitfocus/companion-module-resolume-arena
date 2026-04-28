@@ -1,12 +1,12 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {connectedClip} from './feedbacks/connectedClip';
-import {selectedClip} from './feedbacks/selectedClip';
-import {clipInfo} from './feedbacks/clipInfo';
-import {clipSpeed} from './feedbacks/clipSpeed';
-import {clipTransportPosition} from './feedbacks/clipTransportPosition';
-import {clipOpacity} from './feedbacks/clipOpacity';
-import {clipVolume} from './feedbacks/clipVolume';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {connectedClip} from './feedbacks/connectedClip.js';
+import {selectedClip} from './feedbacks/selectedClip.js';
+import {clipInfo} from './feedbacks/clipInfo.js';
+import {clipSpeed} from './feedbacks/clipSpeed.js';
+import {clipTransportPosition} from './feedbacks/clipTransportPosition.js';
+import {clipOpacity} from './feedbacks/clipOpacity.js';
+import {clipVolume} from './feedbacks/clipVolume.js';
 
 export function getClipApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {

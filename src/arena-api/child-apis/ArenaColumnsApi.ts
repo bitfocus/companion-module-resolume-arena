@@ -1,5 +1,5 @@
-import {ArenaFetchFunction} from '../rest';
-import { ColumnOptions, ColumnWriteOptions } from './column-options/ColumnOptions';
+import {ArenaFetchFunction} from '../rest.js';
+import { ColumnOptions, ColumnWriteOptions } from './column-options/ColumnOptions.js';
 
 export class ArenaColumnsApi {
 	private arenaFetch: ArenaFetchFunction;

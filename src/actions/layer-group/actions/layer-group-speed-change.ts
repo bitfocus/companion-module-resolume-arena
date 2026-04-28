@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaRestApi from '../../../arena-api/rest';
-import {WebsocketInstance} from '../../../websocket';
-import ArenaOscApi from '../../../arena-api/osc';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getLayerGroupOption} from '../../../defaults';
-import {parameterStates} from '../../../state';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getLayerGroupOption} from '../../../defaults.js';
+import {parameterStates} from '../../../state.js';
 
 export function layerGroupSpeedChange(
 	restApi: () => ArenaRestApi | null,
@@ -46,8 +46,8 @@ export function layerGroupSpeedChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+				const layerGroup = +(options.layer);
+				const inputValue: number = (+(options.value))/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 				let value: number | undefined;
 				switch (options.action) {

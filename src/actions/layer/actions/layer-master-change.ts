@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function layerMasterChange(
 	restApi: () => ArenaRestApi | null,
@@ -45,8 +45,8 @@ export function layerMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
+				const layer = +(options.layer);
+				const inputValue: number = (+(options.value)) / 100;
 				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).master?.value;
 
 				if (currentValue !== undefined) {

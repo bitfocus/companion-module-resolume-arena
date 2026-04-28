@@ -1,9 +1,8 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, DropdownChoice} from '@companion-module/base';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {ChoiceParameter, ParameterCollection, VideoEffect} from '../api';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, CompanionCommonCallbackContext, DropdownChoice} from '@companion-module/base';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {ChoiceParameter, ParameterCollection, VideoEffect} from '../api.js';
 
 export interface EffectMeta {
 	idx: number;
@@ -394,6 +393,8 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	async effectBypassedFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<boolean> {
+		// API 2.0: subscribe is removed; register WS subscription from the callback (idempotent).
+		await this.effectBypassedFeedbackSubscribe(scope, feedback, context);
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		if (!resolved.effectIdx) return false;
 		const {key} = this.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
@@ -436,11 +437,12 @@ export class EffectUtils implements MessageSubscriber {
 	// EFFECT PARAMETER
 	/////////////////////////////////////////////////
 
-	private async resolveParamName(options: Record<string, any>, context: CompanionCommonCallbackContext): Promise<string> {
+	private async resolveParamName(options: Record<string, any>, _context: CompanionCommonCallbackContext): Promise<string> {
+		// API 2.0: option values arrive pre-resolved by the framework.
 		const collection = options.collection as EffectCollection;
 		const rawChoice = options[`paramChoice_${collection}`] as string | undefined;
 		if (rawChoice && rawChoice !== MANUAL_PARAM_CHOICE) return rawChoice;
-		return context.parseVariablesInString(options.paramName as string ?? '');
+		return (options.paramName as string) ?? '';
 	}
 
 	private resolveEffectParam(
@@ -454,6 +456,8 @@ export class EffectUtils implements MessageSubscriber {
 	}
 
 	async effectParameterFeedbackCallback(scope: EffectScope, feedback: CompanionFeedbackInfo, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> {
+		// API 2.0: subscribe is removed; register WS subscription from the callback (idempotent).
+		await this.effectParameterFeedbackSubscribe(scope, feedback, context);
 		const resolved = await this.parseScopeOptions({...feedback.options, scope}, context);
 		const paramName = await this.resolveParamName(feedback.options, context);
 		if (!resolved.effectIdx || !paramName) return {text: '?'};
@@ -500,17 +504,15 @@ export class EffectUtils implements MessageSubscriber {
 
 	async parseScopeOptionsFromAction(
 		options: Record<string, any>,
-		instance: {parseVariablesInString: (s: string) => Promise<string>}
+		_instance?: unknown
 	): Promise<{scope: EffectScope; location: EffectLocation; effectIdx: number}> {
-		const fakeContext: CompanionCommonCallbackContext = {
-			parseVariablesInString: instance.parseVariablesInString.bind(instance),
-		};
-		return this.parseScopeOptions(options, fakeContext);
+		// API 2.0: option values are pre-resolved; the legacy instance arg is ignored.
+		return this.parseScopeOptions(options, {} as CompanionCommonCallbackContext);
 	}
 
 	private async parseScopeOptions(
 		options: Record<string, any>,
-		context: CompanionCommonCallbackContext
+		_context: CompanionCommonCallbackContext
 	): Promise<{scope: EffectScope; location: EffectLocation; effectIdx: number}> {
 		// Caller always embeds scope in options (from action/feedback scope param)
 		const scope = options.scope as EffectScope;
@@ -524,17 +526,17 @@ export class EffectUtils implements MessageSubscriber {
 			}
 		}
 
-		// Manual path: resolve layer/column/layerGroup + effectIdx from textinputs
+		// API 2.0: option values arrive pre-resolved. Read directly.
 		const layer = scope === 'layer' || scope === 'clip'
-			? +(await context.parseVariablesInString(options.layer as string ?? '0'))
+			? +((options.layer as string) ?? '0')
 			: 0;
 		const column = scope === 'clip'
-			? +(await context.parseVariablesInString(options.column as string ?? '0'))
+			? +((options.column as string) ?? '0')
 			: 0;
 		const layerGroup = scope === 'layergroup'
-			? +(await context.parseVariablesInString(options.layerGroup as string ?? '0'))
+			? +((options.layerGroup as string) ?? '0')
 			: 0;
-		const effectIdx = +(await context.parseVariablesInString(options.effectIdx as string ?? '0'));
+		const effectIdx = +((options.effectIdx as string) ?? '0');
 
 		const location: EffectLocation = {
 			layer: layer || undefined,
