@@ -634,6 +634,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 				this.layerGroupVolumeSubscriptions.set(layerGroup, new Set());
 			}
 			this.layerGroupVolumeSubscriptions.get(layerGroup)?.add(feedback.id);
+			// Actually register the WebSocket param subscription so updates arrive.
+			this.layerWebsocketFeedbackSubscribe(layerGroup);
 		}
 	}
 
@@ -686,6 +688,8 @@ export class LayerGroupUtils implements MessageSubscriber {
 				this.layerGroupOpacitySubscriptions.set(layerGroup, new Set());
 			}
 			this.layerGroupOpacitySubscriptions.get(layerGroup)?.add(feedback.id);
+			// Actually register the WebSocket param subscription so updates arrive.
+			this.layerGroupOpacityWebsocketSubscribe(layerGroup);
 		}
 	}
 

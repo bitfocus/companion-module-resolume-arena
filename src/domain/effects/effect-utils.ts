@@ -151,7 +151,7 @@ export class EffectUtils implements MessageSubscriber {
 			idx: idx + 1,
 			id: eff.id ?? 0,
 			name: eff.name ?? '',
-			displayName: eff.displayName ?? eff.name ?? '',
+			displayName: eff.displayname ?? eff.name ?? '',
 			bypassedParamId: eff.bypassed?.id,
 			params: eff.params,
 			mixer: eff.mixer,
@@ -179,7 +179,7 @@ export class EffectUtils implements MessageSubscriber {
 		// Layer-group effects
 		(state.layergroups ?? []).forEach((group, gi) => {
 			(group.video?.effects ?? []).forEach((eff, ei) => {
-				const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
+				const label = eff.displayname ?? eff.name ?? `Effect ${ei + 1}`;
 				const groupLabel = resolveName((group.name as any)?.value, gi + 1, 'Group');
 				choices.push({id: `layergroup:0:0:${gi + 1}:${ei + 1}`, label: `${groupLabel} – ${label} (#${ei + 1})`});
 			});
@@ -188,14 +188,14 @@ export class EffectUtils implements MessageSubscriber {
 		// Layer effects
 		(state.layers ?? []).forEach((layer, li) => {
 			(layer.video?.effects ?? []).forEach((eff, ei) => {
-				const label = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
+				const label = eff.displayname ?? eff.name ?? `Effect ${ei + 1}`;
 				const layerLabel = resolveName((layer.name as any)?.value, li + 1, 'Layer');
 				choices.push({id: `layer:${li + 1}:0:0:${ei + 1}`, label: `${layerLabel} – ${label} (#${ei + 1})`});
 			});
 			if (includeClips) {
 				(layer.clips ?? []).forEach((clip, ci) => {
 					(clip.video?.effects ?? []).forEach((eff, ei) => {
-						const effectLabel = eff.displayName ?? eff.name ?? `Effect ${ei + 1}`;
+						const effectLabel = eff.displayname ?? eff.name ?? `Effect ${ei + 1}`;
 						const layerLabel = resolveName((layer.name as any)?.value, li + 1, 'Layer');
 						const clipName = (clip.name as any)?.value as string | undefined;
 						const clipPart = clipName ? ` – ${clipName}` : '';

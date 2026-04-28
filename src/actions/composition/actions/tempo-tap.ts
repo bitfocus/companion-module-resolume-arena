@@ -15,7 +15,7 @@ export function tempoTap(
 		callback: async ({}: {options: any}) => {
 			const theApi = restApi();
 			if (theApi) {
-				const tapTempoId = compositionState.get()!.tempoController?.tempoTap?.id!
+				const tapTempoId = compositionState.get()?.tempocontroller?.tempotap?.id!
 				websocketApi()?.triggerParam(tapTempoId+'', true)
 				websocketApi()?.triggerParam(tapTempoId+'', false)
 			} else {
