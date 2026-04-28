@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {WebsocketInstance} from '../../../websocket';
-import {DeckUtils} from '../../../domain/deck/deck-util';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {DeckUtils} from '../../../domain/deck/deck-util.js';
 
 export function selectNextDeck(
 	restApi: () => ArenaRestApi | null,
@@ -14,15 +14,12 @@ export function selectNextDeck(
 		name: 'Select Next Deck',
 		options: [],
 		callback: async () => {
-			let theApi = restApi();
-			let theDeckUtils = deckUtils();
-			if (theApi && theDeckUtils) {
-				let deck = theDeckUtils.calculateNextDeck(1);
-				if (deck != undefined) {
-					websocketApi()?.triggerPath('/composition/decks/' + deck + '/select');
-				}
-			} else {
-				oscApi()?.compNextDeck();
+			const theApi = restApi();
+			const theDeckUtils = deckUtils();
+			if (!theApi || !theDeckUtils) return;
+			const deck = theDeckUtils.calculateNextDeck(1);
+			if (deck != undefined) {
+				websocketApi()?.triggerPath('/composition/decks/' + deck + '/select');
 			}
 		}
 	};

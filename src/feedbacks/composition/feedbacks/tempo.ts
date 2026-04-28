@@ -1,9 +1,13 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
-export function tempo(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {return {
-	type: 'advanced',
-	name: 'Tempo',
-	options: [],
-	callback: resolumeArenaInstance.getCompositionUtils()!.compositionTempoFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!)
-}}
+export function tempo(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
+	const utils = resolumeArenaInstance.getCompositionUtils()!;
+	return {
+		type: 'advanced',
+		name: 'Tempo',
+		options: [],
+		callback: utils.compositionTempoFeedbackCallback.bind(utils),
+		unsubscribe: utils.compositionTempoFeedbackUnsubscribe.bind(utils),
+	};
+}

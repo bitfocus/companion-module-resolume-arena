@@ -1,8 +1,7 @@
-import {CompanionVariableDefinition} from '@companion-module/base';
-import {getClipApiVariables} from './variables/clip/clipVariables';
-import {getColumnApiVariables} from './variables/column/columnVariables';
+import {getClipApiVariables} from './variables/clip/clipVariables.js';
+import {getColumnApiVariables} from './variables/column/columnVariables.js';
 
-export function getApiVariables(): CompanionVariableDefinition[] {
+export function getApiVariables(): Array<{variableId: string; name: string}> {
 	return [
 		...getClipApiVariables(),
 		...getColumnApiVariables()

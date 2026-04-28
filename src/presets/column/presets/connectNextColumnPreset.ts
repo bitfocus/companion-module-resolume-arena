@@ -1,9 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition} from '@companion-module/base';
 
-export function connectNextColumnPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
-	category: 'Column',
+export function connectNextColumnPreset(): CompanionPresetDefinition {return {
+	type: 'simple',
 	name: 'Connect Next Column',
 	style: {
 		size: '14',

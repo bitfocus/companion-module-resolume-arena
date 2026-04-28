@@ -3,19 +3,18 @@ import {
 	CompanionStaticUpgradeResult,
 	CompanionUpgradeContext
 } from '@companion-module/base';
-import {ResolumeArenaConfig} from '../config-fields';
 
 export function upgrade_v3_0_1(
-	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	_context: CompanionUpgradeContext<any>,
+	props: CompanionStaticUpgradeProps<any, any>
+): CompanionStaticUpgradeResult<any, any> {
 	let updateActions = [];
 
 	for (const action of props.actions) {
 		switch (action.actionId) {
 			case 'custom':
-				if (action.options !== undefined && action.options.relativeType === undefined) {
-					action.options.relativeType = 'n';
+				if (action.options !== undefined && (action.options as any).relativeType === undefined) {
+					(action.options as any).relativeType = 'n';
 					updateActions.push(action);
 				}
 				break;

@@ -1,6 +1,6 @@
 import {CompanionVariableDefinition} from '@companion-module/base';
 
-export function getClipApiVariables(): CompanionVariableDefinition[] {
+export function getClipApiVariables(): any[] {
 	return [
 		{variableId: 'selectedClip', name: 'selectedClip'},
 		{variableId: 'selectedClipLayer', name: 'selectedClipLayer'},

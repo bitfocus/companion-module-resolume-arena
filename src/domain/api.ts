@@ -551,7 +551,10 @@ export interface Composition {
      * @type {TempoController}
      * @memberof Composition
      */
-    tempoController?: TempoController;
+    // NOTE: lowercase to match Resolume's WebSocket JSON. The Swagger spec
+    // declares this in camelCase but the running server emits all-lowercase
+    // keys matching the OSC paths.
+    tempocontroller?: TempoController;
 }
 /**
  * Cross fade between two clips
@@ -1001,7 +1004,8 @@ export interface LayerTransition {
      * @type {ChoiceParameter}
      * @memberof LayerTransition
      */
-    blendMode?: ChoiceParameter;
+    // NOTE: lowercase per Resolume JSON (matches `playmode`, `maskmode`, `syncmode`).
+    blendmode?: ChoiceParameter;
 }
 /**
  * An unstructured collection of parameters. Parameters are presented as a map where the key is the name of the parameter and the value is the parameter itself. Parameters may be any valid parameter type.
@@ -1320,19 +1324,19 @@ export interface TempoController {
      * @type {EventParameter}
      * @memberof TempoController
      */
-    tempoPull?: EventParameter;
+    tempopull?: EventParameter;
     /**
      * 
      * @type {EventParameter}
      * @memberof TempoController
      */
-    tempoPush?: EventParameter;
+    tempopush?: EventParameter;
     /**
      * 
      * @type {EventParameter}
      * @memberof TempoController
      */
-    tempoTap?: EventParameter;
+    tempotap?: EventParameter;
     /**
      * 
      * @type {EventParameter}
@@ -1524,9 +1528,11 @@ export interface VideoEffect {
      * @type {string}
      * @memberof VideoEffect
      */
-    displayName?: string;
+    // NOTE: lowercase per Resolume JSON convention. Wrong casing here meant
+    // every effect dropdown silently fell through to `eff.name` (internal id).
+    displayname?: string;
     /**
-     * 
+     *
      * @type {BooleanParameter & any}
      * @memberof VideoEffect
      */

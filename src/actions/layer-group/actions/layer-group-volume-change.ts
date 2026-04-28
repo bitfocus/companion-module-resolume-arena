@@ -1,11 +1,11 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerGroupOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {parameterStates} from '../../../state';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {LayerGroupUtils} from '../../../domain/layer-groups/layer-group-util';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerGroupOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {parameterStates} from '../../../state.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {LayerGroupUtils} from '../../../domain/layer-groups/layer-group-util.js';
 
 export function layerGroupVolumeChange(
 	restApi: () => ArenaRestApi | null,
@@ -49,8 +49,8 @@ export function layerGroupVolumeChange(
 			let theApi = restApi();
 			let theLayerGroupUtils = layerGroupUtils();
 			if (theApi && theLayerGroupUtils) {
-				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const layerGroup = +(options.layer);
+				const inputValue: number = (+(options.value));
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 
 				let value: number | undefined;

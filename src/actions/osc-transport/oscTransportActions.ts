@@ -1,7 +1,7 @@
 import {CompanionActionDefinitions} from '@companion-module/base'
 import type {CompanionInputFieldTextInput} from '@companion-module/base'
-import type {ResolumeArenaModuleInstance} from '../../index'
-import {getSpeedValue} from '../../defaults'
+import type {ResolumeArenaModuleInstance} from '../../index.js'
+import {getSpeedValue} from '../../defaults.js'
 
 /**
  * OSC Transport Actions — Millumin-equivalent actions for Resolume Arena.
@@ -16,7 +16,8 @@ export function getOscTransportActions(
 ): CompanionActionDefinitions {
 	const oscApi = () => resolumeArenaModuleInstance.getOscApi()
 	const oscState = () => resolumeArenaModuleInstance.getOscState()
-	const parse = (s: string) => resolumeArenaModuleInstance.parseVariablesInString(s)
+	// Companion 4.3 resolves variables at the framework level before dispatching
+	const parse = async (s: string): Promise<string> => s
 	const parseIntParam = async (s: string): Promise<number | undefined> => {
 		const n = parseInt(await parse(s), 10)
 		return isNaN(n) ? undefined : n

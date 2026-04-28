@@ -1,9 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition} from '@companion-module/base';
 
-export function selectPreviousColumnPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
-	category: 'Column',
+export function selectPreviousColumnPreset(): CompanionPresetDefinition {return {
+	type: 'simple',
 	name: 'Select Previous Column',
 	style: {
 		size: '14',

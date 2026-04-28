@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base'
 import type {CompanionAdvancedFeedbackResult, CompanionFeedbackDefinitions} from '@companion-module/base'
-import type {ResolumeArenaModuleInstance} from '../../index'
+import type {ResolumeArenaModuleInstance} from '../../index.js'
 import {graphics} from 'companion-module-utils'
-import type {OptionsBar} from 'companion-module-utils/dist/graphics'
+type OptionsBar = any
 
 /**
  * OSC Transport Feedbacks — countdown color changes and progress bar.
@@ -70,7 +70,7 @@ export function getOscTransportFeedbacks(
 				const oscState = resolumeArenaInstance.getOscState();
 				if (!oscState) return {};
 
-				const layer = +await resolumeArenaInstance.parseVariablesInString(feedback.options.layer);
+				const layer = +(feedback.options.layer as string);
 				const remaining = oscState.getLayerRemainingSeconds(layer);
 				const duration = oscState.getLayerDurationSeconds(layer);
 				const progress = oscState.getLayerProgress(layer);
@@ -80,10 +80,8 @@ export function getOscTransportFeedbacks(
 				}
 
 				// Determine bar color: green → orange → red
-				const orangeResolved = await resolumeArenaInstance.parseVariablesInString(String(feedback.options.orangeSeconds ?? '30'))
-				const redResolved = await resolumeArenaInstance.parseVariablesInString(String(feedback.options.redSeconds ?? '10'))
-				const orangeThreshold = parseFloat(orangeResolved) || 30
-				const redThreshold = parseFloat(redResolved) || 10
+				const orangeThreshold = parseFloat(String(feedback.options.orangeSeconds ?? '30')) || 30
+				const redThreshold = parseFloat(String(feedback.options.redSeconds ?? '10')) || 10
 
 				let barColor: number
 				if (remaining <= redThreshold) {
@@ -114,7 +112,7 @@ export function getOscTransportFeedbacks(
 				}
 
 				return {
-					imageBuffer: graphics.bar(options),
+					imageBuffer: Buffer.from(graphics.bar(options)).toString('base64'),
 				}
 			},
 		},
@@ -149,7 +147,7 @@ export function getOscTransportFeedbacks(
 				const oscState = resolumeArenaInstance.getOscState();
 				if (!oscState) return {};
 
-				const column = +await resolumeArenaInstance.parseVariablesInString(feedback.options.column);
+				const column = +(feedback.options.column as string);
 				if (oscState.activeColumn === column) {
 					return { bgcolor: feedback.options.bg_active, color: feedback.options.text_active };
 				}

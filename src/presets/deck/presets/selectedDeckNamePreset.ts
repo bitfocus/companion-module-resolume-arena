@@ -1,9 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition} from '@companion-module/base';
 
-export function selectedDeckNamePreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
-	category: 'Deck',
+export function selectedDeckNamePreset(): CompanionPresetDefinition {return {
+	type: 'simple',
 	name: 'Selected Deck Name',
 	style: {
 		size: '14',

@@ -1,6 +1,6 @@
-import { CommonOptionsPropertyChoice } from "../common-options/properties/CommonOptionsPropertyChoice";
-import { CommonOptionsPropertyString } from "../common-options/properties/CommonOptionsPropertyString";
-import {CommonOptionsPropertyRange} from '../common-options/properties/CommonOptionsPropertyRange';
+import { CommonOptionsPropertyChoice } from "../common-options/properties/CommonOptionsPropertyChoice.js";
+import { CommonOptionsPropertyString } from "../common-options/properties/CommonOptionsPropertyString.js";
+import {CommonOptionsPropertyRange} from '../common-options/properties/CommonOptionsPropertyRange.js';
 
 export interface ClipStatus {
   id: number,

@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {LayerUtils} from '../../../domain/layers/layer-util';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {LayerUtils} from '../../../domain/layers/layer-util.js';
 
 export function layerTransitionDurationChange(
 	restApi: () => ArenaRestApi | null,
@@ -48,11 +48,11 @@ export function layerTransitionDurationChange(
 			let theApi = restApi();
 			let theLayerUtils = layerUtils();
 			if (theApi && theLayerUtils) {
-				const layer = +await resolumeArenaInstance.parseVariablesInString(options.layer);
+				const layer = +(options.layer);
 				const layerFromState = theLayerUtils.getLayerFromCompositionState(layer);
 				const layerTransitionDurationId = layerFromState?.transition?.duration?.id + '';
 
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)));
+				const inputValue: number = (+(options.value));
 				const currentValue: number | undefined = (await resolumeArenaInstance.restApi!.Layers.getSettings(layer)).transition?.duration?.value;
 
 				if (currentValue !== undefined) {

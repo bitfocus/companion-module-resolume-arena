@@ -1,9 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionPresetDefinition as CompanionButtonPresetDefinition} from '@companion-module/base';
 
-export function disconnectAllPreset(category: string): CompanionButtonPresetDefinition {return {
-	type: 'button',
-	category,
+export function disconnectAllPreset(_category: string): CompanionButtonPresetDefinition {return {
+	type: 'simple',
 	name: 'Disconnect All Clips',
 	style: {
 		size: '18',

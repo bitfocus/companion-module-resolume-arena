@@ -1,5 +1,6 @@
 import {combineRgb} from '@companion-module/base'
-import type {CompanionPresetDefinitions, CompanionButtonPresetDefinition, CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
+import type {CompanionPresetDefinitions, CompanionPresetDefinition as CompanionButtonPresetDefinition, CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
+import type {DomainPresetBundle, PresetSubGroup} from '../types.js'
 
 // ── Shared Colors ──
 const white = combineRgb(255, 255, 255)
@@ -36,7 +37,7 @@ const darkGray = combineRgb(40, 40, 40)
 // 12. Utility (composition only)
 
 function btn(
-	category: string,
+	_category: string,
 	name: string,
 	text: string,
 	color: number,
@@ -46,8 +47,7 @@ function btn(
 	feedbacks?: Array<{feedbackId: string; options: CompanionOptionValues}>
 ): CompanionButtonPresetDefinition {
 	return {
-		type: 'button',
-		category,
+		type: 'simple',
 		name,
 		style: { size: (size || 'auto') as any, text, color: color || white, bgcolor: bgcolor || darkGray },
 		steps: [{ down: actions.map(a => ({ actionId: a[0], options: a[1] })), up: [] }],
@@ -113,8 +113,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 
 		// 9. Timer Displays
 		[`${pfx}_TRT`]: {
-			type: 'button',
-			category: cat,
+			type: 'simple',
 			name: 'TRT',
 			style: {
 				size: '14',
@@ -129,8 +128,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 		},
 
 		[`${pfx}_ClipNameRemaining`]: {
-			type: 'button',
-			category: cat,
+			type: 'simple',
 			name: 'Clip Name + Remaining',
 			style: {
 				size: 'auto',
@@ -146,8 +144,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 
 		// 10. Progress Bar
 		[`${pfx}_ProgressBar`]: {
-			type: 'button',
-			category: cat,
+			type: 'simple',
 			name: 'Progress Bar',
 			style: {
 				size: '18',
@@ -235,8 +232,7 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 
 		// Info
 		oscComp_ActiveColumn: {
-			type: 'button',
-			category: cat,
+			type: 'simple',
 			name: 'Active Column',
 			style: { size: 'auto', text: `Column\\n$(${moduleId}:osc_active_column)`, color: white, bgcolor: darkGray },
 			steps: [{ down: [], up: [] }],
@@ -244,8 +240,7 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 		},
 
 		oscComp_ActiveColumnName: {
-			type: 'button',
-			category: cat,
+			type: 'simple',
 			name: 'Active Column Name',
 			style: { size: 'auto', text: `$(${moduleId}:osc_active_column_name)`, color: white, bgcolor: darkGray },
 			steps: [{ down: [], up: [] }],
@@ -253,4 +248,52 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 		},
 
 	};
+}
+
+// Bundle view: takes the flat preset record and splits it into sub-groups by
+// id prefix — Composition (oscComp_*), Layer 01..10 (oscL{N}_*), Group 01..03
+// (oscG{N}_*), plus any dynamically-discovered layers > 10 in an "Additional
+// Layers" sub-group. Sub-groups render in array order inside the section.
+export function getOscTransportPresetBundle(instanceLabel: string, extraLayers?: Set<number>): DomainPresetBundle {
+	const presets = getOscTransportPresets(instanceLabel, extraLayers)
+	const ids = Object.keys(presets)
+
+	const compIds = ids.filter(id => id.startsWith('oscComp_'))
+	const extraLayerIds = ids.filter(id => /^osc_layer_/.test(id))
+
+	const groups: PresetSubGroup[] = []
+	if (compIds.length) groups.push({id: 'osc_comp', type: 'simple', name: 'Composition', presets: compIds})
+
+	for (let l = 1; l <= 10; l++) {
+		const layerIds = ids.filter(id => id.startsWith(`oscL${l}_`))
+		if (layerIds.length) {
+			groups.push({
+				id: `osc_layer_${l}`,
+				type: 'simple',
+				name: `Layer ${String(l).padStart(2, '0')}`,
+				presets: layerIds,
+			})
+		}
+	}
+
+	for (let g = 1; g <= 3; g++) {
+		const groupIds = ids.filter(id => id.startsWith(`oscG${g}_`))
+		if (groupIds.length) {
+			groups.push({
+				id: `osc_group_${g}`,
+				type: 'simple',
+				name: `Group ${String(g).padStart(2, '0')}`,
+				presets: groupIds,
+			})
+		}
+	}
+
+	if (extraLayerIds.length) {
+		groups.push({id: 'osc_extra', type: 'simple', name: 'Additional Layers', presets: extraLayerIds})
+	}
+
+	return {
+		section: {id: 'oscTransport', name: 'OSC Transport', definitions: groups},
+		presets,
+	}
 }

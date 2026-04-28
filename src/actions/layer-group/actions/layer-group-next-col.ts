@@ -1,7 +1,7 @@
 import {CompanionActionDefinition, Regex} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function layerGroupNextCol(
 	_restApi: () => (ArenaRestApi | null),
@@ -17,7 +17,7 @@ export function layerGroupNextCol(
 				label: 'Layer Group Number',
 				id: 'layerGroup',
 				default: '1',
-				required: true,
+				minLength: 1,
 				useVariables: true
 			},
 			{
@@ -26,12 +26,12 @@ export function layerGroupNextCol(
 				label: 'Last Column',
 				id: 'lastColumn',
 				default: '4',
-				required: true,
+				minLength: 1,
 				useVariables: true
 			},
 		],
 		callback: async ({options}: {options: any}) => {
-			const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layerGroup = +(options.layer);
 			oscApi()?.layerGroupNextCol(layerGroup, options.lastColumn);
 		},
 	};
