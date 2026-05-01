@@ -196,12 +196,11 @@ export class ClipUtils implements MessageSubscriber {
 				this.resolumeArenaInstance.log('warn', 'thumb is not available for ' + clipId.getIdString());
 			}
 		}
-		if (thumbPromiseMap.length > 0) {
-			Promise.allSettled(thumbPromiseMap).then(_ => {
-				this.resolumeArenaInstance.checkFeedbacks('clipInfo');
-			});
-		}
-
+		// Always checkFeedbacks after all thumbs resolve — the non-cropped path
+		// updates clipBase64Thumbs but never triggered a re-evaluation without this.
+		Promise.allSettled(thumbPromiseMap).then(_ => {
+			this.resolumeArenaInstance.checkFeedbacks('clipInfo');
+		});
 	}
 
 	async getThumbs(clipId: ClipId, feedbackId: string) {

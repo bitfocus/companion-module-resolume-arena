@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { connectClip } from '../../src/actions/clip/actions/connect-clip'
 import { selectClip } from '../../src/actions/clip/actions/select-clip'
+import { updateClipThumbnail } from '../../src/actions/clip/actions/update-clip-thumbnail'
 import { connectColumn } from '../../src/actions/column/actions/connectColumn'
 import { selectColumn } from '../../src/actions/column/actions/selectColumn'
 import { selectDeck } from '../../src/actions/deck/actions/select-deck'
@@ -60,6 +61,37 @@ describe('selectClip', () => {
 		await (action.callback as any)({ options: { layer: '1', column: '3' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/1/clips/3/select', true)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/1/clips/3/select', false)
+	})
+})
+
+// ── updateClipThumbnail ────────────────────────────────────────────────────────
+
+describe('updateClipThumbnail — layer/column target', () => {
+	it('calls rest.Clips.updateThumb with the correct ClipId', async () => {
+		const updateThumb = vi.fn().mockResolvedValue(undefined)
+		const restApi = { Clips: { updateThumb, updateSelectedThumb: vi.fn() } }
+		const instance = makeInstance('2', '4')
+		const action = updateClipThumbnail(() => restApi as any, () => null, instance)
+		await (action.callback as any)({ options: { target: 'layerColumn', layer: '2', column: '4' } })
+		expect(updateThumb).toHaveBeenCalledOnce()
+		const clipId = updateThumb.mock.calls[0][0]
+		expect(clipId.getLayer()).toBe(2)
+		expect(clipId.getColumn()).toBe(4)
+	})
+
+	it('does nothing when restApi is null', async () => {
+		const action = updateClipThumbnail(() => null, () => null, makeInstance())
+		await expect((action.callback as any)({ options: { target: 'layerColumn', layer: '1', column: '1' } })).resolves.toBeUndefined()
+	})
+})
+
+describe('updateClipThumbnail — selected target', () => {
+	it('calls rest.Clips.updateSelectedThumb', async () => {
+		const updateSelectedThumb = vi.fn().mockResolvedValue(undefined)
+		const restApi = { Clips: { updateThumb: vi.fn(), updateSelectedThumb } }
+		const action = updateClipThumbnail(() => restApi as any, () => null, makeInstance())
+		await (action.callback as any)({ options: { target: 'selected' } })
+		expect(updateSelectedThumb).toHaveBeenCalledOnce()
 	})
 })
 
