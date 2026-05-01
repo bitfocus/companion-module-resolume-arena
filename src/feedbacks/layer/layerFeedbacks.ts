@@ -9,6 +9,7 @@ import {layerMaster} from './feedbacks/layerMaster';
 import {layerOpacity} from './feedbacks/layerOpacity';
 import {layerVolume} from './feedbacks/layerVolume';
 import {layerTransitionDuration} from './feedbacks/layerTransitionDuration';
+import {wsProgressBar} from './feedbacks/wsProgressBar';
 
 export function getLayerApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {
@@ -21,5 +22,6 @@ export function getLayerApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleI
 		layerVolume: layerVolume(resolumeArenaInstance),
 		layerTransitionDuration: layerTransitionDuration(resolumeArenaInstance),
 		layerTransportPosition: layerTransportPosition(resolumeArenaInstance),
+		wsProgressBar: wsProgressBar(resolumeArenaInstance),
 	};
 }

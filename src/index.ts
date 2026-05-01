@@ -90,7 +90,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	setupPresets(): void {
 		const presets = {}
 		if (this.restApi) {
-			Object.assign(presets, getApiPresets())
+			Object.assign(presets, getApiPresets(this.label))
 		}
 		// OSC transport presets only need the OSC send port, not the listener
 		if (this.config?.port) {

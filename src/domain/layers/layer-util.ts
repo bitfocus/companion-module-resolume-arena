@@ -227,6 +227,10 @@ export class LayerUtils implements MessageSubscriber {
 		}
 	}
 
+	getActiveColumn(layer: number): number {
+		return this.activeLayers.get(layer) ?? 0;
+	}
+
 	/////////////////////////////////////////////////
 	// ACTIVE
 	/////////////////////////////////////////////////
