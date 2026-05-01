@@ -81,6 +81,7 @@ export class ClipUtils implements MessageSubscriber {
 			}
 			if (!!data.path.match(/\/composition\/layers\/\d+\/clips\/\d+\/transport\/position/)) {
 				this.resolumeArenaInstance.checkFeedbacks('clipTransportPosition');
+				this.resolumeArenaInstance.checkFeedbacks('wsProgressBar');
 				const posMatch = data.path.match(/^\/composition\/layers\/(\d+)\/clips\/(\d+)\/transport\/position$/);
 				if (posMatch) {
 					this.updateWsLayerTimingVariables(+posMatch[1], +posMatch[2]);

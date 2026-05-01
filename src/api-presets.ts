@@ -7,14 +7,14 @@ import {getLayerGroupApiPresets} from './presets/layer-group/layerGroupPresets';
 import {getCompositionApiPresets} from './presets/composition/compositionPresets';
 import {getLayerApiPresets} from './presets/layer/layerPresets';
 
-export function getApiPresets(): CompanionPresetDefinitions {
+export function getApiPresets(instanceLabel: string): CompanionPresetDefinitions {
 	return {
 		...getClipApiPresets('Clip'),
 		...getColumnApiPresets(),
 		...getCompositionApiPresets('Composition'),
 		...getDeckApiPresets(),
 		...getEffectApiPresets('Effect'),
-		...getLayerApiPresets('Layer'),
+		...getLayerApiPresets('Layer', instanceLabel),
 		...getLayerGroupApiPresets('Layer Group'),
 	};
 }
