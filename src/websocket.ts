@@ -103,19 +103,6 @@ export class WebsocketInstance {
 					for (const subscriber of this.resolumeArenaInstance.getWebSocketSubscribers()) {
 						subscriber.effectsUpdated?.();
 					}
-				} else if (message.type === 'thumbnail_update') {
-					// setComposition((composition: any) => {
-					// 	for (const layer of composition.layers) {
-					// 		for (const clip of layer.clips) {
-					// 			if (clip.id === message.value.id) {
-					// 				clip.thumbnail = message.value;
-					// 				return {...composition};
-					// 			}
-					// 		}
-					// 	}
-					// 	// no match found, re-use existing composition
-					// 	return composition;
-					// });
 				} else if (message.type === 'parameter_update' || message.type === 'parameter_subscribed') {
 					const parameter = message as {path: string; value: string | boolean | number};
 					if (!message.path.includes('/transport/position')) {

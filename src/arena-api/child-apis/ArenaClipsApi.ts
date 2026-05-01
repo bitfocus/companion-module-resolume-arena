@@ -41,4 +41,13 @@ export class ArenaClipsApi {
 		var fileUri = `file:///${filename}`;
 		await this.arenaFetch('post', url, 'bool', fileUri);
 	}
+
+	async updateThumb(clipId: ClipId) {
+		var url = `composition/layers/${clipId.getLayer()}/clips/${clipId.getColumn()}/thumbnail/update`;
+		await this.arenaFetch('post', url, 'ok');
+	}
+
+	async updateSelectedThumb() {
+		await this.arenaFetch('post', 'composition/clips/selected/thumbnail/update', 'ok');
+	}
 }

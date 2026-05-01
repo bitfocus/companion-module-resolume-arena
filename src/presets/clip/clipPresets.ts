@@ -1,6 +1,7 @@
 import {CompanionPresetDefinitions} from '@companion-module/base';
 import {triggerClipPreset} from './presets/triggerClipPreset';
 import {selectClipPreset} from './presets/selectClipPreset';
+import {updateClipThumbnailPreset} from './presets/updateClipThumbnailPreset';
 import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100';
 import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10';
 import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10';
@@ -11,6 +12,7 @@ export function getClipApiPresets(category: string): CompanionPresetDefinitions 
 	return {
 		triggerClip: triggerClipPreset(category),
 		selectClip: selectClipPreset(category),
+		updateClipThumbnail: updateClipThumbnailPreset(category),
 		changeClipSpeedSet100: changeTemplateSet100(category, 'clip', 'Speed', false, getDefaultLayerColumnOptions()),
 		changeClipSpeedAdd10: changeTemplateAdd10(category, 'clip', 'Speed', false, getDefaultLayerColumnOptions()),
 		changeClipSpeedSubtract10: changeTemplateSubtract10(category, 'clip', 'Speed', false, getDefaultLayerColumnOptions()),
