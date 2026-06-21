@@ -46,7 +46,7 @@
 		"node-fetch": "^2.0.0",
 		"osc": "^2.4.4",
 		"pngjs": "^7.0.0",
-		"ws": "^8.20.1"
+		"ws": "^8.21.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^1.5.2",
