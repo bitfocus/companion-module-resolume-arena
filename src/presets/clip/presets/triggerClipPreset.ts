@@ -1,10 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 import {getDefaultLayerColumnOptions} from '../../../defaults.js';
 
-export function triggerClipPreset(category: string): CompanionButtonPresetDefinition {
+export function triggerClipPreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Trigger Clip',
 		style: {

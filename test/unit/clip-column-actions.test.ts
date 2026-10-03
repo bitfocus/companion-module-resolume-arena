@@ -15,11 +15,9 @@ function makeOscApi() {
 	return { connectClip: vi.fn(), selectClip: vi.fn() }
 }
 
-function makeInstance(...results: string[]) {
-	let idx = 0
+function makeInstance() {
 	return {
 		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
 	} as any
 }
 
@@ -33,7 +31,7 @@ beforeEach(() => {
 describe('connectClip — REST path', () => {
 	it('triggers connect path twice (true then false)', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('2', '3')
+		const instance = makeInstance()
 		const action = connectClip(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2', column: '3' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/2/clips/3/connect', true)
@@ -44,7 +42,7 @@ describe('connectClip — REST path', () => {
 describe('connectClip — OSC path', () => {
 	it('calls oscApi.connectClip', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('1', '2')
+		const instance = makeInstance()
 		const action = connectClip(() => null, () => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '1', column: '2' } })
 		expect(osc.connectClip).toHaveBeenCalledWith(1, 2)
@@ -56,7 +54,7 @@ describe('connectClip — OSC path', () => {
 describe('selectClip', () => {
 	it('triggers select path true then false via websocket', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1', '3')
+		const instance = makeInstance()
 		const action = selectClip(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', column: '3' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/1/clips/3/select', true)
@@ -70,7 +68,7 @@ describe('updateClipThumbnail — layer/column target', () => {
 	it('calls rest.Clips.updateThumb with the correct ClipId', async () => {
 		const updateThumb = vi.fn().mockResolvedValue(undefined)
 		const restApi = { Clips: { updateThumb, updateSelectedThumb: vi.fn() } }
-		const instance = makeInstance('2', '4')
+		const instance = makeInstance()
 		const action = updateClipThumbnail(() => restApi as any, () => null, instance)
 		await (action.callback as any)({ options: { target: 'layerColumn', layer: '2', column: '4' } })
 		expect(updateThumb).toHaveBeenCalledOnce()
@@ -101,7 +99,7 @@ describe('connectColumn — REST path', () => {
 	it('action=set triggers column connect path with the given value', async () => {
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -117,7 +115,7 @@ describe('connectColumn — REST path', () => {
 	it('action=add calls calculateConnectedNextColumn', async () => {
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn().mockReturnValue(3), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -133,7 +131,7 @@ describe('connectColumn — REST path', () => {
 	it('action=subtract calls calculateConnectedPreviousColumn', async () => {
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn().mockReturnValue(2) }
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -170,7 +168,7 @@ describe('connectColumn — byName lookup', () => {
 		} as any)
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('Verse')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -189,7 +187,7 @@ describe('connectColumn — byName lookup', () => {
 		} as any)
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('Missing')
+		const instance = makeInstance()
 		instance.log = vi.fn()
 		const action = connectColumn(
 			() => ({} as any),
@@ -210,7 +208,7 @@ describe('connectColumn — byName lookup', () => {
 		} as any)
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('Test Col 2')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -229,7 +227,7 @@ describe('connectColumn — byName lookup', () => {
 		} as any)
 		const ws = makeWsApi()
 		const columnUtils = { calculateConnectedNextColumn: vi.fn(), calculateConnectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('Intro')
+		const instance = makeInstance()
 		const action = connectColumn(
 			() => null,
 			() => ws as any,
@@ -248,7 +246,7 @@ describe('selectColumn', () => {
 	it('action=set triggers column select path (false then true)', async () => {
 		const ws = makeWsApi()
 		const columnUtils = { calculateSelectedNextColumn: vi.fn(), calculateSelectedPreviousColumn: vi.fn() }
-		const instance = makeInstance('3')
+		const instance = makeInstance()
 		const action = selectColumn(
 			() => ({} as any),
 			() => ws as any,

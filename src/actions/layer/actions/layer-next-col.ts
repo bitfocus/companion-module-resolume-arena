@@ -6,7 +6,7 @@ import {ResolumeArenaModuleInstance} from '../../../index.js';
 export function layerNextCol(
 	_restApi: () => (ArenaRestApi | null),
 	oscApi: () => (ArenaOscApi | null),
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Next Column',
@@ -17,12 +17,12 @@ export function layerNextCol(
 				label: 'Layer Number',
 				id: 'layerN',
 				default: '1',
-				required: true,
+				minLength: 1,
 				useVariables: true
 			}
 		],
 		callback: async ({options}: {options: any}) => {
-			const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+			const layer = +options.layer;
 			oscApi()?.layerNextCol(layer);
 		},
 	};

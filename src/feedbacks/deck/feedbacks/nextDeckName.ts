@@ -5,6 +5,7 @@ export function nextDeckName(resolumeArenaInstance: ResolumeArenaModuleInstance)
 	return {
 		type: 'advanced',
 		name: 'Next Deck Name',
+		affectedProperties: ['text'],
 		options: [{
 			id: 'next',
 			type: 'number',

@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../preset-structure.js';
 
-export function effectParamClipListIncreasePreset(category: string): CompanionButtonPresetDefinition {
+export function effectParamClipListIncreasePreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Increase Effect Parameter (Clip — from list)',
 		style: {

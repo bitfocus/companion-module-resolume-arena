@@ -6,6 +6,7 @@ export function layerGroupColumnName(resolumeArenaInstance: ResolumeArenaModuleI
 	return {
 		type: 'advanced',
 		name: 'Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), ...getColumnOption()],
 		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};

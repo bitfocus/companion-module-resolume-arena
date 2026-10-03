@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ClipUtils } from '../../src/domain/clip/clip-utils.js'
 import { parameterStates, compositionState } from '../../src/state.js'
+import { FeedbackSubscriptionRegistry } from '../../src/feedbacks/with-subscription.js'
 
 const stubProxy = new Proxy({}, { get: () => vi.fn() })
 
@@ -21,16 +22,11 @@ function makeMockModule() {
 		getConfig: vi.fn().mockReturnValue({ useCroppedThumbs: false }),
 		getClipUtils: vi.fn().mockReturnValue(stubProxy),
 		getLayerUtils: vi.fn().mockReturnValue(stubProxy),
+		getFeedbackSubscriptions: vi.fn().mockReturnValue(new FeedbackSubscriptionRegistry()),
 		restApi: undefined,
 		_wsApi: wsApi,
 	}
 	return instance as any
-}
-
-function makeContext(_layer: string, _column?: string) {
-	return {
-		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
-	} as any
 }
 
 function makeFeedback(layer: string, column: string, id = 'fb1') {
@@ -244,7 +240,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/1/clips/2/connect': { value: 'Previewing' },
 			'/composition/layers/1/clips/2/name': { value: 'MyAwesomeClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '2'), makeContext('1', '2'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '2'))
 		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'MyAwesomeClip' })
 	})
 
@@ -255,7 +251,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/3/clips/4/connect': { value: 'Connected & previewing' },
 			'/composition/layers/3/clips/4/name': { value: 'OtherClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('3', '4'), makeContext('3', '4'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('3', '4'))
 		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'OtherClip' })
 	})
 
@@ -266,7 +262,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/name': { value: 'SomeClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '1'), makeContext('1', '1'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '1'))
 		expect(mod.setVariableValues).not.toHaveBeenCalledWith({ previewedClipName: expect.anything() })
 	})
 })
@@ -279,7 +275,7 @@ describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 			'/composition/layers/1/clips/2/select': { value: true },
 			'/composition/layers/1/clips/2/name': { value: 'TestClip' },
 		} as any)
-		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'), makeContext('1', '2'))
+		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'))
 		expect(result).toBe(true)
 	})
 
@@ -289,7 +285,7 @@ describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 		parameterStates.set({
 			'/composition/layers/1/clips/2/select': { value: false },
 		} as any)
-		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'), makeContext('1', '2'))
+		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'))
 		expect(result).toBeFalsy()
 	})
 })

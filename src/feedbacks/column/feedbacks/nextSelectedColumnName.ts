@@ -4,6 +4,7 @@ import {CompanionFeedbackDefinition} from '@companion-module/base';
 export function nextSelectedColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {return {
 	type: 'advanced',
 	name: 'Next Selected Column Name',
+	affectedProperties: ['text'],
 	options: [{
 		id: 'next',
 		type: 'number',

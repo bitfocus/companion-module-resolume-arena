@@ -2,6 +2,7 @@ import {CompanionFeedbackDefinition} from '@companion-module/base';
 import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {EffectScope} from '../../../domain/effects/effect-utils.js';
 import {buildScopedEffectOptions, buildParamNameOptions} from '../../../actions/effect/effect-action-options.js';
+import {withSubscription} from '../../with-subscription.js';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',
@@ -16,12 +17,15 @@ export function effectParameter(resolumeArenaInstance: ResolumeArenaModuleInstan
 	return {
 		type: 'advanced',
 		name: `Effect Parameter Value (${SCOPE_LABELS[scope]}${nameSuffix})`,
+		affectedProperties: ['text'],
 		options: [
 			...buildScopedEffectOptions(eu, scope, withClipList),
 			...buildParamNameOptions(eu),
 		],
-		callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
-		subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),
-		unsubscribe: eu.effectParameterFeedbackUnsubscribe.bind(eu, scope),
+		...withSubscription(resolumeArenaInstance.getFeedbackSubscriptions(), {
+			callback: eu.effectParameterFeedbackCallback.bind(eu, scope),
+			subscribe: eu.effectParameterFeedbackSubscribe.bind(eu, scope),
+			unsubscribe: eu.effectParameterFeedbackUnsubscribe.bind(eu, scope),
+		}),
 	};
 }

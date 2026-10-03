@@ -33,7 +33,7 @@ export function effectBypass(resolumeArenaInstance: ResolumeArenaModuleInstance,
 		callback: async ({options}) => {
 			const ws = resolumeArenaInstance.getWebsocketApi();
 			if (!ws) return;
-			const resolved = await eu.parseScopeOptionsFromAction({...options, scope}, resolumeArenaInstance);
+			const resolved = await eu.parseScopeOptionsFromAction({...options, scope});
 			if (!resolved.effectIdx) return;
 			const {key, paramId, path} = eu.resolveBypassKey(resolved.scope, resolved.location, resolved.effectIdx);
 			const bypassed = options.bypass === 'toggle' ? !parameterStates.get()[key]?.value : options.bypass === 'on';

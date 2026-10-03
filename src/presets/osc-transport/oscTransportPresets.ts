@@ -1,5 +1,6 @@
 import {combineRgb} from '@companion-module/base'
-import type {CompanionPresetDefinitions, CompanionButtonPresetDefinition, CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
+import type {CompanionPresetFeedback, CompanionOptionValues} from '@companion-module/base'
+import type {CategorizedPresets, CategorizedPreset} from '../preset-structure.js'
 
 // ── Shared Colors ──
 const white = combineRgb(255, 255, 255)
@@ -44,9 +45,9 @@ function btn(
 	size: string,
 	actions: Array<[string, Record<string, string>]>,
 	feedbacks?: Array<{feedbackId: string; options: CompanionOptionValues}>
-): CompanionButtonPresetDefinition {
+): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name,
 		style: { size: (size || 'auto') as any, text, color: color || white, bgcolor: bgcolor || darkGray },
@@ -55,9 +56,9 @@ function btn(
 	}
 }
 
-export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<number>): CompanionPresetDefinitions {
+export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<number>): CategorizedPresets {
 	const moduleId = instanceLabel || 'resolume-arena'
-	const presets: CompanionPresetDefinitions = {}
+	const presets: CategorizedPresets = {}
 	for (let l = 1; l <= 10; l++) Object.assign(presets, getLayerPresets(l, moduleId));
 	if (extraLayers) {
 		for (const l of extraLayers) {
@@ -69,7 +70,7 @@ export function getOscTransportPresets(instanceLabel: string, extraLayers?: Set<
 	return presets
 }
 
-function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefinitions {
+function getLayerPresets(layer: number, moduleId: string): CategorizedPresets {
 	const cat = `OSC Transport / Layer ${layer}`
 	const L = `${layer}`
 	const pfx = `oscL${L}`
@@ -113,7 +114,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 
 		// 9. Timer Displays
 		[`${pfx}_TRT`]: {
-			type: 'button',
+			type: 'simple',
 			category: cat,
 			name: 'TRT',
 			style: {
@@ -129,7 +130,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 		},
 
 		[`${pfx}_ClipNameRemaining`]: {
-			type: 'button',
+			type: 'simple',
 			category: cat,
 			name: 'Clip Name + Remaining',
 			style: {
@@ -146,7 +147,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 
 		// 10. Progress Bar
 		[`${pfx}_ProgressBar`]: {
-			type: 'button',
+			type: 'simple',
 			category: cat,
 			name: 'Progress Bar',
 			style: {
@@ -163,7 +164,7 @@ function getLayerPresets(layer: number, moduleId: string): CompanionPresetDefini
 	}
 }
 
-function getGroupPresets(group: number): CompanionPresetDefinitions {
+function getGroupPresets(group: number): CategorizedPresets {
 	const cat = `OSC Transport / Group ${group}`
 	const G = `${group}`
 	const pfx = `oscG${G}`
@@ -197,7 +198,7 @@ function getGroupPresets(group: number): CompanionPresetDefinitions {
 	}
 }
 
-function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
+function getCompositionPresets(moduleId: string): CategorizedPresets {
 	const cat = 'OSC Transport / Composition'
 
 	return {
@@ -235,7 +236,7 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 
 		// Info
 		oscComp_ActiveColumn: {
-			type: 'button',
+			type: 'simple',
 			category: cat,
 			name: 'Active Column',
 			style: { size: 'auto', text: `Column\\n$(${moduleId}:osc_active_column)`, color: white, bgcolor: darkGray },
@@ -244,7 +245,7 @@ function getCompositionPresets(moduleId: string): CompanionPresetDefinitions {
 		},
 
 		oscComp_ActiveColumnName: {
-			type: 'button',
+			type: 'simple',
 			category: cat,
 			name: 'Active Column Name',
 			style: { size: 'auto', text: `$(${moduleId}:osc_active_column_name)`, color: white, bgcolor: darkGray },

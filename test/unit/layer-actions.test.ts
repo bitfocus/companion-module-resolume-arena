@@ -19,18 +19,10 @@ function makeOscApi() {
 	return { bypassLayer: vi.fn(), clearLayer: vi.fn(), layerNextCol: vi.fn(), layerPrevCol: vi.fn() }
 }
 
-function makeInstance(parseResults: string[] | string = '1') {
-	const results = Array.isArray(parseResults) ? [...parseResults] : null
-	let callIndex = 0
+function makeInstance() {
 	return {
 		log: vi.fn(),
 		checkFeedbacks: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => {
-			if (results) {
-				return Promise.resolve(results[callIndex++] ?? results[results.length - 1])
-			}
-			return Promise.resolve(parseResults as string)
-		}),
 		restApi: null as any,
 	} as any
 }
@@ -55,7 +47,7 @@ beforeEach(() => {
 describe('bypassLayer — REST path', () => {
 	it('bypass=on sets bypassed to true', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'on' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/bypassed', true)
@@ -63,7 +55,7 @@ describe('bypassLayer — REST path', () => {
 
 	it('bypass=off sets bypassed to false', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'off' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/bypassed', false)
@@ -72,7 +64,7 @@ describe('bypassLayer — REST path', () => {
 	it('bypass=toggle flips from true to false', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/layers/1/bypassed': { value: true } } as any)
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'toggle' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/bypassed', false)
@@ -82,7 +74,7 @@ describe('bypassLayer — REST path', () => {
 describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 	it('bypass=on updates parameterStates immediately and calls checkFeedbacks', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'on' } })
 		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(true)
@@ -92,7 +84,7 @@ describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 	it('bypass=off updates parameterStates immediately to false', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/layers/1/bypassed': { value: true } } as any)
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'off' } })
 		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(false)
@@ -102,7 +94,7 @@ describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 	it('bypass=toggle updates parameterStates to flipped value immediately', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/layers/1/bypassed': { value: false } } as any)
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'toggle' } })
 		expect(parameterStates.get()['/composition/layers/1/bypassed']?.value).toBe(true)
@@ -114,7 +106,7 @@ describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 		// bypass is toggled, parameterStates is updated optimistically, checkFeedbacks fires.
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/layers/2/bypassed': { value: true } } as any)
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = bypassLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2', bypass: 'toggle' } })
 		// State should reflect the new bypassed=false immediately, without needing a WS response
@@ -124,7 +116,7 @@ describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 
 	it('does not call checkFeedbacks when restApi is null (OSC path)', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => null, () => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'on' } })
 		expect(instance.checkFeedbacks).not.toHaveBeenCalled()
@@ -134,7 +126,7 @@ describe('bypassLayer — optimistic state update and checkFeedbacks', () => {
 describe('bypassLayer — OSC path', () => {
 	it('bypass=on calls oscApi.bypassLayer with value 1', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = bypassLayer(() => null, () => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '2', bypass: 'on' } })
 		expect(osc.bypassLayer).toHaveBeenCalledWith(2, expect.objectContaining({ value: 1 }))
@@ -142,7 +134,7 @@ describe('bypassLayer — OSC path', () => {
 
 	it('bypass=toggle via OSC logs warning and does not call bypassLayer', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = bypassLayer(() => null, () => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '1', bypass: 'toggle' } })
 		expect(instance.log).toHaveBeenCalledWith('warn', expect.any(String))
@@ -155,7 +147,7 @@ describe('bypassLayer — OSC path', () => {
 describe('clearLayer — REST path', () => {
 	it('triggers clear path via websocket', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('3')
+		const instance = makeInstance()
 		const action = clearLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '3' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/3/clear')
@@ -165,7 +157,7 @@ describe('clearLayer — REST path', () => {
 describe('clearLayer — OSC path', () => {
 	it('calls oscApi.clearLayer when no REST api', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = clearLayer(() => null, () => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '2' } })
 		expect(osc.clearLayer).toHaveBeenCalledWith(2)
@@ -177,7 +169,7 @@ describe('clearLayer — OSC path', () => {
 describe('soloLayer', () => {
 	it('solo=on sets solo to true', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = soloLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', solo: 'on' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/solo', true)
@@ -185,7 +177,7 @@ describe('soloLayer', () => {
 
 	it('solo=off sets solo to false', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = soloLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', solo: 'off' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/1/solo', false)
@@ -194,7 +186,7 @@ describe('soloLayer', () => {
 	it('solo=toggle flips current state', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/layers/2/solo': { value: true } } as any)
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = soloLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2', solo: 'toggle' } })
 		expect(ws.setPath).toHaveBeenCalledWith('/composition/layers/2/solo', false)
@@ -213,7 +205,7 @@ describe('soloLayer', () => {
 describe('selectLayer', () => {
 	it('triggers select path via websocket', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = selectLayer(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layers/2/select')
@@ -232,7 +224,7 @@ describe('selectLayer', () => {
 describe('layerNextCol', () => {
 	it('calls oscApi.layerNextCol with parsed layer number', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = layerNextCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '2' } })
 		expect(osc.layerNextCol).toHaveBeenCalledWith(2)
@@ -242,7 +234,7 @@ describe('layerNextCol', () => {
 describe('layerPrevCol', () => {
 	it('calls oscApi.layerPrevCol with parsed layer number', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('3')
+		const instance = makeInstance()
 		const action = layerPrevCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '3' } })
 		expect(osc.layerPrevCol).toHaveBeenCalledWith(3)
@@ -254,7 +246,7 @@ describe('layerPrevCol', () => {
 describe('layerMasterChange', () => {
 	it('set — calls setPath with inputValue/100', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '50'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerMasterChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -263,7 +255,7 @@ describe('layerMasterChange', () => {
 
 	it('add — adds inputValue/100 to current master', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '10'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer({ master: { value: 0.5, id: 100 } })) } }
 		const action = layerMasterChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'add', value: '10' } })
@@ -272,7 +264,7 @@ describe('layerMasterChange', () => {
 
 	it('subtract — subtracts inputValue/100 from current master', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '20'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer({ master: { value: 0.5, id: 100 } })) } }
 		const action = layerMasterChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'subtract', value: '20' } })
@@ -300,7 +292,7 @@ describe('layerOpacityChange', () => {
 
 	it('set — calls subscribeParam + setParam with new value', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '80'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerOpacityChange(() => ({} as any), () => ws as any, () => null, () => makeLayerUtils() as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '80' } })
@@ -310,7 +302,7 @@ describe('layerOpacityChange', () => {
 
 	it('add — adds inputValue/100 to current opacity', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '10'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerOpacityChange(() => ({} as any), () => ws as any, () => null, () => makeLayerUtils() as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'add', value: '10' } })
@@ -328,7 +320,7 @@ describe('layerOpacityChange', () => {
 	it('does not call subscribeParam or setParam when layer has no opacity id (#140)', async () => {
 		const ws = makeWsApi()
 		const layerUtils = { getLayerFromCompositionState: vi.fn().mockReturnValue(undefined) }
-		const instance = makeInstance(['1', '50'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerOpacityChange(() => ({} as any), () => ws as any, () => null, () => layerUtils as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -351,7 +343,7 @@ describe('layerVolumeChange', () => {
 
 	it('set — calls setParam with raw value (not /100)', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '0.5'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerVolumeChange(() => ({} as any), () => ws as any, () => null, () => makeLayerUtils() as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '0.5' } })
@@ -368,7 +360,7 @@ describe('layerVolumeChange', () => {
 	it('does not call subscribeParam or setParam when layer has no volume id (#140)', async () => {
 		const ws = makeWsApi()
 		const layerUtils = { getLayerFromCompositionState: vi.fn().mockReturnValue(undefined) }
-		const instance = makeInstance(['1', '-6'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerVolumeChange(() => ({} as any), () => ws as any, () => null, () => layerUtils as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '-6' } })
@@ -391,7 +383,7 @@ describe('layerTransitionDurationChange', () => {
 
 	it('set — calls setParam with raw value', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '1.5'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerTransitionDurationChange(() => ({} as any), () => ws as any, () => null, () => makeLayerUtils() as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '1.5' } })
@@ -400,7 +392,7 @@ describe('layerTransitionDurationChange', () => {
 
 	it('add — adds to current transition duration', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance(['1', '0.5'])
+		const instance = makeInstance()
 		instance.restApi = { Layers: { getSettings: vi.fn().mockResolvedValue(makeRestLayer()) } }
 		const action = layerTransitionDurationChange(() => ({} as any), () => ws as any, () => null, () => makeLayerUtils() as any, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'add', value: '0.5' } })

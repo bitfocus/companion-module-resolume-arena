@@ -134,7 +134,6 @@ describe.skipIf(!resolume)('connectColumn byName — # placeholder expansion', (
 		const fakeColumnUtils: any = {}
 		const fakeInstance: any = {
 			log: () => {},
-			parseVariablesInString: (s: string) => Promise.resolve(s),
 		}
 		const action = connectColumn(
 			() => ({} as any),
@@ -188,7 +187,6 @@ describe.skipIf(!resolume)('connectColumn byName — triggers correct column in 
 		}
 		const fakeInstance: any = {
 			log: () => {},
-			parseVariablesInString: (s: string) => Promise.resolve(s),
 		}
 
 		// Look up by the display name (REST value, which may include # already expanded)

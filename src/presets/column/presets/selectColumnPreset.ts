@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
 import {getDefaultColumnOptions, getDefaultStyleCyan, getDefaultStyleGreen} from '../../../defaults.js';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectColumnPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function selectColumnPreset(): CategorizedPreset {return {
+	type: 'simple',
 	category: 'Column',
 	name: 'Select Column By Index',
 	style: {

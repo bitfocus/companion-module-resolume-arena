@@ -3,6 +3,7 @@ import {getDefaultStyleRed} from '../../../defaults.js';
 import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {EffectScope} from '../../../domain/effects/effect-utils.js';
 import {buildScopedEffectOptions} from '../../../actions/effect/effect-action-options.js';
+import {withSubscription} from '../../with-subscription.js';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',
@@ -19,8 +20,10 @@ export function effectBypassed(resolumeArenaInstance: ResolumeArenaModuleInstanc
 		name: `Effect Bypassed (${SCOPE_LABELS[scope]}${nameSuffix})`,
 		defaultStyle: getDefaultStyleRed(),
 		options: buildScopedEffectOptions(eu, scope, withClipList),
-		callback: eu.effectBypassedFeedbackCallback.bind(eu, scope),
-		subscribe: eu.effectBypassedFeedbackSubscribe.bind(eu, scope),
-		unsubscribe: eu.effectBypassedFeedbackUnsubscribe.bind(eu, scope),
+		...withSubscription(resolumeArenaInstance.getFeedbackSubscriptions(), {
+			callback: eu.effectBypassedFeedbackCallback.bind(eu, scope),
+			subscribe: eu.effectBypassedFeedbackSubscribe.bind(eu, scope),
+			unsubscribe: eu.effectBypassedFeedbackUnsubscribe.bind(eu, scope),
+		}),
 	};
 }
