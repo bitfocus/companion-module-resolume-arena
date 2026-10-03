@@ -1,4 +1,4 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackAdvancedEvent, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
 import {drawPercentage, drawVolume} from '../../image-utils.js';
 import {ResolumeArenaModuleInstance} from '../../index.js';
 import {compositionState, parameterStates} from '../../state.js';
@@ -547,14 +547,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupMasterFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const master = parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 		if (layerGroup !== undefined && master !== undefined) {
 			return {
 				text: Math.round(master * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(master)
+				imageBuffer: drawPercentage(master, feedback.image)
 			};
 		}
 		return {text: '?'};
@@ -588,14 +588,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Volume
 	/////////////////////////////////////////////////
 
-	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupVolumeFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const volume = parameterStates.get()['/composition/groups/' + layerGroup + '/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
 				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
-				imageBuffer: drawVolume(volume)
+				imageBuffer: drawVolume(volume, 0, feedback.image)
 			};
 		}
 		return {text: '?'};
@@ -640,14 +640,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupOpacityFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const opacity = parameterStates.get()['/composition/groups/' + layerGroup + '/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(opacity)
+				imageBuffer: drawPercentage(opacity, feedback.image)
 			};
 		}
 		return {text: '?'};
@@ -692,14 +692,14 @@ export class LayerGroupUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerGroupSpeedFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layerGroup = +(feedback.options.layerGroup as string);
 		const speed = parameterStates.get()['/composition/groups/' + layerGroup + '/speed']?.value;
 		if (layerGroup !== undefined && speed !== undefined) {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(speed)
+				imageBuffer: drawPercentage(speed, feedback.image)
 			};
 		}
 		return {text: '?'};
