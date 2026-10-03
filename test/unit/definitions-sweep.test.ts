@@ -5,6 +5,7 @@ import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscT
 import { configFields } from '../../src/config-fields.js'
 import { compositionState, parameterStates } from '../../src/state.js'
 import { makeModuleInstance } from './helpers/host-context.js'
+import { isDynamicValue, validateOptionValue } from './helpers/host-validation.js'
 
 /**
  * Structural checks over every action, feedback and config field the module registers,
@@ -79,6 +80,36 @@ describe.each(['actions', 'feedbacks'] as const)('%s — option fields', (kind) 
 					expect(target!.disableAutoExpression, `${kind}.${id}: "${ref}" must set disableAutoExpression`).toBe(true)
 					checked++
 				}
+			}
+		}
+		expect(checked).toBeGreaterThan(0)
+	})
+})
+
+describe.each(['actions', 'feedbacks'] as const)('%s — values Companion 5 validates', (kind) => {
+	const definitions = () => Object.entries(build()[kind]) as [string, { options: Field[] }][]
+
+	// A freshly added action/feedback gets the defaults; if one is invalid Companion skips the whole entity
+	it('has defaults that pass the host validation of their own field', () => {
+		const invalid: string[] = []
+		for (const [id, definition] of definitions()) {
+			for (const option of definition.options) {
+				if (!('default' in option) || option.default === undefined || isDynamicValue(option.default)) continue
+				const error = validateOptionValue({ ...option, allowInvalidValues: false }, option.default)
+				if (error) invalid.push(`${kind}.${id}.${option.id} = ${JSON.stringify(option.default)}: ${error}`)
+			}
+		}
+		expect(invalid).toEqual([])
+	})
+
+	// Their choices depend on the loaded composition; a stored value may be missing from the current list
+	it('lets composition-dependent dropdowns pass values that are not in the current choices', () => {
+		let checked = 0
+		for (const [id, definition] of definitions()) {
+			for (const option of definition.options) {
+				if (!/^(effectChoice|paramChoice_\w+|valueChoice_\w+)$/.test(option.id)) continue
+				expect(option.allowInvalidValues, `${kind}.${id}.${option.id}`).toBe(true)
+				checked++
 			}
 		}
 		expect(checked).toBeGreaterThan(0)

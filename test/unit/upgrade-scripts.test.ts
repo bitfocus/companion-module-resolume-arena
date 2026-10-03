@@ -7,6 +7,7 @@ import { upgrade_v3_5_2 } from '../../src/upgrade-scripts/upgrade_v3_5_2.js'
 import { upgrade_v3_7_0 } from '../../src/upgrade-scripts/upgrade_v3_7_0.js'
 import { upgrade_v3_10_0 } from '../../src/upgrade-scripts/upgrade_v3_10_0.js'
 import { upgrade_v3_13_0 } from '../../src/upgrade-scripts/upgrade_v3_13_0.js'
+import { upgrade_v4_0_0 } from '../../src/upgrade-scripts/upgrade_v4_0_0.js'
 
 // API 2.x hands upgrade scripts every option wrapped as { isExpression, value }
 const value = (v: string | number | boolean) => ({ isExpression: false as const, value: v })
@@ -43,6 +44,7 @@ describe('getUpgradeScripts', () => {
 			upgrade_v3_7_0,
 			upgrade_v3_10_0,
 			upgrade_v3_13_0,
+			upgrade_v4_0_0,
 		])
 	})
 
@@ -176,6 +178,115 @@ describe('upgrade_v3_13_0', () => {
 
 	it('leaves an existing lookupMode alone', () => {
 		const result = upgrade_v3_13_0(context, props([action('connectColumn', { lookupMode: value('byName') })]))
+		expect(result.updatedActions).toHaveLength(0)
+	})
+})
+
+describe('upgrade_v4_0_0 — connectedClip colours', () => {
+	// Companion 5 skips a feedback whose number colorpicker holds a CSS string, which removed the
+	// coloured border that marks the active clip.
+	it('converts CSS colour strings to colour numbers', () => {
+		const result = upgrade_v4_0_0(
+			context,
+			props(
+				[],
+				[
+					feedback('connectedClip', {
+						layer: value('1'),
+						column: value('2'),
+						color_connected: value('rgb(0, 255, 0)'),
+						color_connected_selected: value('rgb(0,255,255)'),
+						color_connected_preview: value('rgb(255, 255, 0)'),
+						color_preview: value('rgb(255, 0, 0)'),
+					}),
+				]
+			)
+		)
+		expect(result.updatedFeedbacks).toHaveLength(1)
+		expect(result.updatedFeedbacks[0].options).toEqual({
+			layer: value('1'),
+			column: value('2'),
+			color_connected: value(0x00ff00),
+			color_connected_selected: value(0x00ffff),
+			color_connected_preview: value(0xffff00),
+			color_preview: value(0xff0000),
+		})
+	})
+
+	it('understands hex colours and numeric strings', () => {
+		const result = upgrade_v4_0_0(
+			context,
+			props([], [feedback('connectedClip', { color_connected: value('#ff8000'), color_preview: value('#0f0'), color_connected_preview: value('65280') })])
+		)
+		expect(result.updatedFeedbacks[0].options).toEqual({
+			color_connected: value(0xff8000),
+			color_preview: value(0x00ff00),
+			color_connected_preview: value(65280),
+		})
+	})
+
+	it('leaves colour numbers and expressions alone', () => {
+		const options = { color_connected: value(65280), color_preview: expression('$(local:colour)') }
+		const result = upgrade_v4_0_0(context, props([], [feedback('connectedClip', { ...options })]))
+		expect(result.updatedFeedbacks).toHaveLength(0)
+	})
+
+	it('leaves a string it cannot read as a colour alone', () => {
+		const result = upgrade_v4_0_0(context, props([], [feedback('connectedClip', { color_connected: value('not a colour') })]))
+		expect(result.updatedFeedbacks).toHaveLength(0)
+	})
+
+	it('does not touch other feedbacks', () => {
+		const result = upgrade_v4_0_0(context, props([], [feedback('oscActiveColumn', { bg_active: value('rgb(0, 255, 0)') })]))
+		expect(result.updatedFeedbacks).toHaveLength(0)
+	})
+})
+
+describe('upgrade_v4_0_0 — parseVariables() text left in plain option values', () => {
+	// A plain (non-expression) value holding the text parseVariables("...") can never match the number
+	// regex of the layer/column fields, so Companion skips the action. Restore the variable text.
+	it('unwraps it for actions', () => {
+		const result = upgrade_v4_0_0(
+			context,
+			props([action('triggerClip', { layer: value('3'), column: value('parseVariables("$(internal:custom_col1)")') })])
+		)
+		expect(result.updatedActions).toHaveLength(1)
+		expect(result.updatedActions[0].options).toEqual({ layer: value('3'), column: value('$(internal:custom_col1)') })
+	})
+
+	it('unwraps it for feedbacks, restoring escaped characters', () => {
+		const result = upgrade_v4_0_0(
+			context,
+			props([], [feedback('clipInfo', { layer: value('parseVariables("$(arena:selectedClipLayer)")'), column: value('parseVariables("a \\"b\\" \\\\ c")') })])
+		)
+		expect(result.updatedFeedbacks[0].options).toEqual({ layer: value('$(arena:selectedClipLayer)'), column: value('a "b" \\ c') })
+	})
+
+	it('keeps real expressions as they are', () => {
+		const result = upgrade_v4_0_0(
+			context,
+			props([action('triggerClip', { layer: expression('parseVariables("$(internal:custom_layer1)")'), column: value('2') })])
+		)
+		expect(result.updatedActions).toHaveLength(0)
+	})
+
+	it('does not report untouched actions and feedbacks', () => {
+		const result = upgrade_v4_0_0(context, props([action('triggerClip', { layer: value('1'), column: value('$(internal:custom_col1)') })], [feedback('clipInfo', { layer: value(1) })]))
+		expect(result.updatedActions).toHaveLength(0)
+		expect(result.updatedFeedbacks).toHaveLength(0)
+	})
+})
+
+describe('upgrade_v4_0_0 — Resync Tempo buttons made from the old preset', () => {
+	// The preset used the action id `tempoResync`, which never existed; the action is `resyncTap`.
+	it('points them at the existing action', () => {
+		const result = upgrade_v4_0_0(context, props([action('tempoResync', {})]))
+		expect(result.updatedActions).toHaveLength(1)
+		expect(result.updatedActions[0].actionId).toBe('resyncTap')
+	})
+
+	it('leaves resyncTap and tempoTap alone', () => {
+		const result = upgrade_v4_0_0(context, props([action('resyncTap', {}), action('tempoTap', {})]))
 		expect(result.updatedActions).toHaveLength(0)
 	})
 })
