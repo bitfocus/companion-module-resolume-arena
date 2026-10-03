@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
 import type {CategorizedPreset} from '../../preset-structure.js';
-import {getDefaultLayerColumnOptions} from '../../../defaults.js';
+import {getDefaultConnectedClipColors, getDefaultLayerColumnOptions} from '../../../defaults.js';
 
 export function triggerClipPreset(category: string): CategorizedPreset {
 	return {
@@ -29,10 +29,7 @@ export function triggerClipPreset(category: string): CategorizedPreset {
 				feedbackId: 'connectedClip',
 				options: {
 					...getDefaultLayerColumnOptions(),
-					color_connected: 'rgb(0, 255, 0)',
-					color_connected_selected: 'rgb(0,255,255)',
-					color_connected_preview: 'rgb(255, 255, 0)',
-					color_preview: 'rgb(255, 0, 0)'
+					...getDefaultConnectedClipColors()
 				}
 			},
 			{

@@ -7,6 +7,7 @@ import { getApiFeedbacks } from '../../src/api-feedback.js'
 import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscTransportFeedbacks.js'
 import { compositionState, parameterStates } from '../../src/state.js'
 import { makeModuleInstance } from './helpers/host-context.js'
+import { isDynamicValue, validateOptionValue } from './helpers/host-validation.js'
 
 function preset(category: string, name = 'Preset'): CategorizedPresets[string] {
 	return {
@@ -152,6 +153,57 @@ describe('module presets (API 2.x structure)', () => {
 				expect(feedbackIds.has(feedback.feedbackId as string), `${id}: feedback ${String(feedback.feedbackId)}`).toBe(true)
 			}
 		}
+	})
+
+	// Companion 5 logs a warning for presets that pass option keys the definition does not declare
+	it('only passes option keys that the action or feedback declares', () => {
+		const { instance } = makeModuleInstance()
+		const actions = getActions(instance) as Record<string, any>
+		const feedbacks = { ...getApiFeedbacks(instance), ...getOscTransportFeedbacks(instance) } as Record<string, any>
+		const unknown: string[] = []
+		const check = (presetId: string, kind: string, id: string, definition: any, options: Record<string, unknown>) => {
+			const declared = new Set((definition?.options ?? []).map((o: any) => o.id))
+			for (const key of Object.keys(options)) {
+				if (!declared.has(key)) unknown.push(`${presetId}: ${kind} ${id} has no option "${key}"`)
+			}
+		}
+		for (const [presetId, definition] of Object.entries(all())) {
+			for (const step of definition.steps) {
+				for (const action of [...step.down, ...step.up]) {
+					check(presetId, 'action', String(action.actionId), actions[action.actionId as string], action.options as any)
+				}
+			}
+			for (const feedback of definition.feedbacks) {
+				check(presetId, 'feedback', String(feedback.feedbackId), feedbacks[feedback.feedbackId as string], feedback.options as any)
+			}
+		}
+		expect(unknown).toEqual([])
+	})
+
+	// Companion 5 skips an action/feedback when one of its option values fails validation
+	it('only passes option values that Companion accepts for the field', () => {
+		const { instance } = makeModuleInstance()
+		const actions = getActions(instance) as Record<string, any>
+		const feedbacks = { ...getApiFeedbacks(instance), ...getOscTransportFeedbacks(instance) } as Record<string, any>
+		const invalid: string[] = []
+		const check = (presetId: string, kind: string, id: string, definition: any, options: Record<string, unknown>) => {
+			for (const field of definition?.options ?? []) {
+				if (!(field.id in options) || isDynamicValue(options[field.id])) continue
+				const error = validateOptionValue(field, options[field.id])
+				if (error) invalid.push(`${presetId}: ${kind} ${id}.${field.id} = ${JSON.stringify(options[field.id])}: ${error}`)
+			}
+		}
+		for (const [presetId, definition] of Object.entries(all())) {
+			for (const step of definition.steps) {
+				for (const action of [...step.down, ...step.up]) {
+					check(presetId, 'action', String(action.actionId), actions[action.actionId as string], action.options as any)
+				}
+			}
+			for (const feedback of definition.feedbacks) {
+				check(presetId, 'feedback', String(feedback.feedbackId), feedbacks[feedback.feedbackId as string], feedback.options as any)
+			}
+		}
+		expect(invalid).toEqual([])
 	})
 })
 

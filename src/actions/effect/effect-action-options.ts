@@ -26,6 +26,9 @@ export function buildScopedEffectOptions(eu: EffectUtils, scope: EffectScope, wi
 			default: MANUAL_EFFECT_CHOICE,
 			// Referenced by isVisibleExpression below, so it cannot be an expression itself
 			disableAutoExpression: true,
+			// The choices follow the loaded composition; without this Companion skips the action/feedback
+			// whenever the stored effect is not in the current list (e.g. before the composition has loaded)
+			allowInvalidValues: true,
 		});
 	}
 
@@ -139,6 +142,7 @@ export function buildParamNameOptions(eu: EffectUtils): SomeCompanionFeedbackInp
 				choices: eu.buildParamChoicesForCollection(collection),
 				default: MANUAL_PARAM_CHOICE,
 				disableAutoExpression: true,
+				allowInvalidValues: true,
 				isVisibleExpression: `$(options:collection) == "${collection}"`,
 			})
 		),

@@ -15,7 +15,7 @@ describe('module entrypoint (API 2.x)', () => {
 
 	it('exports all upgrade scripts as UpgradeScripts', () => {
 		expect(Array.isArray(UpgradeScripts)).toBe(true)
-		expect(UpgradeScripts).toHaveLength(6)
+		expect(UpgradeScripts).toHaveLength(7)
 		for (const script of UpgradeScripts) {
 			expect(typeof script).toBe('function')
 		}
