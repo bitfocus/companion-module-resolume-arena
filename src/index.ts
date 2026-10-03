@@ -49,7 +49,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaTypes
 	private deckUtils: DeckUtils
 	private effectUtils: EffectUtils
 	private websocketSubscribers: Set<MessageSubscriber> = new Set()
-	private feedbackSubscriptions = new FeedbackSubscriptionRegistry()
+	private feedbackSubscriptions = new FeedbackSubscriptionRegistry((error) => this.log('warn', `Feedback subscription failed: ${error}`))
 
 	constructor(internal: unknown) {
 		super(internal)
