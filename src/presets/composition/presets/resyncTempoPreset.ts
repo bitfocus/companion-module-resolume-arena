@@ -15,7 +15,7 @@ export function resyncTempoPreset(category: string): CompanionButtonPresetDefini
 		{
 			down: [
 				{
-					actionId: 'tempoResync',
+					actionId: 'resyncTap',
 					options: {},
 				},
 			],
