@@ -1,5 +1,5 @@
 import {CompanionVariableDefinition} from '@companion-module/base'
-import {compositionState} from '../state'
+import {compositionState} from '../state.js'
 
 export const WS_DEFAULT_LAYERS = 10
 export const WS_DEFAULT_LAYER_GROUPS = 5

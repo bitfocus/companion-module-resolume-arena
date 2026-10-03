@@ -1,6 +1,6 @@
-import {ClipId} from '../../domain/clip/clip-id';
-import {ArenaFetchFunction} from '../rest';
-import {ClipStatus} from './clip-options/ClipStatus';
+import {ClipId} from '../../domain/clip/clip-id.js';
+import {ArenaFetchFunction} from '../rest.js';
+import {ClipStatus} from './clip-options/ClipStatus.js';
 
 export class ArenaClipsApi {
 	private arenaFetch: ArenaFetchFunction;

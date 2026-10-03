@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getColumnOption, getLayerOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getColumnOption, getLayerOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function clipSpeed(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {

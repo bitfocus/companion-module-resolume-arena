@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleGreen, getLayerOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleGreen, getLayerOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerSelected(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {

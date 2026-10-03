@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getSpeedValue, getDeckOption, getLayerOption, getColumnOption, getClipOption, getLayerGroupOption } from '../../src/defaults'
+import { getSpeedValue, getDeckOption, getLayerOption, getColumnOption, getClipOption, getLayerGroupOption } from '../../src/defaults.js'
 
 // getSpeedValue maps a percentage input to Resolume's internal speed scale.
 // 100% → ~4.0 (Resolume's "normal speed" value on the OSC interface).

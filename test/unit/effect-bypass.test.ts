@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {parameterStates, compositionState} from '../../src/state';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {parameterStates, compositionState} from '../../src/state.js';
 
 function makeEffectUtils(mod: any) {
 	return new EffectUtils(mod);
@@ -144,7 +144,7 @@ describe('effectBypass action callback', () => {
 	it('sets bypassed=true when bypass=on', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
@@ -153,7 +153,7 @@ describe('effectBypass action callback', () => {
 	it('sets bypassed=false when bypass=off', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: true} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'off'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', false);
@@ -162,7 +162,7 @@ describe('effectBypass action callback', () => {
 	it('toggles bypassed when bypass=toggle', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'toggle'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
@@ -170,7 +170,7 @@ describe('effectBypass action callback', () => {
 
 	it('does nothing when websocketApi is null', async () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'on'}})).resolves.not.toThrow();
 	});
@@ -178,7 +178,7 @@ describe('effectBypass action callback', () => {
 	it('bypasses composition-level effect', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'composition');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/video/effects/1/bypassed', true);
@@ -187,7 +187,7 @@ describe('effectBypass action callback', () => {
 	it('bypasses clip-level effect', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/2/clips/3/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'clip');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '2', column: '3', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/2/clips/3/video/effects/1/bypassed', true);

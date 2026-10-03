@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {parameterStates} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
-import {getSpeedValue} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {parameterStates} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {getSpeedValue} from '../../../defaults.js';
 
 export function compositionSpeedChange(
 	restApi: () => ArenaRestApi | null,

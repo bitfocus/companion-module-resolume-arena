@@ -1,9 +1,9 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, DropdownChoice} from '@companion-module/base';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {ChoiceParameter, ParameterCollection, VideoEffect} from '../api';
+import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {ChoiceParameter, ParameterCollection, VideoEffect} from '../api.js';
 
 export interface EffectMeta {
 	idx: number;

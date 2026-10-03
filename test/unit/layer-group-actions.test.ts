@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { bypassLayerGroup } from '../../src/actions/layer-group/actions/bypass-layer-group'
-import { soloLayerGroup } from '../../src/actions/layer-group/actions/solo-layer-group'
-import { clearLayerGroup } from '../../src/actions/layer-group/actions/clear-layer-group'
-import { layerGroupMasterChange } from '../../src/actions/layer-group/actions/layer-group-master-change'
-import { layerGroupOpacityChange } from '../../src/actions/layer-group/actions/layer-group-opacity-change'
-import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change'
-import { parameterStates, compositionState } from '../../src/state'
+import { bypassLayerGroup } from '../../src/actions/layer-group/actions/bypass-layer-group.js'
+import { soloLayerGroup } from '../../src/actions/layer-group/actions/solo-layer-group.js'
+import { clearLayerGroup } from '../../src/actions/layer-group/actions/clear-layer-group.js'
+import { layerGroupMasterChange } from '../../src/actions/layer-group/actions/layer-group-master-change.js'
+import { layerGroupOpacityChange } from '../../src/actions/layer-group/actions/layer-group-opacity-change.js'
+import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeWsApi() {
 	return { setPath: vi.fn(), setParam: vi.fn(), triggerPath: vi.fn() }

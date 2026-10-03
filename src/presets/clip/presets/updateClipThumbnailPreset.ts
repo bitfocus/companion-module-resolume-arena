@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {getDefaultLayerColumnOptions} from '../../../defaults';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import {getDefaultLayerColumnOptions} from '../../../defaults.js';
 
 export function updateClipThumbnailPreset(category: string): CompanionButtonPresetDefinition {
 	return {

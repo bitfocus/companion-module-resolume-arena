@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {WebsocketInstance} from '../../../websocket';
-import {DeckUtils} from '../../../domain/deck/deck-util';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {DeckUtils} from '../../../domain/deck/deck-util.js';
 
 export function selectNextDeck(
 	restApi: () => ArenaRestApi | null,

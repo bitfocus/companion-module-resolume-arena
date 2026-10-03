@@ -2,7 +2,7 @@ import {combineRgb} from '@companion-module/base';
 import {graphics} from 'companion-module-utils';
 import {PNG} from 'pngjs';
 import {ImageTransformer, PixelFormat, ResizeMode} from '@julusian/image-rs';
-import {compositionState} from './state';
+import {compositionState} from './state.js';
 
 export function drawVolume(volume: number, dBMax: number = 0): Uint8Array | undefined {
 	let value = Math.pow(10, (volume / 20));

@@ -1,5 +1,5 @@
-import {getColumnOption, getDefaultStyleBlue, getLayerOption} from '../../../defaults';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {getColumnOption, getDefaultStyleBlue, getLayerOption} from '../../../defaults.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function selectedClip(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition{

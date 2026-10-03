@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ClipUtils } from '../../src/domain/clip/clip-utils'
-import { parameterStates, compositionState } from '../../src/state'
+import { ClipUtils } from '../../src/domain/clip/clip-utils.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 const stubProxy = new Proxy({}, { get: () => vi.fn() })
 

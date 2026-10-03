@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleGreen, getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleGreen, getLayerGroupOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerGroupSolo(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
