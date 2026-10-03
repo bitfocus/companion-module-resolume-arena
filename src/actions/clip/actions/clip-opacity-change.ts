@@ -51,9 +51,9 @@ export function clipOpacityChange(
 			const theClipUtils = clipUtils();
 			if (!theApi || !theClipUtils) return;
 
-			const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value))) / 100;
-			const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-			const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
+			const inputValue: number = (+options.value) / 100;
+			const layerInput = +options.layer;
+			const columnInput = +options.column;
 
 			const clip = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
 			const id = clip?.video?.opacity?.id;

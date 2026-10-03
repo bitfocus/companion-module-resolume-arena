@@ -17,10 +17,6 @@ function makeMockModule() {
 	} as any
 }
 
-function makeContext(layer: string) {
-	return { parseVariablesInString: vi.fn().mockResolvedValue(layer) } as any
-}
-
 function makeFeedback(layer: string, view: string, timeRemaining = false) {
 	return { id: 'fb1', options: { layer, view, timeRemaining } } as any
 }
@@ -41,7 +37,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 	it('returns "?" when no active clip for layer', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'fullSeconds'), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'fullSeconds'))
 		expect(result).toEqual({ text: '?' })
 	})
 
@@ -54,7 +50,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/transport/position': { value: 500, max: 1000 },
 		} as any)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'fullSeconds'), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'fullSeconds'))
 		expect((result as any).text).toMatch(/^\d+\.\d+s$/)
 	})
 
@@ -67,7 +63,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/transport/position': { value: 500, max: 1000 },
 		} as any)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp'), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp'))
 		expect((result as any).text).toMatch(/^\d{2}:\d{2}:\d{2}$/)
 	})
 
@@ -80,7 +76,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/transport/position': { value: 500, max: 1000 },
 		} as any)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp_noHours'), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp_noHours'))
 		expect((result as any).text).toMatch(/^\d{2}:\d{2}$/)
 	})
 
@@ -93,7 +89,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/transport/position': { value: 500, max: 1000 },
 		} as any)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp', true), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp', true))
 		expect((result as any).text).toMatch(/^-\d{2}:\d{2}:\d{2}$/)
 	})
 
@@ -106,7 +102,7 @@ describe('LayerUtils.layerTransportPositionFeedbackCallback', () => {
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/transport/position': { value: 500, max: 1000 },
 		} as any)
-		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp', false), makeContext('1'))
+		const result = await lu.layerTransportPositionFeedbackCallback(makeFeedback('1', 'timestamp', false))
 		expect((result as any).text).not.toMatch(/^-/)
 	})
 })

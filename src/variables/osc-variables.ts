@@ -1,11 +1,11 @@
-import {CompanionVariableDefinition} from '@companion-module/base'
+import type {VariableDefinitionEntry} from './variable-definition.js'
 /** The number of layers to always pre-register variables for */
 export const OSC_DEFAULT_LAYERS: number = 10
 /**
  * Generate OSC variable definitions for a given layer number.
  * Called for layers 1-10 at init, and dynamically for layers beyond 10.
  */
-export function getOscLayerVariables(layer: number): CompanionVariableDefinition[] {
+export function getOscLayerVariables(layer: number): VariableDefinitionEntry[] {
 	const prefix = `osc_layer_${layer}`
 	return [
 		{ variableId: `${prefix}_elapsed`, name: `OSC Layer ${layer} / Elapsed Time` },
@@ -21,8 +21,8 @@ export function getOscLayerVariables(layer: number): CompanionVariableDefinition
  * Generate all OSC variable definitions — layers 1-10 always,
  * plus any additional layers discovered dynamically.
  */
-export function getAllOscVariables(extraLayers: Set<number>): CompanionVariableDefinition[] {
-	const variables: CompanionVariableDefinition[] = []
+export function getAllOscVariables(extraLayers: Set<number>): VariableDefinitionEntry[] {
+	const variables: VariableDefinitionEntry[] = []
 	// Composition-level variables
 	variables.push({ variableId: 'osc_active_column', name: 'OSC / Active Column' })
 	variables.push({ variableId: 'osc_active_column_name', name: 'OSC / Active Column Name (rename columns in Resolume for custom names)' })

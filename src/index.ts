@@ -2,7 +2,7 @@ import ArenaOscApi from './arena-api/osc.js'
 import ArenaRestApi from './arena-api/rest.js'
 import { configFields, ResolumeArenaConfig } from './config-fields.js'
 
-import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from '@companion-module/base'
+import { InstanceBase, InstanceStatus, type InstanceTypes, type SomeCompanionConfigField } from '@companion-module/base'
 import { getActions } from './actions.js'
 import { getApiFeedbacks } from './api-feedback.js'
 import { getApiPresets } from './api-presets.js'
@@ -20,10 +20,20 @@ import { ArenaOscListener } from './osc-listener.js'
 import { OscState } from './osc-state.js'
 import { getAllOscVariables } from './variables/osc-variables.js'
 import { getAllWsVariables } from './variables/ws-variables.js'
+import { toVariableDefinitions, type VariableDefinitionEntry } from './variables/variable-definition.js'
 import { getOscTransportPresets } from './presets/osc-transport/oscTransportPresets.js'
+import { toPresetDefinitions, type CategorizedPresets } from './presets/preset-structure.js'
 import { getOscTransportFeedbacks } from './feedbacks/osc-transport/oscTransportFeedbacks.js'
+import { FeedbackSubscriptionRegistry } from './feedbacks/with-subscription.js'
 
-export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfig> {
+export interface ResolumeArenaTypes extends InstanceTypes {
+	config: ResolumeArenaConfig
+	secrets: undefined
+}
+
+export const UpgradeScripts = getUpgradeScripts()
+
+export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaTypes> {
 	private config!: ResolumeArenaConfig
 	public restApi: ArenaRestApi | null = null
 	private websocketApi: WebsocketApi | null = null
@@ -39,6 +49,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	private deckUtils: DeckUtils
 	private effectUtils: EffectUtils
 	private websocketSubscribers: Set<MessageSubscriber> = new Set()
+	private feedbackSubscriptions = new FeedbackSubscriptionRegistry()
 
 	constructor(internal: unknown) {
 		super(internal)
@@ -57,7 +68,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.config = config
 
 		await this.restartApis()
-		this.subscribeFeedbacks()
+		this.resubscribeFeedbacks()
 
 		this.websocketSubscribers.add(this.layerUtils)
 		this.websocketSubscribers.add(this.layerGroupUtils)
@@ -66,6 +77,16 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		this.websocketSubscribers.add(this.compositionUtils)
 		this.websocketSubscribers.add(this.deckUtils)
 		this.websocketSubscribers.add(this.effectUtils)
+	}
+
+	/**
+	 * The feedback `subscribe` callback and `subscribeFeedbacks()` no longer exist in module API 2.x.
+	 * Feedbacks now subscribe from their callback (see withSubscription), so re-running every feedback
+	 * after invalidating the registry re-sends their subscriptions over the new connection.
+	 */
+	private resubscribeFeedbacks(): void {
+		this.feedbackSubscriptions.invalidate()
+		this.checkAllFeedbacks()
 	}
 
 	rebuildDynamicDefinitions(): void {
@@ -88,7 +109,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	}
 
 	setupPresets(): void {
-		const presets = {}
+		const presets: CategorizedPresets = {}
 		if (this.restApi) {
 			Object.assign(presets, getApiPresets(this.label))
 		}
@@ -96,11 +117,12 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.config?.port) {
 			Object.assign(presets, getOscTransportPresets(this.label, this.oscState.getRegisteredLayers()))
 		}
-		this.setPresetDefinitions(presets)
+		const { structure, presets: definitions } = toPresetDefinitions(presets)
+		this.setPresetDefinitions(structure, definitions)
 	}
 
 	setupVariables(): void {
-		const variables = []
+		const variables: VariableDefinitionEntry[] = []
 		if (this.restApi) {
 			variables.push(...getApiVariables())
 			variables.push(...this.clipUtils.getClipNameVariableDefinitions())
@@ -110,7 +132,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 		if (this.config?.useOscListener) {
 			variables.push(...getAllOscVariables(this.oscState.getRegisteredLayers()))
 		}
-		this.setVariableDefinitions(variables)
+		this.setVariableDefinitions(toVariableDefinitions(variables))
 	}
 
 	registerOscVariables(): void {
@@ -121,7 +143,7 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	async configUpdated(config: ResolumeArenaConfig): Promise<void> {
 		this.config = config
 		await this.restartApis()
-		this.subscribeFeedbacks()
+		this.resubscribeFeedbacks()
 		return Promise.resolve()
 	}
 
@@ -193,6 +215,10 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 
 	getConfig(): ResolumeArenaConfig {
 		return this.config
+	}
+
+	getFeedbackSubscriptions(): FeedbackSubscriptionRegistry {
+		return this.feedbackSubscriptions
 	}
 
 	getWebSocketSubscribers(): Set<MessageSubscriber> {
@@ -270,4 +296,4 @@ export class ResolumeArenaModuleInstance extends InstanceBase<ResolumeArenaConfi
 	}
 }
 
-runEntrypoint(ResolumeArenaModuleInstance, getUpgradeScripts())
+export default ResolumeArenaModuleInstance

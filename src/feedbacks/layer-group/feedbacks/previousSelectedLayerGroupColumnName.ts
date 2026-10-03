@@ -6,6 +6,7 @@ export function previousSelectedLayerGroupColumnName(resolumeArenaInstance: Reso
 	return {
 		type: 'advanced',
 		name: 'Previous Selected Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), {
 			id: 'previous',
 			type: 'number',

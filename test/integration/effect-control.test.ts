@@ -33,7 +33,6 @@ const mockInstance: any = {
 	checkFeedbacks: () => {},
 	rebuildDynamicDefinitions: () => {},
 	getWebsocketApi: () => ws,
-	parseVariablesInString: (s: string) => Promise.resolve(s),
 };
 
 const mockConfig: any = {host: TEST_HOST, webapiPort: REST_PORT, useSSL: false};

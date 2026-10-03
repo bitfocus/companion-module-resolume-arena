@@ -16,12 +16,13 @@ export function getOscTransportActions(
 ): CompanionActionDefinitions {
 	const oscApi = () => resolumeArenaModuleInstance.getOscApi()
 	const oscState = () => resolumeArenaModuleInstance.getOscState()
-	const parse = (s: string) => resolumeArenaModuleInstance.parseVariablesInString(s)
-	const parseIntParam = async (s: string): Promise<number | undefined> => {
+	// Companion resolves variables and expressions before the callback runs; a value may arrive as a number
+	const parse = (s: unknown): string => String(s)
+	const parseIntParam = async (s: unknown): Promise<number | undefined> => {
 		const n = parseInt(await parse(s), 10)
 		return isNaN(n) ? undefined : n
 	}
-	const parseFloatParam = async (s: string): Promise<number | undefined> => {
+	const parseFloatParam = async (s: unknown): Promise<number | undefined> => {
 		const n = parseFloat(await parse(s))
 		return isNaN(n) ? undefined : n
 	}

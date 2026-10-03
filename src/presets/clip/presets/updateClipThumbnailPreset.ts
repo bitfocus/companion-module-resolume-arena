@@ -1,10 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 import {getDefaultLayerColumnOptions} from '../../../defaults.js';
 
-export function updateClipThumbnailPreset(category: string): CompanionButtonPresetDefinition {
+export function updateClipThumbnailPreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Update Clip Thumbnail',
 		style: {

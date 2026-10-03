@@ -6,6 +6,7 @@ export function connectedLayerGroupColumnName(resolumeArenaInstance: ResolumeAre
 	return {
 		type: 'advanced',
 		name: 'Connected Layer Group Column Name',
+		affectedProperties: ['text', 'color', 'bgcolor'],
 		options: [...getLayerGroupOption()],
 		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnConnectedNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};

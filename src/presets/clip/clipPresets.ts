@@ -1,4 +1,4 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
+import type {CategorizedPresets} from '../preset-structure.js';
 import {triggerClipPreset} from './presets/triggerClipPreset.js';
 import {selectClipPreset} from './presets/selectClipPreset.js';
 import {updateClipThumbnailPreset} from './presets/updateClipThumbnailPreset.js';
@@ -8,7 +8,7 @@ import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtra
 import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0.js';
 import {getDefaultLayerColumnOptions} from '../../defaults.js';
 
-export function getClipApiPresets(category: string): CompanionPresetDefinitions {
+export function getClipApiPresets(category: string): CategorizedPresets {
 	return {
 		triggerClip: triggerClipPreset(category),
 		selectClip: selectClipPreset(category),

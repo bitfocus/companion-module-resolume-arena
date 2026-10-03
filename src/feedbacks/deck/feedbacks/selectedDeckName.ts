@@ -5,6 +5,7 @@ export function selectedDeckName(resolumeArenaInstance: ResolumeArenaModuleInsta
 	return {
 		type: 'advanced',
 		name: 'Selected Deck Name',
+		affectedProperties: ['text', 'color', 'bgcolor'],
 		options: [],
 		callback: resolumeArenaInstance.getDeckUtils()!.deckSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!)
 	};

@@ -17,10 +17,6 @@ function makeMockModule() {
 	return instance as any
 }
 
-function makeContext(resolved: string) {
-	return { parseVariablesInString: vi.fn().mockResolvedValue(resolved) } as any
-}
-
 function makeFeedback(opts: Record<string, any>) {
 	return { id: 'fb1', options: opts } as any
 }
@@ -89,14 +85,14 @@ describe('ColumnUtils.columnSelectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const cu = new ColumnUtils(mod)
 		parameterStates.set({ '/composition/columns/3/select': { value: true } } as any)
-		const result = await cu.columnSelectedFeedbackCallback(makeFeedback({ column: '3' }), makeContext('3'))
+		const result = await cu.columnSelectedFeedbackCallback(makeFeedback({ column: '3' }))
 		expect(result).toBe(true)
 	})
 
 	it('returns falsy when column is not selected', async () => {
 		const mod = makeMockModule()
 		const cu = new ColumnUtils(mod)
-		const result = await cu.columnSelectedFeedbackCallback(makeFeedback({ column: '1' }), makeContext('1'))
+		const result = await cu.columnSelectedFeedbackCallback(makeFeedback({ column: '1' }))
 		expect(result).toBeFalsy()
 	})
 })
@@ -108,7 +104,7 @@ describe('ColumnUtils.columnConnectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const cu = new ColumnUtils(mod)
 		parameterStates.set({ '/composition/columns/2/connect': { value: 'Connected' } } as any)
-		const result = await cu.columnConnectedFeedbackCallback(makeFeedback({ column: '2' }), makeContext('2'))
+		const result = await cu.columnConnectedFeedbackCallback(makeFeedback({ column: '2' }))
 		expect(result).toBe(true)
 	})
 
@@ -116,7 +112,7 @@ describe('ColumnUtils.columnConnectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const cu = new ColumnUtils(mod)
 		parameterStates.set({ '/composition/columns/2/connect': { value: 'Disconnected' } } as any)
-		const result = await cu.columnConnectedFeedbackCallback(makeFeedback({ column: '2' }), makeContext('2'))
+		const result = await cu.columnConnectedFeedbackCallback(makeFeedback({ column: '2' }))
 		expect(result).toBe(false)
 	})
 })
@@ -128,7 +124,7 @@ describe('ColumnUtils.columnNameFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const cu = new ColumnUtils(mod)
 		parameterStates.set({ '/composition/columns/2/name': { value: 'Col #' } } as any)
-		const result = await cu.columnNameFeedbackCallback(makeFeedback({ column: '2' }), makeContext('2'))
+		const result = await cu.columnNameFeedbackCallback(makeFeedback({ column: '2' }))
 		expect((result as any).text).toBe('Col 2')
 	})
 })

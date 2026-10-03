@@ -5,6 +5,7 @@ export function compositionVolume(resolumeArenaInstance: ResolumeArenaModuleInst
 	return {
 		type: 'advanced',
 		name: 'Composition Volume',
+		affectedProperties: ['text', 'imageBuffer'],
 		options: [],
 		callback: resolumeArenaInstance.getCompositionUtils()!.compositionVolumeFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!)
 	};

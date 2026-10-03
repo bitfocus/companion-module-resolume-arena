@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectPreviousDeckPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function selectPreviousDeckPreset(): CategorizedPreset {return {
+	type: 'simple',
 	category: 'Deck',
 	name: 'Select Previous Deck',
 	style: {

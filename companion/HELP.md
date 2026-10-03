@@ -1,6 +1,9 @@
 ## Resolume Arena
 This module is for controlling Resolume Arena.
 
+### Requirements
+* Companion 5.0 or newer (this version uses Companion module API 2.1).
+
 ### Configuration
 * Type in the IP address of the device.
 * Type in the OSC port of the device (default is 7000).

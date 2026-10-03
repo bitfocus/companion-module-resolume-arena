@@ -6,6 +6,7 @@ export function selectedLayerGroupColumnName(resolumeArenaInstance: ResolumeAren
 	return {
 		type: 'advanced',
 		name: 'Selected Layer Group Column Name',
+		affectedProperties: ['text', 'color', 'bgcolor'],
 		options: [...getLayerGroupOption()],
 		callback: resolumeArenaInstance.getLayerGroupUtils()!.layerGroupColumnSelectedNameFeedbackCallback.bind(resolumeArenaInstance.getLayerGroupUtils()!)
 	};

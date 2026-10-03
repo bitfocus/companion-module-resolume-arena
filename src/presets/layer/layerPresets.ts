@@ -1,4 +1,5 @@
-import {combineRgb, CompanionPresetDefinitions} from '@companion-module/base';
+import {combineRgb} from '@companion-module/base';
+import type {CategorizedPresets} from '../preset-structure.js';
 import {bypassLayerPreset} from './presets/bypassLayerPreset.js';
 import {soloLayerPreset} from './presets/soloLayerPreset.js';
 import {clearLayerPreset} from './presets/clearLayerPreset.js';
@@ -15,7 +16,7 @@ const orange = combineRgb(255, 140, 0);
 const yellow = combineRgb(204, 204, 0);
 const red = combineRgb(255, 0, 0);
 
-export function getLayerApiPresets(category: string, instanceLabel: string): CompanionPresetDefinitions {
+export function getLayerApiPresets(category: string, instanceLabel: string): CategorizedPresets {
 	const m = instanceLabel || 'resolume-arena';
 	return {
 		bypassLayer: bypassLayerPreset(category),
@@ -35,7 +36,7 @@ export function getLayerApiPresets(category: string, instanceLabel: string): Com
 		changeLayerVolumeSubtract10: changeTemplateSubtract10(category,'layer','Volume', true),
 		changeLayerVolumeSet0: changeTemplateSet0(category,'layer','Volume', true),
 		layerTimerElapsed: {
-			type: 'button',
+			type: 'simple',
 			category,
 			name: 'Layer Timer — Elapsed',
 			style: { size: '18', text: '$('+m+':ws_layer_1_elapsed)', color: white, bgcolor: black },
@@ -46,7 +47,7 @@ export function getLayerApiPresets(category: string, instanceLabel: string): Com
 			],
 		},
 		layerTimerRemaining: {
-			type: 'button',
+			type: 'simple',
 			category,
 			name: 'Layer Timer — Remaining',
 			style: { size: '18', text: '$('+m+':ws_layer_1_remaining)', color: white, bgcolor: black },
@@ -57,7 +58,7 @@ export function getLayerApiPresets(category: string, instanceLabel: string): Com
 			],
 		},
 		layerTimerTRT: {
-			type: 'button',
+			type: 'simple',
 			category,
 			name: 'Layer Timer — TRT (Duration + Remaining)',
 			style: { size: '14', text: 'TRT\\n$('+m+':ws_layer_1_duration)\\n$('+m+':ws_layer_1_remaining)', color: white, bgcolor: black },
@@ -67,7 +68,7 @@ export function getLayerApiPresets(category: string, instanceLabel: string): Com
 			],
 		},
 		layerTimerProgressBar: {
-			type: 'button',
+			type: 'simple',
 			category,
 			name: 'Layer Timer — Progress Bar',
 			style: { size: '18', text: '$('+m+':ws_layer_1_remaining)', color: white, bgcolor: black },

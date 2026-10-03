@@ -20,10 +20,6 @@ function makeMockModule() {
 	return instance as any
 }
 
-function makeContext(resolved: string) {
-	return { parseVariablesInString: vi.fn().mockResolvedValue(resolved) } as any
-}
-
 function makeFeedback(opts: Record<string, any>, id = 'fb1') {
 	return { id, options: opts } as any
 }
@@ -122,7 +118,7 @@ describe('LayerGroupUtils — bypass subscribe / unsubscribe', () => {
 	it('subscribes to WebSocket path on first subscribe call', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layergroups/1/bypassed')
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1)
 	})
@@ -130,25 +126,25 @@ describe('LayerGroupUtils — bypass subscribe / unsubscribe', () => {
 	it('does not subscribe twice for same layer group', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'b'), makeContext('1'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'b'))
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1)
 	})
 
 	it('calls unsubscribePath when last subscriber is removed', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
-		await lgu.layerGroupBypassedFeedbackUnsubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
+		await lgu.layerGroupBypassedFeedbackUnsubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
 		expect(mod._wsApi.unsubscribePath).toHaveBeenCalledWith('/composition/layergroups/1/bypassed')
 	})
 
 	it('does not unsubscribe while other subscribers remain', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
-		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'b'), makeContext('1'))
-		await lgu.layerGroupBypassedFeedbackUnsubscribe(makeFeedback({ layerGroup: '1' }, 'a'), makeContext('1'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
+		await lgu.layerGroupBypassedFeedbackSubscribe(makeFeedback({ layerGroup: '1' }, 'b'))
+		await lgu.layerGroupBypassedFeedbackUnsubscribe(makeFeedback({ layerGroup: '1' }, 'a'))
 		expect(mod._wsApi.unsubscribePath).not.toHaveBeenCalled()
 	})
 })
@@ -160,7 +156,7 @@ describe('LayerGroupUtils.layerGroupBypassedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/bypassed': { value: true } } as any)
-		const result = await lgu.layerGroupBypassedFeedbackCallback(makeFeedback({ layerGroup: '1' }), makeContext('1'))
+		const result = await lgu.layerGroupBypassedFeedbackCallback(makeFeedback({ layerGroup: '1' }))
 		expect(result).toBe(true)
 	})
 
@@ -168,7 +164,7 @@ describe('LayerGroupUtils.layerGroupBypassedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/bypassed': { value: false } } as any)
-		const result = await lgu.layerGroupBypassedFeedbackCallback(makeFeedback({ layerGroup: '1' }), makeContext('1'))
+		const result = await lgu.layerGroupBypassedFeedbackCallback(makeFeedback({ layerGroup: '1' }))
 		expect(result).toBe(false)
 	})
 })
@@ -180,7 +176,7 @@ describe('LayerGroupUtils.layerGroupSoloFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/2/solo': { value: true } } as any)
-		const result = await lgu.layerGroupSoloFeedbackCallback(makeFeedback({ layerGroup: '2' }), makeContext('2'))
+		const result = await lgu.layerGroupSoloFeedbackCallback(makeFeedback({ layerGroup: '2' }))
 		expect(result).toBe(true)
 	})
 })
@@ -192,7 +188,7 @@ describe('LayerGroupUtils.layerGroupSelectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/select': { value: true } } as any)
-		const result = await lgu.layerGroupSelectedFeedbackCallback(makeFeedback({ layerGroup: '1' }), makeContext('1'))
+		const result = await lgu.layerGroupSelectedFeedbackCallback(makeFeedback({ layerGroup: '1' }))
 		expect(result).toBe(true)
 	})
 })
@@ -203,7 +199,7 @@ describe('LayerGroupUtils.layerGroupActiveFeedbackCallback', () => {
 	it('returns false when no active layer group', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		const result = await lgu.layerGroupActiveFeedbackCallback(makeFeedback({ layerGroup: '1' }), makeContext('1'))
+		const result = await lgu.layerGroupActiveFeedbackCallback(makeFeedback({ layerGroup: '1' }))
 		expect(result).toBe(false)
 	})
 
@@ -223,7 +219,7 @@ describe('LayerGroupUtils.layerGroupActiveFeedbackCallback', () => {
 		const lgu = new LayerGroupUtils(mod)
 		lgu.updateActiveLayerGroups()
 
-		const result = await lgu.layerGroupActiveFeedbackCallback(makeFeedback({ layerGroup: '1' }), makeContext('1'))
+		const result = await lgu.layerGroupActiveFeedbackCallback(makeFeedback({ layerGroup: '1' }))
 		expect(result).toBe(true)
 	})
 })
@@ -235,24 +231,14 @@ describe('LayerGroupUtils.layerGroupColumnNameFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/columns/2/name': { value: 'Col #' } } as any)
-		const ctx = {
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('2')   // column
-				.mockResolvedValueOnce('1'),  // layerGroup
-		} as any
-		const result = await lgu.layerGroupColumnNameFeedbackCallback(makeFeedback({ column: '2', layerGroup: '1' }), ctx)
+		const result = await lgu.layerGroupColumnNameFeedbackCallback(makeFeedback({ column: '2', layerGroup: '1' }))
 		expect((result as any).text).toBe('Col 2')
 	})
 
 	it('returns empty object when no name in state', async () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
-		const ctx = {
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('3')
-				.mockResolvedValueOnce('1'),
-		} as any
-		const result = await lgu.layerGroupColumnNameFeedbackCallback(makeFeedback({ column: '3', layerGroup: '1' }), ctx)
+		const result = await lgu.layerGroupColumnNameFeedbackCallback(makeFeedback({ column: '3', layerGroup: '1' }))
 		expect(result).toEqual({})
 	})
 })
@@ -264,12 +250,7 @@ describe('LayerGroupUtils.layerGroupColumnsConnectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/columns/2/connect': { value: 'Connected' } } as any)
-		const ctx = {
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
-		} as any
-		const result = await lgu.layerGroupColumnsConnectedFeedbackCallback(makeFeedback({ layerGroup: '1', column: '2' }), ctx)
+		const result = await lgu.layerGroupColumnsConnectedFeedbackCallback(makeFeedback({ layerGroup: '1', column: '2' }))
 		expect(result).toBe(true)
 	})
 
@@ -277,12 +258,7 @@ describe('LayerGroupUtils.layerGroupColumnsConnectedFeedbackCallback', () => {
 		const mod = makeMockModule()
 		const lgu = new LayerGroupUtils(mod)
 		parameterStates.set({ '/composition/groups/1/columns/2/connect': { value: 'Disconnected' } } as any)
-		const ctx = {
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
-		} as any
-		const result = await lgu.layerGroupColumnsConnectedFeedbackCallback(makeFeedback({ layerGroup: '1', column: '2' }), ctx)
+		const result = await lgu.layerGroupColumnsConnectedFeedbackCallback(makeFeedback({ layerGroup: '1', column: '2' }))
 		expect(result).toBe(false)
 	})
 })

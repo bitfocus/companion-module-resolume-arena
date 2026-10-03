@@ -6,6 +6,7 @@ export function layerTransportPosition(resolumeArenaInstance: ResolumeArenaModul
 	return {
 		type: 'advanced',
 		name: 'Layer Active Clip Transport Position',
+		affectedProperties: ['text', 'size'],
 		options: [...getLayerOption(),
 			{
 				id: 'view',

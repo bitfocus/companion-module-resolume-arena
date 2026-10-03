@@ -6,6 +6,7 @@ export function layerTransitionDuration(resolumeArenaInstance: ResolumeArenaModu
 	return {
 		type: 'advanced',
 		name: 'Layer Transition Duration',
+		affectedProperties: ['text', 'imageBuffer'],
 		options: [...getLayerOption()],
 		callback: resolumeArenaInstance.getLayerUtils()!.layerTransitionDurationFeedbackCallback.bind(resolumeArenaInstance.getLayerUtils()!)
 	};

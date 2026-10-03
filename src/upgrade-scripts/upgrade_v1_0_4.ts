@@ -7,8 +7,8 @@ import {ResolumeArenaConfig} from '../config-fields.js';
 
 export function upgrade_v1_0_4(
 	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	props: CompanionStaticUpgradeProps<ResolumeArenaConfig, undefined>
+): CompanionStaticUpgradeResult<ResolumeArenaConfig, undefined> {
 	let updateActions = [];
 
 	for (const action of props.actions) {
@@ -25,6 +25,7 @@ export function upgrade_v1_0_4(
 
 	return {
 		updatedConfig: null,
+		updatedSecrets: null,
 		updatedActions: updateActions,
 		updatedFeedbacks: []
 	};

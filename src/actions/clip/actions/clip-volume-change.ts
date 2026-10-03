@@ -51,9 +51,9 @@ export function clipVolumeChange(
 			const theClipUtils = clipUtils();
 			if (!theApi || !theClipUtils) return;
 
-			const inputValue: number = +(await resolumeArenaInstance.parseVariablesInString(options.value));
-			const layerInput = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-			const columnInput = +await resolumeArenaInstance.parseVariablesInString(options.column);
+			const inputValue: number = +options.value;
+			const layerInput = +options.layer;
+			const columnInput = +options.column;
 
 			const clip = theClipUtils.getClipFromCompositionState(layerInput, columnInput);
 			const id = clip?.audio?.volume?.id;

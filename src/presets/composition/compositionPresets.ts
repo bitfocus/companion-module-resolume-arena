@@ -1,4 +1,4 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
+import type {CategorizedPresets} from '../preset-structure.js';
 import {tapTempoPreset} from './presets/tapTempoPreset.js';
 import {resyncTempoPreset} from './presets/resyncTempoPreset.js';
 import {disconnectAllPreset} from './presets/disconnectAllPreset.js';
@@ -7,7 +7,7 @@ import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10.js';
 import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10.js';
 import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0.js';
 
-export function getCompositionApiPresets(category: string): CompanionPresetDefinitions {
+export function getCompositionApiPresets(category: string): CategorizedPresets {
 	return {
 		tapTempo: tapTempoPreset(category),
 		resyncTempo: resyncTempoPreset(category),

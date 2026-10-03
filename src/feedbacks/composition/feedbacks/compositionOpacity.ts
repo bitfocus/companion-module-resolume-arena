@@ -5,6 +5,7 @@ export function compositionOpacity(resolumeArenaInstance: ResolumeArenaModuleIns
 	return {
 		type: 'advanced',
 		name: 'Composition Opacity',
+		affectedProperties: ['text', 'imageBuffer'],
 		options: [],
 		callback: resolumeArenaInstance.getCompositionUtils()!.compositionOpacityFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!)
 	};

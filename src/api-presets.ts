@@ -1,4 +1,4 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
+import type {CategorizedPresets} from './presets/preset-structure.js';
 import {getClipApiPresets} from './presets/clip/clipPresets.js';
 import {getColumnApiPresets} from './presets/column/columnPresets.js';
 import {getDeckApiPresets} from './presets/deck/deckPresets.js';
@@ -7,7 +7,7 @@ import {getLayerGroupApiPresets} from './presets/layer-group/layerGroupPresets.j
 import {getCompositionApiPresets} from './presets/composition/compositionPresets.js';
 import {getLayerApiPresets} from './presets/layer/layerPresets.js';
 
-export function getApiPresets(instanceLabel: string): CompanionPresetDefinitions {
+export function getApiPresets(instanceLabel: string): CategorizedPresets {
 	return {
 		...getClipApiPresets('Clip'),
 		...getColumnApiPresets(),

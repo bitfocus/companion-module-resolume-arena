@@ -12,7 +12,6 @@ function makeMockModule() {
 		setVariableValues: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
-		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
 	}
 	return instance as any

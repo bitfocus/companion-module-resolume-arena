@@ -4,26 +4,31 @@ import {PNG} from 'pngjs';
 import {ImageTransformer, PixelFormat, ResizeMode} from '@julusian/image-rs';
 import {compositionState} from './state.js';
 
-export function drawVolume(volume: number, dBMax: number = 0): Uint8Array | undefined {
+/** Module API 2.x expects feedback image buffers as base64 encoded strings. */
+export function encodeImageBuffer(buffer: Uint8Array): string {
+	return Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength).toString('base64');
+}
+
+export function drawVolume(volume: number, dBMax: number = 0): string {
 	let value = Math.pow(10, (volume / 20));
 	value /= Math.pow(10, (dBMax / 20));
 	value = Math.pow(value, 0.5);
 	return drawPercentage(value);
 }
 
-export function drawPercentage(percentage: number): Uint8Array | undefined {
+export function drawPercentage(percentage: number): string {
 	if (percentage >= 1.01) {
 		const frontColor = createColorBlock(combineRgb(255, 0, 0));
 		const backColor = createColorBlock(combineRgb(0, 0, 255), percentage / 10);
-		return graphics.stackImage([graphics.rect(frontColor), graphics.rect(backColor)]);
+		return encodeImageBuffer(graphics.stackImage([graphics.rect(frontColor), graphics.rect(backColor)]));
 	} else {
 		const frontColor = createColorBlock(combineRgb(0, 0, 255));
 		const backColor = createColorBlock(combineRgb(0, 0, 0), percentage);
-		return graphics.stackImage([graphics.rect(frontColor), graphics.rect(backColor)]);
+		return encodeImageBuffer(graphics.stackImage([graphics.rect(frontColor), graphics.rect(backColor)]));
 	}
 }
 
-export function drawThumb(thumb: string): Uint8Array {
+export function drawThumb(thumb: string): string {
 	const inputDecoded = PNG.sync.read(Buffer.from(thumb, 'base64'));
 	const video = compositionState.get()!.video!;
 	const out = ImageTransformer.fromBuffer(
@@ -36,7 +41,7 @@ export function drawThumb(thumb: string): Uint8Array {
 		.scale(64, 64, ResizeMode.Fill)
 		.toBufferSync(PixelFormat.Rgb);
 
-	return out.buffer as Uint8Array;
+	return encodeImageBuffer(out.buffer);
 }
 
 function createColorBlock(fillColor: number, percentage: number = 0) {

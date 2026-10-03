@@ -1,9 +1,9 @@
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 import {combineRgb} from '@companion-module/base';
 import {getDefaultLayerColumnOptions, getDefaultStyleBlue} from '../../../defaults.js';
 
-export function selectClipPreset(category: string): CompanionButtonPresetDefinition{ return {
-	type: 'button',
+export function selectClipPreset(category: string): CategorizedPreset{ return {
+	type: 'simple',
 		category,
 		name: 'Select Clip',
 		style: {
