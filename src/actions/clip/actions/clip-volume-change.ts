@@ -1,12 +1,12 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getClipOption} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {parameterStates} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getClipOption} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
+import {parameterStates} from '../../../state.js';
 
 export function clipVolumeChange(
 	restApi: () => ArenaRestApi | null,

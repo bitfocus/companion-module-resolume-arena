@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ColumnUtils } from '../../src/domain/columns/column-util'
-import { parameterStates, compositionState } from '../../src/state'
+import { ColumnUtils } from '../../src/domain/columns/column-util.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {

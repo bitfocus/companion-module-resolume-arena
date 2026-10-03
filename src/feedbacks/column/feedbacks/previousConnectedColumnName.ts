@@ -1,4 +1,4 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function previousConnectedColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {return {

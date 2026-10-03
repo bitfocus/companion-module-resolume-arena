@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { connectClip } from '../../src/actions/clip/actions/connect-clip'
-import { selectClip } from '../../src/actions/clip/actions/select-clip'
-import { updateClipThumbnail } from '../../src/actions/clip/actions/update-clip-thumbnail'
-import { connectColumn } from '../../src/actions/column/actions/connectColumn'
-import { selectColumn } from '../../src/actions/column/actions/selectColumn'
-import { selectDeck } from '../../src/actions/deck/actions/select-deck'
-import { compositionState, parameterStates } from '../../src/state'
+import { connectClip } from '../../src/actions/clip/actions/connect-clip.js'
+import { selectClip } from '../../src/actions/clip/actions/select-clip.js'
+import { updateClipThumbnail } from '../../src/actions/clip/actions/update-clip-thumbnail.js'
+import { connectColumn } from '../../src/actions/column/actions/connectColumn.js'
+import { selectColumn } from '../../src/actions/column/actions/selectColumn.js'
+import { selectDeck } from '../../src/actions/deck/actions/select-deck.js'
+import { compositionState, parameterStates } from '../../src/state.js'
 
 function makeWsApi() {
 	return { setPath: vi.fn(), triggerPath: vi.fn(), subscribeParam: vi.fn(), setParam: vi.fn() }

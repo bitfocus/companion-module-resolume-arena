@@ -1,6 +1,6 @@
-import {ArenaFetchFunction} from '../rest';
-import { ColumnOptions, ColumnWriteOptions } from './column-options/ColumnOptions';
-import {LayerGroupOptions, LayerGroupWriteOptions} from './layer-group-options/LayerGroupOptions';
+import {ArenaFetchFunction} from '../rest.js';
+import { ColumnOptions, ColumnWriteOptions } from './column-options/ColumnOptions.js';
+import {LayerGroupOptions, LayerGroupWriteOptions} from './layer-group-options/LayerGroupOptions.js';
 
 export class ArenaLayerGroupsApi {
 	private arenaFetch: ArenaFetchFunction;

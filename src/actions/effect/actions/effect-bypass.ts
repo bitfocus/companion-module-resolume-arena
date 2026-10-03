@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope} from '../../../domain/effects/effect-utils';
-import {parameterStates} from '../../../state';
-import {buildScopedEffectOptions} from '../effect-action-options';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {EffectScope} from '../../../domain/effects/effect-utils.js';
+import {parameterStates} from '../../../state.js';
+import {buildScopedEffectOptions} from '../effect-action-options.js';
 
 const SCOPE_LABELS: Record<EffectScope, string> = {
 	layer: 'Layer',

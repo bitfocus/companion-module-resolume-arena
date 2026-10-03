@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getClipApiVariables } from '../../src/variables/clip/clipVariables'
+import { getClipApiVariables } from '../../src/variables/clip/clipVariables.js'
 
 describe('getClipApiVariables', () => {
 	it('returns 8 variable definitions', () => {

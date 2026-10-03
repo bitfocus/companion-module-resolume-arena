@@ -1,7 +1,7 @@
 import {CompanionActionDefinitions} from '@companion-module/base'
 import type {CompanionInputFieldTextInput} from '@companion-module/base'
-import type {ResolumeArenaModuleInstance} from '../../index'
-import {getSpeedValue} from '../../defaults'
+import type {ResolumeArenaModuleInstance} from '../../index.js'
+import {getSpeedValue} from '../../defaults.js'
 
 /**
  * OSC Transport Actions — Millumin-equivalent actions for Resolume Arena.

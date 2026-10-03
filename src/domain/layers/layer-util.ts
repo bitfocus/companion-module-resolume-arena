@@ -1,11 +1,11 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {Layer, RangeParameter} from '../api';
-import {ClipId} from '../clip/clip-id';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
+import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {Layer, RangeParameter} from '../api.js';
+import {ClipId} from '../clip/clip-id.js';
+import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common.js';
 
 export class LayerUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;

@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
 import type {CompanionAdvancedFeedbackResult, CompanionFeedbackDefinition} from '@companion-module/base';
 import {graphics} from 'companion-module-utils';
-import type {OptionsBar} from 'companion-module-utils/dist/graphics';
-import type {ResolumeArenaModuleInstance} from '../../../index';
+import type {OptionsBar} from 'companion-module-utils/dist/graphics.js';
+import type {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function wsProgressBar(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

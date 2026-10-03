@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscTransportFeedbacks'
+import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscTransportFeedbacks.js'
 import { combineRgb } from '@companion-module/base'
 
 function makeMockInstance({

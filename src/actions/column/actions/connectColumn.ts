@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ColumnUtils} from '../../../domain/columns/column-util';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {parameterStates} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ColumnUtils} from '../../../domain/columns/column-util.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {parameterStates} from '../../../state.js';
 
 function lookupColumnIndexByName(name: string): number | undefined {
 	const states = parameterStates.get();

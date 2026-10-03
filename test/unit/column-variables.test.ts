@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getColumnApiVariables } from '../../src/variables/column/columnVariables'
+import { getColumnApiVariables } from '../../src/variables/column/columnVariables.js'
 
 describe('getColumnApiVariables', () => {
 	it('returns 2 variable definitions', () => {

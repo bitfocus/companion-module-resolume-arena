@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { CompositionUtils } from '../../src/domain/composition/composition-utils'
-import { parameterStates, compositionState } from '../../src/state'
+import { CompositionUtils } from '../../src/domain/composition/composition-utils.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {

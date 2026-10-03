@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { OscState } from '../../src/osc-state'
+import { OscState } from '../../src/osc-state.js'
 
 function makeMockInstance() {
 	const oscListener = { send: vi.fn() }

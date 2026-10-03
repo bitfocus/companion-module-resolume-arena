@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultDeckOptions, getDefaultStyleGreen} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultDeckOptions, getDefaultStyleGreen} from '../../../defaults.js';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
 
 export function selectDeckPreset(): CompanionButtonPresetDefinition {return {
 	type: 'button',

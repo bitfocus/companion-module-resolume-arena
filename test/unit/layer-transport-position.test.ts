@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { LayerUtils } from '../../src/domain/layers/layer-util'
-import { parameterStates, compositionState } from '../../src/state'
+import { LayerUtils } from '../../src/domain/layers/layer-util.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	return {
