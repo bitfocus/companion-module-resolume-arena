@@ -147,6 +147,10 @@ describe('feedbacks — API 2.x rules', () => {
 		expect(advanced).toBeGreaterThan(30)
 	})
 
+	it('declares the Clip Info thumbnail as png64, which Companion draws below the button text', () => {
+		expect(build().feedbacks.clipInfo.affectedProperties).toEqual(['text', 'png64'])
+	})
+
 	it('has a callback on every feedback', () => {
 		for (const [id, feedback] of Object.entries(build().feedbacks)) {
 			expect(typeof feedback.callback, `feedbacks.${id}`).toBe('function')

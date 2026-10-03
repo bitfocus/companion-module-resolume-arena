@@ -11,6 +11,7 @@ import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config.js'
 import { isResolumeReachable, pause } from './helpers.js'
 import { drawThumb } from '../../src/image-utils.js'
 import { compositionState } from '../../src/state.js'
+import { PNG } from 'pngjs'
 
 const resolume = await isResolumeReachable()
 
@@ -57,17 +58,19 @@ describe.skipIf(!resolume)('drawThumb — image-rs pipeline (requires media)', (
 		await pause(300)
 	})
 
-	it('drawThumb returns a Uint8Array from a live Resolume thumbnail', async () => {
+	it('drawThumb returns a base64 PNG from a live Resolume thumbnail', async () => {
 		const thumb = await api.Clips.getThumb(new ClipId(TEST_LAYER, TEST_COLUMN))
 		expect(thumb.length).toBeGreaterThan(0)
 		const result = drawThumb(thumb)
-		expect(result).toBeInstanceOf(Uint8Array)
+		expect(typeof result).toBe('string')
+		expect(Buffer.from(result, 'base64').subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
 	})
 
-	it('drawThumb output is exactly 64×64 RGB (12288 bytes)', async () => {
+	it('drawThumb output is a 72×72 PNG (64×64 thumbnail with a 4 pixel margin)', async () => {
 		const thumb = await api.Clips.getThumb(new ClipId(TEST_LAYER, TEST_COLUMN))
-		const result = drawThumb(thumb)
-		expect(result.length).toBe(64 * 64 * 3)
+		const png = PNG.sync.read(Buffer.from(drawThumb(thumb), 'base64'))
+		expect(png.width).toBe(72)
+		expect(png.height).toBe(72)
 	})
 })
 

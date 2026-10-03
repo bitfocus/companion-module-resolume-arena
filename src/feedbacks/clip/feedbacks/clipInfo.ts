@@ -7,7 +7,7 @@ export function clipInfo(resolumeArenaInstance: ResolumeArenaModuleInstance):Com
 	return {
 		type: 'advanced',
 		name: 'Clip Info',
-		affectedProperties: ['text', 'png64', 'imageBuffer'],
+		affectedProperties: ['text', 'png64'],
 		options: [
 			...getLayerOption(),
 			...getColumnOption(),
