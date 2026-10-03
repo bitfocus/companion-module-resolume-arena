@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { compositionMasterChange } from '../../src/actions/composition/actions/composition-master-change'
-import { compositionOpacityChange } from '../../src/actions/composition/actions/composition-opacity-change'
-import { compositionSpeedChange } from '../../src/actions/composition/actions/composition-speed-change'
-import { compositionVolumeChange } from '../../src/actions/composition/actions/composition-volume-change'
-import { parameterStates, compositionState } from '../../src/state'
+import { compositionMasterChange } from '../../src/actions/composition/actions/composition-master-change.js'
+import { compositionOpacityChange } from '../../src/actions/composition/actions/composition-opacity-change.js'
+import { compositionSpeedChange } from '../../src/actions/composition/actions/composition-speed-change.js'
+import { compositionVolumeChange } from '../../src/actions/composition/actions/composition-volume-change.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeWsApi() {
 	return { setPath: vi.fn(), setParam: vi.fn(), triggerPath: vi.fn() }

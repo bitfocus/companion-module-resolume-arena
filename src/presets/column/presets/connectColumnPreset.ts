@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultColumnOptions, getDefaultStyleCyan, getDefaultStyleGreen} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultColumnOptions, getDefaultStyleCyan, getDefaultStyleGreen} from '../../../defaults.js';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
 
 export function connectColumnPreset(): CompanionButtonPresetDefinition {return {
 	type: 'button',

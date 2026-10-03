@@ -1,5 +1,5 @@
-import {getColumnOption, getLayerOption} from '../../../defaults';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {getColumnOption, getLayerOption} from '../../../defaults.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function connectedClip(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {

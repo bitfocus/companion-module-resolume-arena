@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base'
 import type {CompanionAdvancedFeedbackResult, CompanionFeedbackDefinitions} from '@companion-module/base'
-import type {ResolumeArenaModuleInstance} from '../../index'
+import type {ResolumeArenaModuleInstance} from '../../index.js'
 import {graphics} from 'companion-module-utils'
-import type {OptionsBar} from 'companion-module-utils/dist/graphics'
+import type {OptionsBar} from 'companion-module-utils/dist/graphics.js'
 
 /**
  * OSC Transport Feedbacks — countdown color changes and progress bar.

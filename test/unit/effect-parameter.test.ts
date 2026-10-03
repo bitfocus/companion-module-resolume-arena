@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {parameterStates, compositionState} from '../../src/state';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {parameterStates, compositionState} from '../../src/state.js';
 
 function makeEffectUtils(mod: any) {
 	return new EffectUtils(mod);
@@ -201,7 +201,7 @@ describe('EffectUtils.messageUpdates — effectParameter path', () => {
 describe('coerceValue (via effectParameterSet action)', () => {
 	async function makeAction(mod: any) {
 		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
 	}
 
@@ -273,7 +273,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 
 	it('does nothing when ws is null', async () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		const action = effectParameterSet({...mod, getEffectUtils: () => new EffectUtils(mod as any)} as any, 'layer');
 		await expect((action.callback as Function)({options: {...BASE_MANUAL, paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
@@ -287,7 +287,7 @@ describe('effectParameterSet — relative modes', () => {
 
 	async function makeAction(mod: any) {
 		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
 	}
 

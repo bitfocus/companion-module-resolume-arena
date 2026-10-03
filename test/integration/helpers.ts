@@ -1,4 +1,4 @@
-import { TEST_HOST, REST_PORT } from './config'
+import { TEST_HOST, REST_PORT } from './config.js'
 
 /**
  * Returns true if Resolume's REST API is reachable.

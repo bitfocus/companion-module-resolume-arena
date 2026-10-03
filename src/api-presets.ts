@@ -1,11 +1,11 @@
 import {CompanionPresetDefinitions} from '@companion-module/base';
-import {getClipApiPresets} from './presets/clip/clipPresets';
-import {getColumnApiPresets} from './presets/column/columnPresets';
-import {getDeckApiPresets} from './presets/deck/deckPresets';
-import {getEffectApiPresets} from './presets/effect/effectPresets';
-import {getLayerGroupApiPresets} from './presets/layer-group/layerGroupPresets';
-import {getCompositionApiPresets} from './presets/composition/compositionPresets';
-import {getLayerApiPresets} from './presets/layer/layerPresets';
+import {getClipApiPresets} from './presets/clip/clipPresets.js';
+import {getColumnApiPresets} from './presets/column/columnPresets.js';
+import {getDeckApiPresets} from './presets/deck/deckPresets.js';
+import {getEffectApiPresets} from './presets/effect/effectPresets.js';
+import {getLayerGroupApiPresets} from './presets/layer-group/layerGroupPresets.js';
+import {getCompositionApiPresets} from './presets/composition/compositionPresets.js';
+import {getLayerApiPresets} from './presets/layer/layerPresets.js';
 
 export function getApiPresets(instanceLabel: string): CompanionPresetDefinitions {
 	return {

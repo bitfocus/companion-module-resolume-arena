@@ -1,11 +1,11 @@
 import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, combineRgb} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {LayerGroup} from '../api';
-import {LayerGroupColumnId} from './layer-group-column-id';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
+import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {LayerGroup} from '../api.js';
+import {LayerGroupColumnId} from './layer-group-column-id.js';
+import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common.js';
 
 export class LayerGroupUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;

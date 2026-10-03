@@ -1,7 +1,7 @@
 import {CompanionActionDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {effectBypass} from './actions/effect-bypass';
-import {effectParameterSet} from './actions/effect-parameter-set';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {effectBypass} from './actions/effect-bypass.js';
+import {effectParameterSet} from './actions/effect-parameter-set.js';
 
 export function getEffectActions(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	return {

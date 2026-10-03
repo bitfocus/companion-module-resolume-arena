@@ -8,19 +8,19 @@
  * - selectNextDeck / selectPreviousDeck
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { compNextCol } from '../../src/actions/composition/actions/comp-next-col'
-import { compPrevCol } from '../../src/actions/composition/actions/comp-prev-col'
-import { clearAllLayers } from '../../src/actions/composition/actions/clear-all-layers'
-import { tempoTap } from '../../src/actions/composition/actions/tempo-tap'
-import { tempoResync } from '../../src/actions/composition/actions/tempo-resync'
-import { layerGroupNextCol } from '../../src/actions/layer-group/actions/layer-group-next-col'
-import { layerGroupPrevCol } from '../../src/actions/layer-group/actions/layer-group-prev-col'
-import { selectLayerGroup } from '../../src/actions/layer-group/actions/select-layer-group'
-import { layerGroupSpeedChange } from '../../src/actions/layer-group/actions/layer-group-speed-change'
-import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change'
-import { selectNextDeck } from '../../src/actions/deck/actions/select-next-deck'
-import { selectPreviousDeck } from '../../src/actions/deck/actions/select-previous-deck'
-import { compositionState, parameterStates } from '../../src/state'
+import { compNextCol } from '../../src/actions/composition/actions/comp-next-col.js'
+import { compPrevCol } from '../../src/actions/composition/actions/comp-prev-col.js'
+import { clearAllLayers } from '../../src/actions/composition/actions/clear-all-layers.js'
+import { tempoTap } from '../../src/actions/composition/actions/tempo-tap.js'
+import { tempoResync } from '../../src/actions/composition/actions/tempo-resync.js'
+import { layerGroupNextCol } from '../../src/actions/layer-group/actions/layer-group-next-col.js'
+import { layerGroupPrevCol } from '../../src/actions/layer-group/actions/layer-group-prev-col.js'
+import { selectLayerGroup } from '../../src/actions/layer-group/actions/select-layer-group.js'
+import { layerGroupSpeedChange } from '../../src/actions/layer-group/actions/layer-group-speed-change.js'
+import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change.js'
+import { selectNextDeck } from '../../src/actions/deck/actions/select-next-deck.js'
+import { selectPreviousDeck } from '../../src/actions/deck/actions/select-previous-deck.js'
+import { compositionState, parameterStates } from '../../src/state.js'
 
 function makeWsApi() {
 	return { triggerPath: vi.fn(), triggerParam: vi.fn(), setPath: vi.fn(), setParam: vi.fn() }

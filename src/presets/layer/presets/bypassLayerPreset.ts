@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultStyleRed} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultStyleRed} from '../../../defaults.js';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
 
 export function bypassLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',

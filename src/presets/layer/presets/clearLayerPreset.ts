@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultStyleBlue} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultStyleBlue} from '../../../defaults.js';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
 
 export function clearLayerPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',

@@ -1,5 +1,5 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
 
 export function connectPreviousLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
 	type: 'button',

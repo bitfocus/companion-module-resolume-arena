@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { WebsocketInstance } from '../../src/websocket'
+import { WebsocketInstance } from '../../src/websocket.js'
 import WebSocket from 'ws'
 
 // Creates a bare instance without calling the constructor (avoids real WS connection).

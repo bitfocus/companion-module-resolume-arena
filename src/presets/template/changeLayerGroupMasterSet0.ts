@@ -1,6 +1,6 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {CompanionOptionValues} from '@companion-module/base/dist/module-api/input';
+import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import {CompanionOptionValues} from '@companion-module/base/dist/module-api/input.js';
 
 export function changeTemplateSet0(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CompanionButtonPresetDefinition {
 	return {

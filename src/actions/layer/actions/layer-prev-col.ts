@@ -1,7 +1,7 @@
 import {CompanionActionDefinition, Regex} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function layerPrevCol(
 	_restApi: () => (ArenaRestApi | null),

@@ -1,10 +1,10 @@
 import {Agent as httpAgent} from 'http';
 import {Agent as httpsAgent} from 'https';
 import fetch, {Headers, HeadersInit, RequestInit, Response} from 'node-fetch';
-import {ArenaClipsApi} from './child-apis/ArenaClipsApi';
-import {ArenaLayersApi} from './child-apis/ArenaLayersApi';
-import {ArenaLayerGroupsApi} from './child-apis/ArenaLayerGroupsApi';
-import {ArenaColumnsApi} from './child-apis/ArenaColumnsApi';
+import {ArenaClipsApi} from './child-apis/ArenaClipsApi.js';
+import {ArenaLayersApi} from './child-apis/ArenaLayersApi.js';
+import {ArenaLayerGroupsApi} from './child-apis/ArenaLayerGroupsApi.js';
+import {ArenaColumnsApi} from './child-apis/ArenaColumnsApi.js';
 
 class HTTPResponseError extends Error {
   response: any;

@@ -3,7 +3,7 @@ import {
 	CompanionStaticUpgradeResult,
 	CompanionUpgradeContext
 } from '@companion-module/base';
-import {ResolumeArenaConfig} from '../config-fields';
+import {ResolumeArenaConfig} from '../config-fields.js';
 
 export function upgrade_v3_5_2(
 	_context: CompanionUpgradeContext<ResolumeArenaConfig>,

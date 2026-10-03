@@ -20,10 +20,10 @@
  * are present, the feedback callbacks will handle them correctly.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import { ClipId } from '../../src/domain/clip/clip-id'
-import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, pause } from './helpers'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
+import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
 const resolume = await isResolumeReachable()
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)

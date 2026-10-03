@@ -1,12 +1,12 @@
 import {combineRgb, CompanionPresetDefinitions} from '@companion-module/base';
-import {bypassLayerPreset} from './presets/bypassLayerPreset';
-import {soloLayerPreset} from './presets/soloLayerPreset';
-import {clearLayerPreset} from './presets/clearLayerPreset';
-import {selectLayerPreset} from './presets/selectLayerPreset';
-import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100';
-import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10';
-import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10';
-import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0';
+import {bypassLayerPreset} from './presets/bypassLayerPreset.js';
+import {soloLayerPreset} from './presets/soloLayerPreset.js';
+import {clearLayerPreset} from './presets/clearLayerPreset.js';
+import {selectLayerPreset} from './presets/selectLayerPreset.js';
+import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100.js';
+import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10.js';
+import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10.js';
+import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0.js';
 
 const white = combineRgb(255, 255, 255);
 const black = combineRgb(0, 0, 0);

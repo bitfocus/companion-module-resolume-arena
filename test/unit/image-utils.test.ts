@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { drawThumb, drawPercentage, drawVolume } from '../../src/image-utils'
-import { compositionState } from '../../src/state'
+import { drawThumb, drawPercentage, drawVolume } from '../../src/image-utils.js'
+import { compositionState } from '../../src/state.js'
 
 // 4×4 grey RGBA PNG encoded as base64
 const TINY_PNG_B64 =

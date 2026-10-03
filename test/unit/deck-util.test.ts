@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { DeckUtils } from '../../src/domain/deck/deck-util'
-import { parameterStates, compositionState } from '../../src/state'
+import { DeckUtils } from '../../src/domain/deck/deck-util.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {

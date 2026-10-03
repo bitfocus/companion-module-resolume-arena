@@ -6,13 +6,13 @@
  * - Relative modifier: sends with + prefix, Resolume accepts but applies value absolutely
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import ArenaOscApi from '../../src/arena-api/osc'
-import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER } from './config'
-import { isResolumeReachable, pause } from './helpers'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import ArenaOscApi from '../../src/arena-api/osc.js'
+import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER } from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const osc = require('osc') as {
+import oscPackage from 'osc'
+const osc = oscPackage as unknown as {
 	UDPPort: new (opts: { localAddress: string; localPort: number; metadata: boolean }) => any
 }
 

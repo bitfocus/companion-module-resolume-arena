@@ -1,13 +1,13 @@
 import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo, CompanionVariableDefinition} from '@companion-module/base';
-import {drawPercentage, drawThumb, drawVolume} from '../../image-utils';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {compositionState, parameterStates} from '../../state';
-import {MessageSubscriber} from '../../websocket';
-import {Clip, RangeParameter} from '../api';
-import {ClipId} from './clip-id';
-import {getOtherClipFeedbacks} from '../../feedbacks/clip/clipFeedbacks';
-import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common';
-import {getLayerApiFeedbacks} from '../../feedbacks/layer/layerFeedbacks';
+import {drawPercentage, drawThumb, drawVolume} from '../../image-utils.js';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {compositionState, parameterStates} from '../../state.js';
+import {MessageSubscriber} from '../../websocket.js';
+import {Clip, RangeParameter} from '../api.js';
+import {ClipId} from './clip-id.js';
+import {getOtherClipFeedbacks} from '../../feedbacks/clip/clipFeedbacks.js';
+import {CompanionCommonCallbackContext} from '@companion-module/base/dist/module-api/common.js';
+import {getLayerApiFeedbacks} from '../../feedbacks/layer/layerFeedbacks.js';
 
 export class ClipUtils implements MessageSubscriber {
 	private resolumeArenaInstance: ResolumeArenaModuleInstance;

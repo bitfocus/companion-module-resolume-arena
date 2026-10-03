@@ -1,6 +1,6 @@
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getLayerGroupOption} from '../../../defaults.js';
 
 export function layerGroupSpeed(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

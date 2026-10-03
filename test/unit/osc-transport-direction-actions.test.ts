@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getOscTransportActions } from '../../src/actions/osc-transport/oscTransportActions'
+import { getOscTransportActions } from '../../src/actions/osc-transport/oscTransportActions.js'
 
 function makeMockInstance() {
 	const oscApi = {

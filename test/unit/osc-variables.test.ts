@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getOscLayerVariables, getAllOscVariables, OSC_DEFAULT_LAYERS } from '../../src/variables/osc-variables'
+import { getOscLayerVariables, getAllOscVariables, OSC_DEFAULT_LAYERS } from '../../src/variables/osc-variables.js'
 
 describe('getOscLayerVariables', () => {
 	it('returns 7 variables per layer', () => {

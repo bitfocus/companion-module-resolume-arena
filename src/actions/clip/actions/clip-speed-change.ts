@@ -1,12 +1,12 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getClipOption, getSpeedValue} from '../../../defaults';
-import {WebsocketInstance} from '../../../websocket';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {parameterStates} from '../../../state';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getClipOption, getSpeedValue} from '../../../defaults.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
+import {parameterStates} from '../../../state.js';
 
 export function clipSpeedChange(
 	restApi: () => ArenaRestApi | null,

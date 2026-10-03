@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {EffectScope, EffectParamMode, EffectCollection, MANUAL_PARAM_CHOICE, MANUAL_VALUE_CHOICE} from '../../../domain/effects/effect-utils';
-import {buildScopedEffectOptions, buildParamNameOptions} from '../effect-action-options';
-import {parameterStates} from '../../../state';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {EffectScope, EffectParamMode, EffectCollection, MANUAL_PARAM_CHOICE, MANUAL_VALUE_CHOICE} from '../../../domain/effects/effect-utils.js';
+import {buildScopedEffectOptions, buildParamNameOptions} from '../effect-action-options.js';
+import {parameterStates} from '../../../state.js';
 
 function coerceValue(raw: string): string | number | boolean {
 	const lower = raw.trim().toLowerCase();

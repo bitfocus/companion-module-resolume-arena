@@ -1,9 +1,9 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getClipOption} from '../../../defaults';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getClipOption} from '../../../defaults.js';
 
 export function updateClipThumbnail(
 	restApi: () => ArenaRestApi | null,

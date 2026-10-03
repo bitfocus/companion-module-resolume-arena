@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi, {OscArgs} from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerGroupOption} from '../../../defaults';
-import {parameterStates} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi, {OscArgs} from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerGroupOption} from '../../../defaults.js';
+import {parameterStates} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function bypassLayerGroup(
 	restApi: () => ArenaRestApi | null,

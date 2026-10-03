@@ -1,12 +1,12 @@
 import {CompanionPresetDefinitions} from '@companion-module/base';
-import {triggerClipPreset} from './presets/triggerClipPreset';
-import {selectClipPreset} from './presets/selectClipPreset';
-import {updateClipThumbnailPreset} from './presets/updateClipThumbnailPreset';
-import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100';
-import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10';
-import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10';
-import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0';
-import {getDefaultLayerColumnOptions} from '../../defaults';
+import {triggerClipPreset} from './presets/triggerClipPreset.js';
+import {selectClipPreset} from './presets/selectClipPreset.js';
+import {updateClipThumbnailPreset} from './presets/updateClipThumbnailPreset.js';
+import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100.js';
+import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10.js';
+import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10.js';
+import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0.js';
+import {getDefaultLayerColumnOptions} from '../../defaults.js';
 
 export function getClipApiPresets(category: string): CompanionPresetDefinitions {
 	return {

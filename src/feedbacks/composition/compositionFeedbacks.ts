@@ -1,10 +1,10 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {tempo} from './feedbacks/tempo';
-import {compositionOpacity} from './feedbacks/compositionOpacity';
-import {compositionVolume} from './feedbacks/compositionVolume';
-import {compositionMaster} from './feedbacks/compositionMaster';
-import {compositionSpeed} from './feedbacks/compositionSpeed';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {tempo} from './feedbacks/tempo.js';
+import {compositionOpacity} from './feedbacks/compositionOpacity.js';
+import {compositionVolume} from './feedbacks/compositionVolume.js';
+import {compositionMaster} from './feedbacks/compositionMaster.js';
+import {compositionSpeed} from './feedbacks/compositionSpeed.js';
 
 export function getCompositionApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {

@@ -9,11 +9,11 @@
  * - Connecting by name triggers the correct column in Resolume
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import { WebsocketInstance } from '../../src/websocket'
-import { parameterStates } from '../../src/state'
-import { TEST_HOST, REST_PORT } from './config'
-import { isResolumeReachable, pause, waitFor } from './helpers'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import { WebsocketInstance } from '../../src/websocket.js'
+import { parameterStates } from '../../src/state.js'
+import { TEST_HOST, REST_PORT } from './config.js'
+import { isResolumeReachable, pause, waitFor } from './helpers.js'
 
 const resolume = await isResolumeReachable()
 
@@ -126,7 +126,7 @@ describe.skipIf(!resolume)('connectColumn byName — # placeholder expansion', (
 	it('lookupColumnIndexByName resolves "Test Col 2" to index 2 via # expansion', async () => {
 		// Import the function under test via the action factory — we exercise the real lookup
 		// by calling the action callback with lookupMode byName
-		const { connectColumn } = await import('../../src/actions/column/actions/connectColumn')
+		const { connectColumn } = await import('../../src/actions/column/actions/connectColumn.js')
 		const triggered: string[] = []
 		const fakeWs: any = {
 			triggerPath: (path: string) => triggered.push(path),
@@ -181,7 +181,7 @@ describe.skipIf(!resolume)('connectColumn byName — triggers correct column in 
 	})
 
 	it('connectColumn byName triggers the correct WS path', async () => {
-		const { connectColumn } = await import('../../src/actions/column/actions/connectColumn')
+		const { connectColumn } = await import('../../src/actions/column/actions/connectColumn.js')
 		const triggered: string[] = []
 		const fakeWs: any = {
 			triggerPath: (path: string) => triggered.push(path),

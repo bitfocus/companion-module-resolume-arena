@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { connectLayerGroupColumn } from '../../src/actions/layer-group/actions/connect-layer-group-column'
-import { selectLayerGroupColumn } from '../../src/actions/layer-group/actions/select-layer-group-column'
-import { clipSpeedChange } from '../../src/actions/clip/actions/clip-speed-change'
-import { clipVolumeChange } from '../../src/actions/clip/actions/clip-volume-change'
-import { clipOpacityChange } from '../../src/actions/clip/actions/clip-opacity-change'
-import { compositionState, parameterStates } from '../../src/state'
+import { connectLayerGroupColumn } from '../../src/actions/layer-group/actions/connect-layer-group-column.js'
+import { selectLayerGroupColumn } from '../../src/actions/layer-group/actions/select-layer-group-column.js'
+import { clipSpeedChange } from '../../src/actions/clip/actions/clip-speed-change.js'
+import { clipVolumeChange } from '../../src/actions/clip/actions/clip-volume-change.js'
+import { clipOpacityChange } from '../../src/actions/clip/actions/clip-opacity-change.js'
+import { compositionState, parameterStates } from '../../src/state.js'
 
 function makeWsApi() {
 	return { triggerPath: vi.fn(), setPath: vi.fn(), setParam: vi.fn(), subscribeParam: vi.fn() }
