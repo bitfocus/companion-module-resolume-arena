@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { drawThumb, drawPercentage, drawVolume, encodeImageBuffer } from '../../src/image-utils.js'
 import { compositionState } from '../../src/state.js'
+import { PNG } from 'pngjs'
 
 // 4×4 grey RGBA PNG encoded as base64
 const TINY_PNG_B64 =
@@ -36,16 +37,37 @@ describe('encodeImageBuffer', () => {
 })
 
 describe('drawThumb', () => {
-	it('returns a base64 string for a valid base64 PNG', () => {
+	const decode = (png64: string) => PNG.sync.read(Buffer.from(png64, 'base64'))
+	const alphaAt = (png: PNG, x: number, y: number) => png.data[(y * png.width + x) * 4 + 3]
+
+	// Companion 5 draws a png64 image below the button text and an image buffer above it,
+	// so the cropped thumbnail has to be a PNG for the text to stay in front of it.
+	it('returns a base64 encoded PNG', () => {
 		compositionState.set(makeCompositionState())
 		const result = drawThumb(TINY_PNG_B64)
 		expect(isBase64(result)).toBe(true)
+		expect(Buffer.from(result, 'base64').subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
 	})
 
-	it('output length matches 64×64 RGB (64*64*3 = 12288 bytes)', () => {
+	it('is a 72×72 image: the 64×64 thumbnail with a 4 pixel margin', () => {
 		compositionState.set(makeCompositionState())
-		const result = drawThumb(TINY_PNG_B64)
-		expect(decodedLength(result)).toBe(64 * 64 * 3)
+		const png = decode(drawThumb(TINY_PNG_B64))
+		expect(png.width).toBe(72)
+		expect(png.height).toBe(72)
+	})
+
+	it('keeps the margin transparent so the feedback background colour shows as a border', () => {
+		compositionState.set(makeCompositionState())
+		const png = decode(drawThumb(TINY_PNG_B64))
+		for (const [x, y] of [[0, 0], [3, 3], [71, 71], [68, 36], [36, 3]]) {
+			expect(alphaAt(png, x, y), `margin pixel ${x},${y}`).toBe(0)
+		}
+		// the fixture is a half transparent grey; the thumbnail keeps the alpha of its source
+		const sourceAlpha = alphaAt(PNG.sync.read(Buffer.from(TINY_PNG_B64, 'base64')), 0, 0)
+		expect(sourceAlpha).toBeGreaterThan(0)
+		for (const [x, y] of [[4, 4], [36, 36], [67, 67]]) {
+			expect(alphaAt(png, x, y), `thumbnail pixel ${x},${y}`).toBe(sourceAlpha)
+		}
 	})
 
 	it('handles non-square source aspect ratios without throwing', () => {

@@ -40,6 +40,17 @@ export function drawPercentage(percentage: number, image: ImageSize = DEFAULT_IM
 	}
 }
 
+const THUMB_SIZE = 64;
+const THUMB_MARGIN = 4;
+
+/**
+ * Crops a Resolume thumbnail to the composition's aspect ratio (dropping the black banners) and
+ * returns it as a base64 PNG for the `png64` style property.
+ *
+ * It is a PNG rather than an image buffer because Companion 5 draws an image buffer above the
+ * button text and `png64` below it. The transparent margin lets the button background show as a
+ * border around the thumbnail, which the Connected Clip feedback colours.
+ */
 export function drawThumb(thumb: string): string {
 	const inputDecoded = PNG.sync.read(Buffer.from(thumb, 'base64'));
 	const video = compositionState.get()!.video!;
@@ -50,10 +61,13 @@ export function drawThumb(thumb: string): string {
 		PixelFormat.Rgba
 	)
 		.scale(inputDecoded.width, inputDecoded.width / video.width!.value! * video.height!.value!, ResizeMode.Fill)
-		.scale(64, 64, ResizeMode.Fill)
-		.toBufferSync(PixelFormat.Rgb);
+		.scale(THUMB_SIZE, THUMB_SIZE, ResizeMode.Fill)
+		.pad(THUMB_MARGIN, THUMB_MARGIN, THUMB_MARGIN, THUMB_MARGIN, {red: 0, green: 0, blue: 0, alpha: 0})
+		.toBufferSync(PixelFormat.Rgba);
 
-	return encodeImageBuffer(out.buffer);
+	const png = new PNG({width: out.width, height: out.height});
+	out.buffer.copy(png.data);
+	return PNG.sync.write(png).toString('base64');
 }
 
 function createColorBlock(fillColor: number, image: ImageSize, percentage: number = 0) {
