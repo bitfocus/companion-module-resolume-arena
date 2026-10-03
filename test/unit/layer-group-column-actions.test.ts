@@ -14,11 +14,9 @@ function makeOscApi() {
 	return { customOsc: vi.fn() }
 }
 
-function makeInstance(...results: string[]) {
-	let idx = 0
+function makeInstance() {
 	return {
 		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
 	} as any
 }
 
@@ -33,7 +31,7 @@ describe('connectLayerGroupColumn', () => {
 	it('action=set triggers column connect path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('1', '3')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -52,7 +50,7 @@ describe('connectLayerGroupColumn', () => {
 			calculateNextConnectedLayerGroupColumn: vi.fn().mockReturnValue(4),
 			calculatePreviousConnectedLayerGroupColumn: vi.fn(),
 		}
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -85,7 +83,7 @@ describe('connectLayerGroupColumn', () => {
 			calculateNextConnectedLayerGroupColumn: vi.fn().mockReturnValue(undefined),
 			calculatePreviousConnectedLayerGroupColumn: vi.fn(),
 		}
-		const instance = makeInstance('1', '1')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -97,10 +95,10 @@ describe('connectLayerGroupColumn', () => {
 		expect(ws.triggerPath).not.toHaveBeenCalled()
 	})
 
-	it('options.value is resolved through parseVariablesInString (#143)', async () => {
+	it('uses the already resolved options.value (#143)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextConnectedLayerGroupColumn: vi.fn(), calculatePreviousConnectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('1', '5')
+		const instance = makeInstance()
 		const action = connectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -108,7 +106,7 @@ describe('connectLayerGroupColumn', () => {
 			() => lgu as any,
 			instance
 		)
-		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '$(var:foo)' } })
+		await (action.callback as any)({ options: { layerGroup: '1', action: 'set', value: '5' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', false)
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/1/columns/5/connect', true)
 	})
@@ -120,7 +118,7 @@ describe('selectLayerGroupColumn', () => {
 	it('action=set triggers select path (false then true)', async () => {
 		const ws = makeWsApi()
 		const lgu = { calculateNextSelectedLayerGroupColumn: vi.fn(), calculatePreviousSelectedLayerGroupColumn: vi.fn() }
-		const instance = makeInstance('2', '2')
+		const instance = makeInstance()
 		const action = selectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -139,7 +137,7 @@ describe('selectLayerGroupColumn', () => {
 			calculateNextSelectedLayerGroupColumn: vi.fn(),
 			calculatePreviousSelectedLayerGroupColumn: vi.fn().mockReturnValue(2),
 		}
-		const instance = makeInstance('1')
+		const instance = makeInstance()
 		const action = selectLayerGroupColumn(
 			() => ({} as any),
 			() => ws as any,
@@ -164,10 +162,6 @@ describe('clipSpeedChange — REST path', () => {
 		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')  // value
-				.mockResolvedValueOnce('1')   // layer
-				.mockResolvedValueOnce('2'),  // column
 		} as any
 		const action = clipSpeedChange(
 			() => restApi as any,
@@ -190,10 +184,6 @@ describe('clipSpeedChange — REST path', () => {
 		parameterStates.update(s => { s['/parameter/by-id/88'] = { value: 1.0 } as any })
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')  // value
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipSpeedChange(
 			() => restApi as any,
@@ -217,10 +207,6 @@ describe('clipSpeedChange — REST path', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipSpeedChange(
 			() => restApi as any,
@@ -240,10 +226,6 @@ describe('clipSpeedChange — OSC path', () => {
 		const osc = makeOscApi()
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('100')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipSpeedChange(
 			() => null,
@@ -260,10 +242,6 @@ describe('clipSpeedChange — OSC path', () => {
 		const osc = makeOscApi()
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('10')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipSpeedChange(
 			() => null,
@@ -289,10 +267,6 @@ describe('clipVolumeChange — REST path', () => {
 		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('-12') // value
-				.mockResolvedValueOnce('1')   // layer
-				.mockResolvedValueOnce('1'),  // column
 		} as any
 		const action = clipVolumeChange(
 			() => restApi as any,
@@ -315,10 +289,6 @@ describe('clipVolumeChange — REST path', () => {
 		parameterStates.update(s => { s['/parameter/by-id/33'] = { value: -6 } as any })
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('-6')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('1'),
 		} as any
 		const action = clipVolumeChange(
 			() => restApi as any,
@@ -338,10 +308,6 @@ describe('clipVolumeChange — REST path', () => {
 		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ audio: { volume: { value: -6 } } }) } }
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('-12')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('1'),
 		} as any
 		const action = clipVolumeChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '-12', layer: '1', column: '1', action: 'set' } })
@@ -362,10 +328,6 @@ describe('clipOpacityChange — REST path', () => {
 		const restApi = { Clips: { getStatus: vi.fn() } }
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('80') // value
-				.mockResolvedValueOnce('1')  // layer
-				.mockResolvedValueOnce('1'), // column
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -389,10 +351,6 @@ describe('clipOpacityChange — REST path', () => {
 		parameterStates.update(s => { s['/parameter/by-id/200'] = { value: 0.5 } as any })
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('20')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -418,10 +376,6 @@ describe('clipOpacityChange — REST path', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('20') // value
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('2'),
 		} as any
 		const action = clipOpacityChange(
 			() => restApi as any,
@@ -437,7 +391,7 @@ describe('clipOpacityChange — REST path', () => {
 
 	it('does nothing when restApi is null', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('1', '1', '1')
+		const instance = makeInstance()
 		const action = clipOpacityChange(() => null, () => ws as any, () => null, () => null, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })
 		expect(ws.setParam).not.toHaveBeenCalled()
@@ -449,10 +403,6 @@ describe('clipOpacityChange — REST path', () => {
 		const restApi = { Clips: { getStatus: vi.fn().mockResolvedValue({ video: { opacity: { value: 0.5 } } }) } }
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('50')
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('1'),
 		} as any
 		const action = clipOpacityChange(() => restApi as any, () => ws as any, () => null, () => clipUtils as any, instance)
 		await (action.callback as any)({ options: { value: '50', layer: '1', column: '1', action: 'set' } })

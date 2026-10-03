@@ -6,6 +6,7 @@ export function clipTransportPosition(resolumeArenaInstance: ResolumeArenaModule
 	return {
 		type: 'advanced',
 		name: 'Clip Transport Position',
+		affectedProperties: ['text', 'size'],
 		options:
 			[...getLayerOption(), ...getColumnOption(),
 				{

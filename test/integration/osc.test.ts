@@ -5,7 +5,7 @@ import { ClipId } from '../../src/domain/clip/clip-id.js'
 import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config.js'
 import { isResolumeReachable, pause } from './helpers.js'
 
-// No @types/osc exists — require with inline interface
+// No @types/osc exists — import with inline interface
 import oscPackage from 'osc'
 const osc = oscPackage as unknown as {
 	UDPPort: new (opts: { localAddress: string; localPort: number; metadata: boolean }) => OscUDPPort

@@ -41,6 +41,8 @@ export function connectColumn(
 					{id: 'byName', label: 'By name'},
 				],
 				default: 'byIndex',
+				// referenced by isVisibleExpression below, so it cannot be an expression itself
+				disableAutoExpression: true,
 			},
 			{
 				id: 'action',
@@ -61,21 +63,21 @@ export function connectColumn(
 				],
 				default: 'set',
 				label: 'Action',
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'name',
 				label: 'Column name',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byName',
+				isVisibleExpression: '$(options:lookupMode) == "byName"',
 			}
 		],
 		callback: async ({options}: {options: any}) => {
@@ -85,7 +87,7 @@ export function connectColumn(
 				let column: number | undefined;
 
 				if (options.lookupMode === 'byName') {
-					const name = await resolumeArenaModuleInstance.parseVariablesInString(options.name ?? '');
+					const name = String(options.name ?? '');
 					column = lookupColumnIndexByName(name);
 					if (column === undefined) {
 						resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
@@ -93,7 +95,7 @@ export function connectColumn(
 					}
 				} else {
 					const action = options.action;
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					const value = +options.value;
 					if (action == undefined) {
 						return;
 					}

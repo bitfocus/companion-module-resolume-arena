@@ -3,11 +3,13 @@ import type {CompanionAdvancedFeedbackResult, CompanionFeedbackDefinition} from 
 import {graphics} from 'companion-module-utils';
 import type {OptionsBar} from 'companion-module-utils/dist/graphics.js';
 import type {ResolumeArenaModuleInstance} from '../../../index.js';
+import {encodeImageBuffer} from '../../../image-utils.js';
 
 export function wsProgressBar(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
 		name: 'WS: Layer Progress Bar',
+		affectedProperties: ['bgcolor', 'imageBuffer'],
 		description: 'Visual progress bar for layer active clip playback. Green → Orange → Red based on remaining time.',
 		options: [
 			{
@@ -60,7 +62,7 @@ export function wsProgressBar(resolumeArenaInstance: ResolumeArenaModuleInstance
 			},
 		],
 		callback: async (feedback: any): Promise<CompanionAdvancedFeedbackResult> => {
-			const layer = +await resolumeArenaInstance.parseVariablesInString(feedback.options.layer);
+			const layer = +feedback.options.layer;
 			const column = resolumeArenaInstance.getLayerUtils()?.getActiveColumn(layer) ?? 0;
 
 			if (column === 0) {
@@ -74,8 +76,8 @@ export function wsProgressBar(resolumeArenaInstance: ResolumeArenaModuleInstance
 
 			const { elapsedSec, totalSec, remainingSec } = timing;
 
-			const orangeThreshold = parseFloat(await resolumeArenaInstance.parseVariablesInString(String(feedback.options.orangeSeconds ?? '30'))) || 30;
-			const redThreshold = parseFloat(await resolumeArenaInstance.parseVariablesInString(String(feedback.options.redSeconds ?? '10'))) || 10;
+			const orangeThreshold = parseFloat(String(feedback.options.orangeSeconds ?? '30')) || 30;
+			const redThreshold = parseFloat(String(feedback.options.redSeconds ?? '10')) || 10;
 
 			let barColor: number;
 			if (remainingSec <= redThreshold) {
@@ -101,7 +103,7 @@ export function wsProgressBar(resolumeArenaInstance: ResolumeArenaModuleInstance
 				opacity: 255,
 			};
 
-			return { imageBuffer: graphics.bar(options) };
+			return { imageBuffer: encodeImageBuffer(graphics.bar(options)) };
 		},
 	};
 }

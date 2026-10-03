@@ -1,4 +1,4 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
+import type {CategorizedPresets} from '../preset-structure.js';
 import {bypassLayerGroupPreset} from './presets/bypassLayerGroupPreset.js';
 import {soloLayerGroupPreset} from './presets/soloLayerGroupPreset.js';
 import {clearLayerGroupPreset} from './presets/clearLayerGroupPreset.js';
@@ -16,7 +16,7 @@ import {connectNextLayerGroupColumnPreset} from './presets/connectNextLayerGroup
 import {connectPreviousLayerGroupColumnPreset} from './presets/connectPreviousLayerGroupColumnPreset.js';
 import {connectedLayerGroupColumnNamePreset} from './presets/connectedLayerGroupColumnNamePreset.js';
 
-export function getLayerGroupApiPresets(category: string): CompanionPresetDefinitions {
+export function getLayerGroupApiPresets(category: string): CategorizedPresets {
 	return {
 		bypassLayerGroup: bypassLayerGroupPreset(category),
 		soloLayerGroup: soloLayerGroupPreset(category),

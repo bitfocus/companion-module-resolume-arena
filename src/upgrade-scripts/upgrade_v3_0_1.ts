@@ -7,15 +7,15 @@ import {ResolumeArenaConfig} from '../config-fields.js';
 
 export function upgrade_v3_0_1(
 	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	props: CompanionStaticUpgradeProps<ResolumeArenaConfig, undefined>
+): CompanionStaticUpgradeResult<ResolumeArenaConfig, undefined> {
 	let updateActions = [];
 
 	for (const action of props.actions) {
 		switch (action.actionId) {
 			case 'custom':
 				if (action.options !== undefined && action.options.relativeType === undefined) {
-					action.options.relativeType = 'n';
+					action.options.relativeType = {isExpression: false, value: 'n'};
 					updateActions.push(action);
 				}
 				break;
@@ -24,6 +24,7 @@ export function upgrade_v3_0_1(
 
 	return {
 		updatedConfig: null,
+		updatedSecrets: null,
 		updatedActions: updateActions,
 		updatedFeedbacks: [],
 	};

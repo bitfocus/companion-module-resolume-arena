@@ -6,6 +6,7 @@ export function previousConnectedLayerGroupColumnName(resolumeArenaInstance: Res
 	return {
 		type: 'advanced',
 		name: 'Previous Connected Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), {
 			id: 'previous',
 			type: 'number',

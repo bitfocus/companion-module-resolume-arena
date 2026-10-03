@@ -13,10 +13,9 @@ function makeOscApi() {
 	return { customOsc: vi.fn() }
 }
 
-function makeInstance(parseResult = '50') {
+function makeInstance() {
 	return {
 		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockResolvedValue(parseResult),
 	} as any
 }
 
@@ -30,7 +29,7 @@ beforeEach(() => {
 describe('compositionMasterChange', () => {
 	it('set — calls setPath with inputValue/100', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('100')
+		const instance = makeInstance()
 		const action = compositionMasterChange(
 			() => ({} as any),
 			() => ws as any,
@@ -44,7 +43,7 @@ describe('compositionMasterChange', () => {
 	it('add — adds inputValue to current state', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/master': { value: 0.5 } } as any)
-		const instance = makeInstance('10')
+		const instance = makeInstance()
 		const action = compositionMasterChange(
 			() => ({} as any),
 			() => ws as any,
@@ -58,7 +57,7 @@ describe('compositionMasterChange', () => {
 	it('subtract — subtracts inputValue from current state', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/master': { value: 0.8 } } as any)
-		const instance = makeInstance('20')
+		const instance = makeInstance()
 		const action = compositionMasterChange(
 			() => ({} as any),
 			() => ws as any,
@@ -71,7 +70,7 @@ describe('compositionMasterChange', () => {
 
 	it('does nothing when restApi returns null', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('50')
+		const instance = makeInstance()
 		const action = compositionMasterChange(
 			() => null,
 			() => ws as any,
@@ -94,7 +93,7 @@ describe('compositionMasterChange', () => {
 describe('compositionSpeedChange — REST path', () => {
 	it('set via REST calls setPath', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('100')
+		const instance = makeInstance()
 		const action = compositionSpeedChange(
 			() => ({} as any),
 			() => ws as any,
@@ -108,7 +107,7 @@ describe('compositionSpeedChange — REST path', () => {
 	it('add via REST', async () => {
 		const ws = makeWsApi()
 		parameterStates.set({ '/composition/speed': { value: 0.5 } } as any)
-		const instance = makeInstance('50')
+		const instance = makeInstance()
 		const action = compositionSpeedChange(
 			() => ({} as any),
 			() => ws as any,
@@ -123,7 +122,7 @@ describe('compositionSpeedChange — REST path', () => {
 describe('compositionSpeedChange — OSC path', () => {
 	it('set via OSC calls customOsc', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('100')
+		const instance = makeInstance()
 		const action = compositionSpeedChange(
 			() => null,
 			() => null,
@@ -136,7 +135,7 @@ describe('compositionSpeedChange — OSC path', () => {
 
 	it('add via OSC logs warning', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('10')
+		const instance = makeInstance()
 		const action = compositionSpeedChange(
 			() => null,
 			() => null,
@@ -155,7 +154,7 @@ describe('compositionOpacityChange', () => {
 	it('set — calls setParam with correct value', async () => {
 		const ws = makeWsApi()
 		compositionState.set({ video: { opacity: { id: 42 } } } as any)
-		const instance = makeInstance('75')
+		const instance = makeInstance()
 		const action = compositionOpacityChange(
 			() => ({} as any),
 			() => ws as any,
@@ -170,7 +169,7 @@ describe('compositionOpacityChange', () => {
 		const ws = makeWsApi()
 		compositionState.set({ video: { opacity: { id: 1 } } } as any)
 		parameterStates.set({ '/composition/video/opacity': { value: 0.5 } } as any)
-		const instance = makeInstance('25')
+		const instance = makeInstance()
 		const action = compositionOpacityChange(
 			() => ({} as any),
 			() => ws as any,
@@ -196,7 +195,7 @@ describe('compositionOpacityChange', () => {
 	it('does not call setParam when composition has no opacity id (#140)', async () => {
 		const ws = makeWsApi()
 		compositionState.set(undefined)
-		const instance = makeInstance('50')
+		const instance = makeInstance()
 		const action = compositionOpacityChange(
 			() => ({} as any),
 			() => ws as any,
@@ -215,7 +214,7 @@ describe('compositionVolumeChange', () => {
 	it('set — calls setParam with raw value (not /100)', async () => {
 		const ws = makeWsApi()
 		compositionState.set({ audio: { volume: { id: 99 } } } as any)
-		const instance = makeInstance('-6')
+		const instance = makeInstance()
 		const action = compositionVolumeChange(
 			() => ({} as any),
 			() => ws as any,
@@ -230,7 +229,7 @@ describe('compositionVolumeChange', () => {
 		const ws = makeWsApi()
 		compositionState.set({ audio: { volume: { id: 5 } } } as any)
 		parameterStates.set({ '/composition/audio/volume': { value: -12 } } as any)
-		const instance = makeInstance('6')
+		const instance = makeInstance()
 		const action = compositionVolumeChange(
 			() => ({} as any),
 			() => ws as any,
@@ -245,7 +244,7 @@ describe('compositionVolumeChange', () => {
 		const ws = makeWsApi()
 		compositionState.set({ audio: { volume: { id: 5 } } } as any)
 		parameterStates.set({ '/composition/audio/volume': { value: -6 } } as any)
-		const instance = makeInstance('6')
+		const instance = makeInstance()
 		const action = compositionVolumeChange(
 			() => ({} as any),
 			() => ws as any,
@@ -259,7 +258,7 @@ describe('compositionVolumeChange', () => {
 	it('does not call setParam when composition has no volume id (#140)', async () => {
 		const ws = makeWsApi()
 		compositionState.set(undefined)
-		const instance = makeInstance('-6')
+		const instance = makeInstance()
 		const action = compositionVolumeChange(
 			() => ({} as any),
 			() => ws as any,

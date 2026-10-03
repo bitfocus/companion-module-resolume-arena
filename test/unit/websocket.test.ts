@@ -42,7 +42,7 @@ describe('waitForOpenConnection', () => {
 
 	it('resolves when socket becomes OPEN mid-way through attempts', async () => {
 		const ws = makeWsInstance()
-		const socket = { readyState: WebSocket.CONNECTING }
+		const socket: { readyState: number } = { readyState: WebSocket.CONNECTING }
 		const promise = ws.waitForOpenConnection(socket)
 		vi.advanceTimersByTime(200 * 3) // 3 failed ticks
 		socket.readyState = WebSocket.OPEN

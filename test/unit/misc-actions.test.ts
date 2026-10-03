@@ -39,11 +39,9 @@ function makeOscApi() {
 	}
 }
 
-function makeInstance(...results: string[]) {
-	let idx = 0
+function makeInstance() {
 	return {
 		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
 	} as any
 }
 
@@ -141,7 +139,7 @@ describe('tempoResync — OSC path', () => {
 describe('layerGroupNextCol', () => {
 	it('calls oscApi.layerGroupNextCol with layer group', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = layerGroupNextCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '2', lastColumn: '4' } })
 		expect(osc.layerGroupNextCol).toHaveBeenCalledWith(2, '4')
@@ -151,7 +149,7 @@ describe('layerGroupNextCol', () => {
 describe('layerGroupPrevCol', () => {
 	it('calls oscApi.groupPrevCol with layer group and last column', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('1', '3')
+		const instance = makeInstance()
 		const action = layerGroupPrevCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '1', lastColumn: '3' } })
 		expect(osc.groupPrevCol).toHaveBeenCalledWith(1, 3)
@@ -163,7 +161,7 @@ describe('layerGroupPrevCol', () => {
 describe('selectLayerGroup', () => {
 	it('triggers select path via websocket', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = selectLayerGroup(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/2/select')
@@ -184,9 +182,6 @@ describe('layerGroupSpeedChange', () => {
 		const ws = makeWsApi()
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('50'),
 		} as any
 		const action = layerGroupSpeedChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -211,9 +206,6 @@ describe('layerGroupVolumeChange', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('-12'),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),
@@ -234,9 +226,6 @@ describe('layerGroupVolumeChange', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('6'),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),

@@ -6,6 +6,7 @@ export function deckName(resolumeArenaInstance: ResolumeArenaModuleInstance): Co
 	return {
 		type: 'advanced',
 		name: 'Deck Name',
+		affectedProperties: ['text'],
 		options: [...getDeckOption()],
 		callback: resolumeArenaInstance.getDeckUtils()!.deckNameFeedbackCallback.bind(resolumeArenaInstance.getDeckUtils()!)
 	};

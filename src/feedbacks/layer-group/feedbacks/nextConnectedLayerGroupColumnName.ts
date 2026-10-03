@@ -6,6 +6,7 @@ export function nextConnectedLayerGroupColumnName(resolumeArenaInstance: Resolum
 	return {
 		type: 'advanced',
 		name: 'Next Connected Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), {
 			id: 'next',
 			type: 'number',

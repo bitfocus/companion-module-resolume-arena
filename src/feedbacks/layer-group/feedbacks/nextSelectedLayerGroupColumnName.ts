@@ -6,6 +6,7 @@ export function nextSelectedLayerGroupColumnName(resolumeArenaInstance: Resolume
 	return {
 		type: 'advanced',
 		name: 'Next Selected Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), {
 			id: 'next',
 			type: 'number',

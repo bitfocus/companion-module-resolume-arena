@@ -6,6 +6,7 @@ export function connectedClip(resolumeArenaInstance: ResolumeArenaModuleInstance
 	return {
 		type: 'advanced',
 		name: 'Connected Clip',
+		affectedProperties: ['bgcolor'],
 		options: [...getLayerOption(), ...getColumnOption(),
 			{
 				id: 'color_connected',

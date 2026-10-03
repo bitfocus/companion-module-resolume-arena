@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
 import {getDefaultDeckOptions, getDefaultStyleGreen} from '../../../defaults.js';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectDeckPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function selectDeckPreset(): CategorizedPreset {return {
+	type: 'simple',
 	category: 'Deck',
 	name: 'Select Deck By Index',
 	style: {

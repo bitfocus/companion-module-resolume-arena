@@ -7,8 +7,8 @@ import {ResolumeArenaConfig} from '../config-fields.js';
 
 export function upgrade_v3_13_0(
 	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	props: CompanionStaticUpgradeProps<ResolumeArenaConfig, undefined>
+): CompanionStaticUpgradeResult<ResolumeArenaConfig, undefined> {
 	const updatedActions = [];
 
 	for (const action of props.actions) {
@@ -17,13 +17,14 @@ export function upgrade_v3_13_0(
 			updatedActions.push(action);
 		}
 		if (action.actionId === 'connectColumn' && action.options['lookupMode'] === undefined) {
-			action.options['lookupMode'] = 'byIndex';
+			action.options['lookupMode'] = {isExpression: false, value: 'byIndex'};
 			updatedActions.push(action);
 		}
 	}
 
 	return {
 		updatedConfig: null,
+		updatedSecrets: null,
 		updatedActions,
 		updatedFeedbacks: [],
 	};

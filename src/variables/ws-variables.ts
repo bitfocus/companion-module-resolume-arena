@@ -1,10 +1,10 @@
-import {CompanionVariableDefinition} from '@companion-module/base'
+import type {VariableDefinitionEntry} from './variable-definition.js'
 import {compositionState} from '../state.js'
 
 export const WS_DEFAULT_LAYERS = 10
 export const WS_DEFAULT_LAYER_GROUPS = 5
 
-export function getWsLayerGroupVariables(group: number): CompanionVariableDefinition[] {
+export function getWsLayerGroupVariables(group: number): VariableDefinitionEntry[] {
 	const prefix = `ws_layergroup_${group}`
 	return [
 		{ variableId: `${prefix}_active`, name: `WS Layer Group ${group} / Active (1 if any clip is playing, 0 if not)` },
@@ -12,7 +12,7 @@ export function getWsLayerGroupVariables(group: number): CompanionVariableDefini
 	]
 }
 
-export function getWsLayerVariables(layer: number): CompanionVariableDefinition[] {
+export function getWsLayerVariables(layer: number): VariableDefinitionEntry[] {
 	const prefix = `ws_layer_${layer}`
 	return [
 		{ variableId: `${prefix}_active`, name: `WS Layer ${layer} / Active (1 if clip is playing, 0 if not)` },
@@ -26,11 +26,11 @@ export function getWsLayerVariables(layer: number): CompanionVariableDefinition[
 	]
 }
 
-export function getAllWsVariables(): CompanionVariableDefinition[] {
+export function getAllWsVariables(): VariableDefinitionEntry[] {
 	const state = compositionState.get()
 	const layerCount = state?.layers?.length ?? WS_DEFAULT_LAYERS
 	const groupCount = state?.layergroups?.length ?? WS_DEFAULT_LAYER_GROUPS
-	const variables: CompanionVariableDefinition[] = []
+	const variables: VariableDefinitionEntry[] = []
 	for (let l = 1; l <= layerCount; l++) {
 		variables.push(...getWsLayerVariables(l))
 	}

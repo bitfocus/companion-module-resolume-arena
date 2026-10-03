@@ -16,3 +16,4 @@ test/integration/config.ts
 memory/
 
 /.yarn
+/*.tgz

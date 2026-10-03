@@ -5,6 +5,7 @@ export function previousDeckName(resolumeArenaInstance: ResolumeArenaModuleInsta
 	return {
 		type: 'advanced',
 		name: 'Previous Deck Name',
+		affectedProperties: ['text'],
 		options: [{
 			id: 'previous',
 			type: 'number',
