@@ -27,11 +27,10 @@ describe('withSubscription', () => {
 		expect(hooks.callback).toHaveBeenCalledWith(feedback, context)
 	})
 
-	it('subscribes before running the callback', async () => {
+	it('starts the subscription before running the callback', async () => {
 		const order: string[] = []
 		const wrapped = withSubscription(new FeedbackSubscriptionRegistry(), {
-			subscribe: async () => {
-				await Promise.resolve()
+			subscribe: () => {
 				order.push('subscribe')
 			},
 			callback: () => {
@@ -41,6 +40,50 @@ describe('withSubscription', () => {
 		})
 		await wrapped.callback(makeFeedback('a', { layer: '1' }), context)
 		expect(order).toEqual(['subscribe', 'callback'])
+	})
+
+	// As in module API 1.x, where subscribe and callback were separate calls: a subscribe that is still
+	// busy (e.g. fetching a thumbnail over REST) must not hold up the feedback value.
+	it('does not wait for a slow subscribe before returning the feedback value', async () => {
+		let finishSubscribe!: () => void
+		const subscribe = vi.fn(() => new Promise<void>((resolve) => (finishSubscribe = resolve)))
+		const wrapped = withSubscription(new FeedbackSubscriptionRegistry(), { subscribe, callback: () => 'value' })
+		await expect(wrapped.callback(makeFeedback('a', { layer: '1' }), context)).resolves.toBe('value')
+		expect(subscribe).toHaveBeenCalledTimes(1)
+		finishSubscribe()
+	})
+
+	it('reports a failing subscribe instead of failing the feedback', async () => {
+		const onError = vi.fn()
+		const error = new Error('REST unreachable')
+		const wrapped = withSubscription(new FeedbackSubscriptionRegistry(onError), {
+			subscribe: () => Promise.reject(error),
+			callback: () => 'value',
+		})
+		await expect(wrapped.callback(makeFeedback('a', { layer: '1' }), context)).resolves.toBe('value')
+		await Promise.resolve()
+		expect(onError).toHaveBeenCalledWith(error)
+
+		// and it does not retry on every callback
+		await wrapped.callback(makeFeedback('a', { layer: '1' }), context)
+		expect(onError).toHaveBeenCalledTimes(1)
+	})
+
+	it('reports a failing unsubscribe instead of throwing', async () => {
+		const onError = vi.fn()
+		const error = new Error('boom')
+		const wrapped = withSubscription(new FeedbackSubscriptionRegistry(onError), {
+			subscribe: vi.fn(),
+			unsubscribe: () => {
+				throw error
+			},
+			callback: () => 'value',
+		})
+		await wrapped.callback(makeFeedback('a', { layer: '1' }), context)
+		await expect(wrapped.callback(makeFeedback('a', { layer: '2' }), context)).resolves.toBe('value')
+		await expect(wrapped.unsubscribe(makeFeedback('a', { layer: '2' }))).resolves.toBeUndefined()
+		expect(onError).toHaveBeenCalledTimes(2)
+		expect(onError).toHaveBeenCalledWith(error)
 	})
 
 	it('does not subscribe again while the options are unchanged', async () => {
