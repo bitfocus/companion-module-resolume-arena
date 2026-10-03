@@ -1,4 +1,4 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackAdvancedEvent, CompanionFeedbackInfo} from '@companion-module/base';
 import {drawPercentage, drawVolume} from '../../image-utils.js';
 import {ResolumeArenaModuleInstance} from '../../index.js';
 import {compositionState, parameterStates} from '../../state.js';
@@ -48,13 +48,13 @@ export class CompositionUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	compositionMasterFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionMasterFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult {
 		const master = parameterStates.get()['/composition/master']?.value;
 		if (master !== undefined) {
 			return {
 				text: Math.round(master * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(master)
+				imageBuffer: drawPercentage(master, feedback.image)
 			};
 		}
 		return {text: '?'};
@@ -83,13 +83,13 @@ export class CompositionUtils implements MessageSubscriber {
 	// Volume
 	/////////////////////////////////////////////////
 
-	compositionVolumeFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionVolumeFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult {
 		const volume = parameterStates.get()['/composition/audio/volume']?.value;
 		if (volume !== undefined) {
 			return {
 				text: Math.round(volume * 100)/100+ 'db',
 				show_topbar: false,
-				imageBuffer: drawVolume(volume)
+				imageBuffer: drawVolume(volume, 0, feedback.image)
 			};
 		}
 		return {text: '?'};
@@ -100,13 +100,13 @@ export class CompositionUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	compositionOpacityFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionOpacityFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult {
 		const opacity = parameterStates.get()['/composition/video/opacity']?.value;
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(opacity),
+				imageBuffer: drawPercentage(opacity, feedback.image),
 			};
 		}
 		return {text: '?'};
@@ -116,13 +116,13 @@ export class CompositionUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	compositionSpeedFeedbackCallback(_feedback: CompanionFeedbackInfo): CompanionAdvancedFeedbackResult {
+	compositionSpeedFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult {
 		const speed = parameterStates.get()['/composition/speed']?.value;
 		if (speed !== undefined) {
 			return {
 				text: Math.round(speed * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(speed)
+				imageBuffer: drawPercentage(speed, feedback.image)
 			};
 		}
 		return {text: '?'};
