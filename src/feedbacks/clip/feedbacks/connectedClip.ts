@@ -1,8 +1,9 @@
-import {getColumnOption, getLayerOption} from '../../../defaults.js';
+import {getColumnOption, getDefaultConnectedClipColors, getLayerOption} from '../../../defaults.js';
 import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function connectedClip(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
+	const colors = getDefaultConnectedClipColors();
 	return {
 		type: 'advanced',
 		name: 'Connected Clip',
@@ -12,28 +13,28 @@ export function connectedClip(resolumeArenaInstance: ResolumeArenaModuleInstance
 				id: 'color_connected',
 				type: 'colorpicker',
 				label: 'Connected',
-				default: 'rgb(0, 255, 0)',
+				default: colors.color_connected,
 				returnType: 'number'
 			},
 			{
 				id: 'color_connected_selected',
 				type: 'colorpicker',
 				label: 'Connected & Selected',
-				default: 'rgb(0,255,255)',
+				default: colors.color_connected_selected,
 				returnType: 'number'
 			},
 			{
 				id: 'color_connected_preview',
 				type: 'colorpicker',
 				label: 'Connected & previewing',
-				default: 'rgb(255, 255, 0)',
+				default: colors.color_connected_preview,
 				returnType: 'number'
 			},
 			{
 				id: 'color_preview',
 				type: 'colorpicker',
 				label: 'previewing',
-				default: 'rgb(255, 0, 0)',
+				default: colors.color_preview,
 				returnType: 'number'
 			}
 		],

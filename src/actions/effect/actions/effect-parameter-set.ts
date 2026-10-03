@@ -52,6 +52,7 @@ export function effectParameterSet(resolumeArenaInstance: ResolumeArenaModuleIns
 					choices: eu.buildValueChoicesForCollection(collection),
 					default: MANUAL_VALUE_CHOICE,
 					disableAutoExpression: true,
+					allowInvalidValues: true,
 					isVisibleExpression: `$(options:mode) == "set" && $(options:collection) == "${collection}"`,
 				})
 			),
