@@ -443,17 +443,9 @@ export class ClipUtils implements MessageSubscriber {
 				result.text = clipStatus?.video?.sourceparams?.Text?.value;
 			}
 			if (feedback.options.showThumb) {
-				if (this.resolumeArenaInstance.getConfig().useCroppedThumbs) {
-					result.imageBuffer = this.clipThumbs.get(key.getIdString());
-					result.imageBufferPosition = {
-						x: 4,
-						y: 4,
-						width: 64,
-						height: 64
-					};
-				} else {
-					result.png64 = this.clipBase64Thumbs.get(key.getIdString());
-				}
+				// Always png64, never an image buffer: Companion 5 draws png64 below the button text
+				const thumbs = this.resolumeArenaInstance.getConfig().useCroppedThumbs ? this.clipThumbs : this.clipBase64Thumbs;
+				result.png64 = thumbs.get(key.getIdString());
 				result.show_topbar = false;
 			}
 			return result;
