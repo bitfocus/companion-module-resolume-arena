@@ -1,5 +1,5 @@
-import {CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
-import {drawPercentage, drawVolume} from '../../image-utils.js';
+import {CompanionAdvancedFeedbackResult, CompanionFeedbackAdvancedEvent, CompanionFeedbackInfo} from '@companion-module/base';
+import {drawPercentage, drawVolume, ImageSize} from '../../image-utils.js';
 import {ResolumeArenaModuleInstance} from '../../index.js';
 import {compositionState, parameterStates} from '../../state.js';
 import {MessageSubscriber} from '../../websocket.js';
@@ -282,26 +282,26 @@ export class LayerUtils implements MessageSubscriber {
 	// Master
 	/////////////////////////////////////////////////
 
-	async layerMasterFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerMasterFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
 		const master = parameterStates.get()['/composition/layers/' + layer + '/master']?.value;
 		if (master !== undefined) {
-			return this.setMasterFeedback(master);
+			return this.setMasterFeedback(master, feedback.image);
 		} else {
 			const fallbackMaster: number | undefined = (await this.resolumeArenaInstance.restApi!.Layers.getSettings(layer)).master?.value;
-			return this.setMasterFeedback(fallbackMaster);
+			return this.setMasterFeedback(fallbackMaster, feedback.image);
 		}
 	}
 
-	private setMasterFeedback(master: number | undefined) {
+	private setMasterFeedback(master: number | undefined, image?: ImageSize) {
 		if (master !== undefined) {
 			return {
 				text: Math.round(master * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(master)
+				imageBuffer: drawPercentage(master, image)
 			};
 		}
 		return {text: '?'};
@@ -334,26 +334,26 @@ export class LayerUtils implements MessageSubscriber {
 	// Volume
 	/////////////////////////////////////////////////
 
-	async layerVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerVolumeFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
 		const volume = parameterStates.get()['/composition/layers/' + layer + '/audio/volume']?.value;
 		if (volume !== undefined) {
-			return this.setVolumeFeedback(volume);
+			return this.setVolumeFeedback(volume, feedback.image);
 		} else {
 			const fallbackVolume: number | undefined = (await this.resolumeArenaInstance.restApi!.Layers.getSettings(layer)).audio?.volume?.value;
-			return this.setVolumeFeedback(fallbackVolume);
+			return this.setVolumeFeedback(fallbackVolume, feedback.image);
 		}
 	}
 
-	private setVolumeFeedback(volume: number | undefined) {
+	private setVolumeFeedback(volume: number | undefined, image?: ImageSize) {
 		if (volume !== undefined) {
 			return {
 				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
-				imageBuffer: drawVolume(volume)
+				imageBuffer: drawVolume(volume, 0, image)
 			};
 		}
 		return {text: '?'};
@@ -400,25 +400,25 @@ export class LayerUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	async layerOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerOpacityFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
 		}
 		const opacity = parameterStates.get()['/composition/layers/' + layer + '/video/opacity']?.value;		if (opacity !== undefined) {
-			return this.setOpacityFeedback(opacity);
+			return this.setOpacityFeedback(opacity, feedback.image);
 		}else {
 			const fallbackOpacity: number | undefined = (await this.resolumeArenaInstance.restApi!.Layers.getSettings(layer)).video?.opacity?.value;
-			return this.setOpacityFeedback(fallbackOpacity);
+			return this.setOpacityFeedback(fallbackOpacity, feedback.image);
 		}
 	}
 
-	private setOpacityFeedback(opacity: number | undefined) {
+	private setOpacityFeedback(opacity: number | undefined, image?: ImageSize) {
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(opacity)
+				imageBuffer: drawPercentage(opacity, image)
 			};
 		}
 		return {text: '?'};
@@ -465,7 +465,7 @@ export class LayerUtils implements MessageSubscriber {
 	// Transition Duration
 	/////////////////////////////////////////////////
 
-	async layerTransitionDurationFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async layerTransitionDurationFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		if (layer === 0) {
 			return {text: '?'};
@@ -476,7 +476,7 @@ export class LayerUtils implements MessageSubscriber {
 			return {
 				text: Math.round(duration * 100) / 100 + 's',
 				show_topbar: false,
-				imageBuffer: drawPercentage(duration)
+				imageBuffer: drawPercentage(duration, feedback.image)
 			};
 		}
 		return {text: '?'};

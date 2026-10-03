@@ -1,6 +1,6 @@
-import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackInfo} from '@companion-module/base';
+import {combineRgb, CompanionAdvancedFeedbackResult, CompanionFeedbackAdvancedEvent, CompanionFeedbackInfo} from '@companion-module/base';
 import type {VariableDefinitionEntry} from '../../variables/variable-definition.js';
-import {drawPercentage, drawThumb, drawVolume} from '../../image-utils.js';
+import {drawPercentage, drawThumb, drawVolume, ImageSize} from '../../image-utils.js';
 import {ResolumeArenaModuleInstance} from '../../index.js';
 import {compositionState, parameterStates} from '../../state.js';
 import {MessageSubscriber} from '../../websocket.js';
@@ -279,7 +279,7 @@ export class ClipUtils implements MessageSubscriber {
 /////////////////////////////////////////////////
 
 
-	async clipVolumeFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async clipVolumeFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
@@ -287,19 +287,19 @@ export class ClipUtils implements MessageSubscriber {
 		}
 		const volume = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/audio/volume']?.value;
 		if (volume !== undefined) {
-			return this.setVolumeFeedback(volume);
+			return this.setVolumeFeedback(volume, feedback.image);
 		} else {
 			const fallbackVolume = (await this.resolumeArenaInstance.restApi!.Clips.getStatus(new ClipId(layer, column))).audio?.volume?.value;
-			return this.setVolumeFeedback(fallbackVolume);
+			return this.setVolumeFeedback(fallbackVolume, feedback.image);
 		}
 	}
 
-	private setVolumeFeedback(volume: number | undefined) {
+	private setVolumeFeedback(volume: number | undefined, image?: ImageSize) {
 		if (volume !== undefined) {
 			return {
 				text: Math.round(volume * 100) / 100 + 'db',
 				show_topbar: false,
-				imageBuffer: drawVolume(volume, 12)
+				imageBuffer: drawVolume(volume, 12, image)
 			};
 		} else {
 			return {text: '?'};
@@ -351,7 +351,7 @@ export class ClipUtils implements MessageSubscriber {
 	// Opacity
 	/////////////////////////////////////////////////
 
-	async clipOpacityFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async clipOpacityFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
@@ -360,20 +360,20 @@ export class ClipUtils implements MessageSubscriber {
 		const opacity: number | undefined = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/video/opacity']?.value;
 
 		if (opacity !== undefined) {
-			return this.setOpacityFeedback(opacity);
+			return this.setOpacityFeedback(opacity, feedback.image);
 		} else {
 			const fallbackOpacity = (await this.resolumeArenaInstance.restApi!.Clips.getStatus(new ClipId(layer, column))).video?.opacity.value;
-			return this.setOpacityFeedback(fallbackOpacity);
+			return this.setOpacityFeedback(fallbackOpacity, feedback.image);
 		}
 	}
 
 
-	private setOpacityFeedback(opacity: number | undefined) {
+	private setOpacityFeedback(opacity: number | undefined, image?: ImageSize) {
 		if (opacity !== undefined) {
 			return {
 				text: Math.round(opacity * 100) + '%',
 				show_topbar: false,
-				imageBuffer: drawPercentage(opacity)
+				imageBuffer: drawPercentage(opacity, image)
 			};
 		} else {
 			return {text: '?'};
@@ -594,7 +594,7 @@ export class ClipUtils implements MessageSubscriber {
 	// Speed
 	/////////////////////////////////////////////////
 
-	async clipSpeedFeedbackCallback(feedback: CompanionFeedbackInfo): Promise<CompanionAdvancedFeedbackResult> {
+	async clipSpeedFeedbackCallback(feedback: CompanionFeedbackAdvancedEvent): Promise<CompanionAdvancedFeedbackResult> {
 		const layer = +(feedback.options.layer as string);
 		const column = +(feedback.options.column as string);
 		if (layer === 0 || column === 0) {
@@ -603,20 +603,20 @@ export class ClipUtils implements MessageSubscriber {
 		const speed = parameterStates.get()['/composition/layers/' + layer + '/clips/' + column + '/transport/position/behaviour/speed']?.value;
 
 		if (speed !== undefined) {
-			return this.setSpeedFeedback(speed, layer, column);
+			return this.setSpeedFeedback(speed, layer, column, feedback.image);
 		} else {
 			const fallbackSpeed: number | undefined = (await this.resolumeArenaInstance.restApi!.Clips.getStatus(new ClipId(layer, column))).transport?.controls?.speed?.value;
-			return this.setSpeedFeedback(fallbackSpeed, layer, column);
+			return this.setSpeedFeedback(fallbackSpeed, layer, column, feedback.image);
 		}
 	}
 
-	private setSpeedFeedback(speed: number | undefined, layer: number, column: number) {
+	private setSpeedFeedback(speed: number | undefined, layer: number, column: number, image?: ImageSize) {
 		if (speed !== undefined) {
 			if (ClipId.isValid(layer, column)) {
 				return {
 					text: Math.round(speed * 100) + '%',
 					show_topbar: false,
-					imageBuffer: drawPercentage(speed)
+					imageBuffer: drawPercentage(speed, image)
 				};
 			}
 		}
