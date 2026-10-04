@@ -1,6 +1,6 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getColumnOption, getDefaultStyleGreen} from '../../../defaults';
+import {getColumnOption, getDefaultStyleGreen} from '../../../defaults.js';
 
 export function columnSelected(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

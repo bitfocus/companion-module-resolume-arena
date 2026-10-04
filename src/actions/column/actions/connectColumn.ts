@@ -1,10 +1,10 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ColumnUtils} from '../../../domain/columns/column-util';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {parameterStates} from '../../../state';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ColumnUtils} from '../../../domain/columns/column-util.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {parameterStates} from '../../../state.js';
 
 function lookupColumnIndexByName(name: string): number | undefined {
 	const states = parameterStates.get();
@@ -41,6 +41,8 @@ export function connectColumn(
 					{id: 'byName', label: 'By name'},
 				],
 				default: 'byIndex',
+				// referenced by isVisibleExpression below, so it cannot be an expression itself
+				disableAutoExpression: true,
 			},
 			{
 				id: 'action',
@@ -61,21 +63,21 @@ export function connectColumn(
 				],
 				default: 'set',
 				label: 'Action',
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'value',
 				label: 'Value',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byIndex',
+				isVisibleExpression: '$(options:lookupMode) == "byIndex"',
 			},
 			{
 				type: 'textinput',
 				id: 'name',
 				label: 'Column name',
 				useVariables: true,
-				isVisible: (options) => options.lookupMode === 'byName',
+				isVisibleExpression: '$(options:lookupMode) == "byName"',
 			}
 		],
 		callback: async ({options}: {options: any}) => {
@@ -85,7 +87,7 @@ export function connectColumn(
 				let column: number | undefined;
 
 				if (options.lookupMode === 'byName') {
-					const name = await resolumeArenaModuleInstance.parseVariablesInString(options.name ?? '');
+					const name = String(options.name ?? '');
 					column = lookupColumnIndexByName(name);
 					if (column === undefined) {
 						resolumeArenaModuleInstance.log('error', `connectColumn: no column found with name "${name}"`);
@@ -93,7 +95,7 @@ export function connectColumn(
 					}
 				} else {
 					const action = options.action;
-					const value = +await resolumeArenaModuleInstance.parseVariablesInString(options.value);
+					const value = +options.value;
 					if (action == undefined) {
 						return;
 					}

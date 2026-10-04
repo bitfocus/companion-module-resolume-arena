@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../preset-structure.js';
 
-export function effectBypassClipTogglePreset(category: string): CompanionButtonPresetDefinition {
+export function effectBypassClipTogglePreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Toggle Effect Bypass (Clip)',
 		style: {

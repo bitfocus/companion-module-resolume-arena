@@ -6,9 +6,9 @@
  * would never resolve because socket?.OPEN was always undefined.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { WebsocketInstance } from '../../src/websocket'
-import { isResolumeReachable, pause } from './helpers'
-import { TEST_HOST, REST_PORT } from './config'
+import { WebsocketInstance } from '../../src/websocket.js'
+import { isResolumeReachable, pause } from './helpers.js'
+import { TEST_HOST, REST_PORT } from './config.js'
 
 const resolume = await isResolumeReachable()
 

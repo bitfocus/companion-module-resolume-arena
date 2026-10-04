@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ClipId } from '../../src/domain/clip/clip-id'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
 
 describe('ClipId', () => {
 	it('stores layer and column', () => {

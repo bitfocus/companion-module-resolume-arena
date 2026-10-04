@@ -1,9 +1,9 @@
 import {CompanionActionDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {connectColumn} from './actions/connectColumn';
-import {compNextCol} from '../composition/actions/comp-next-col';
-import {compPrevCol} from '../composition/actions/comp-prev-col';
-import {selectColumn} from './actions/selectColumn';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {connectColumn} from './actions/connectColumn.js';
+import {compNextCol} from '../composition/actions/comp-next-col.js';
+import {compPrevCol} from '../composition/actions/comp-prev-col.js';
+import {selectColumn} from './actions/selectColumn.js';
 
 export function getColumnActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);

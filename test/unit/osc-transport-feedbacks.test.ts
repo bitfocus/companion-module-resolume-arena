@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscTransportFeedbacks'
+import { getOscTransportFeedbacks } from '../../src/feedbacks/osc-transport/oscTransportFeedbacks.js'
 import { combineRgb } from '@companion-module/base'
 
 function makeMockInstance({
@@ -21,7 +21,6 @@ function makeMockInstance({
 	}
 	const instance = {
 		getOscState: vi.fn().mockReturnValue(oscState),
-		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
 		_oscState: oscState,
 	}
 	return instance as any
@@ -45,6 +44,14 @@ describe('oscProgressBar feedback', () => {
 			image: { width: 72, height: 72 },
 		}
 	}
+
+	it('returns the imageBuffer as a base64 string (module API 2.x)', async () => {
+		const mod = makeMockInstance({ durationSec: 120, remainingSec: 60 })
+		const feedbacks = getOscTransportFeedbacks(mod)
+		const result = await (feedbacks.oscProgressBar as any).callback(makeFeedback())
+		expect(typeof result.imageBuffer).toBe('string')
+		expect(Buffer.from(result.imageBuffer, 'base64').length).toBe(72 * 72 * 4)
+	})
 
 	it('returns imageBuffer when duration > 0', async () => {
 		const mod = makeMockInstance({ durationSec: 120, remainingSec: 60 })
@@ -110,7 +117,6 @@ describe('oscActiveColumn feedback', () => {
 
 	it('returns active colors when column matches activeColumn', async () => {
 		const mod = makeMockInstance({ activeColumn: 2 })
-		mod.parseVariablesInString.mockResolvedValue('2')
 		const feedbacks = getOscTransportFeedbacks(mod)
 		const result = await (feedbacks.oscActiveColumn as any).callback(makeFeedback('2'))
 		expect(result).toEqual({
@@ -121,7 +127,6 @@ describe('oscActiveColumn feedback', () => {
 
 	it('returns {} when column does not match activeColumn', async () => {
 		const mod = makeMockInstance({ activeColumn: 3 })
-		mod.parseVariablesInString.mockResolvedValue('1')
 		const feedbacks = getOscTransportFeedbacks(mod)
 		const result = await (feedbacks.oscActiveColumn as any).callback(makeFeedback('1'))
 		expect(result).toEqual({})

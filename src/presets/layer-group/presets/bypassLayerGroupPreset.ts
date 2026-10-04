@@ -1,10 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultStyleRed} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultStyleRed} from '../../../defaults.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function bypassLayerGroupPreset(category: string): CompanionButtonPresetDefinition {
+export function bypassLayerGroupPreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Bypass Layer Group',
 		style: {

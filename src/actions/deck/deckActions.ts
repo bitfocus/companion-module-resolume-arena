@@ -1,8 +1,8 @@
 import {CompanionActionDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {selectDeck} from './actions/select-deck';
-import {selectNextDeck} from './actions/select-next-deck';
-import {selectPreviousDeck} from './actions/select-previous-deck';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {selectDeck} from './actions/select-deck.js';
+import {selectNextDeck} from './actions/select-next-deck.js';
+import {selectPreviousDeck} from './actions/select-previous-deck.js';
 
 export function getDeckActions(resolumeArenaModuleInstance: ResolumeArenaModuleInstance): CompanionActionDefinitions {
 	const restApi = resolumeArenaModuleInstance.getRestApi.bind(resolumeArenaModuleInstance);

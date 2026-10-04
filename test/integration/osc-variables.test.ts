@@ -17,10 +17,10 @@
  *   - osc_layer_N_clip_name     — clip name
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import { ArenaOscListener } from '../../src/osc-listener'
-import { OscState } from '../../src/osc-state'
-import { ClipId } from '../../src/domain/clip/clip-id'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import { ArenaOscListener } from '../../src/osc-listener.js'
+import { OscState } from '../../src/osc-state.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
 import {
 	TEST_HOST,
 	REST_PORT,
@@ -28,8 +28,8 @@ import {
 	OSC_LISTEN_PORT,
 	TEST_LAYER,
 	TEST_COLUMN,
-} from './config'
-import { isResolumeReachable, pause, waitFor } from './helpers'
+} from './config.js'
+import { isResolumeReachable, pause, waitFor } from './helpers.js'
 
 const resolume = await isResolumeReachable()
 

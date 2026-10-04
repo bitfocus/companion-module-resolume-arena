@@ -24,14 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Use Node.js from .nvmrc
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version-file: .nvmrc
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --ignore-scripts
+        run: yarn install --immutable --mode=skip-build
 
       - name: Run tests
         run: yarn test

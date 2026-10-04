@@ -1,14 +1,14 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {columnSelected} from './feedbacks/columnSelected';
-import {columnName} from './feedbacks/columnName';
-import {selectedColumnName} from './feedbacks/selectedColumnName';
-import {nextSelectedColumnName} from './feedbacks/nextSelectedColumnName';
-import {previousSelectedColumnName} from './feedbacks/previousSelectedColumnName';
-import {columnConnected} from './feedbacks/columnConnected';
-import {connectedColumnName} from './feedbacks/connectedColumnName';
-import {nextConnectedColumnName} from './feedbacks/nextConnectedColumnName';
-import {previousConnectedColumnName} from './feedbacks/previousConnectedColumnName';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {columnSelected} from './feedbacks/columnSelected.js';
+import {columnName} from './feedbacks/columnName.js';
+import {selectedColumnName} from './feedbacks/selectedColumnName.js';
+import {nextSelectedColumnName} from './feedbacks/nextSelectedColumnName.js';
+import {previousSelectedColumnName} from './feedbacks/previousSelectedColumnName.js';
+import {columnConnected} from './feedbacks/columnConnected.js';
+import {connectedColumnName} from './feedbacks/connectedColumnName.js';
+import {nextConnectedColumnName} from './feedbacks/nextConnectedColumnName.js';
+import {previousConnectedColumnName} from './feedbacks/previousConnectedColumnName.js';
 
 export function getColumnApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {

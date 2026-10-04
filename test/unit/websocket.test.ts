@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { WebsocketInstance } from '../../src/websocket'
+import { WebsocketInstance } from '../../src/websocket.js'
 import WebSocket from 'ws'
 
 // Creates a bare instance without calling the constructor (avoids real WS connection).
@@ -42,7 +42,7 @@ describe('waitForOpenConnection', () => {
 
 	it('resolves when socket becomes OPEN mid-way through attempts', async () => {
 		const ws = makeWsInstance()
-		const socket = { readyState: WebSocket.CONNECTING }
+		const socket: { readyState: number } = { readyState: WebSocket.CONNECTING }
 		const promise = ws.waitForOpenConnection(socket)
 		vi.advanceTimersByTime(200 * 3) // 3 failed ticks
 		socket.readyState = WebSocket.OPEN

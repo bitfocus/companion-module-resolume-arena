@@ -1,11 +1,12 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getLayerGroupOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function nextSelectedLayerGroupColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
 		name: 'Next Selected Layer Group Column Name',
+		affectedProperties: ['text'],
 		options: [...getLayerGroupOption(), {
 			id: 'next',
 			type: 'number',

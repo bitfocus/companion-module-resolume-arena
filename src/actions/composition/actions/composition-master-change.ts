@@ -1,15 +1,15 @@
 import { CompanionActionDefinition } from '@companion-module/base';
-import { ResolumeArenaModuleInstance } from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import { parameterStates } from '../../../state';
-import { WebsocketInstance } from '../../../websocket';
+import { ResolumeArenaModuleInstance } from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import { parameterStates } from '../../../state.js';
+import { WebsocketInstance } from '../../../websocket.js';
 
 export function compositionMasterChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
-	resolumeArenaInstance: ResolumeArenaModuleInstance
+	_resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Composition Master Change',
@@ -44,7 +44,7 @@ export function compositionMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-                const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+                const inputValue: number = (+options.value)/100;
 				const currentValue: number = +parameterStates.get()['/composition/master']?.value;
 				let value: number | undefined;
 				switch (options.action) {

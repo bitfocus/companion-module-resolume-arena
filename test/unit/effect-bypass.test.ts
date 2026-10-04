@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {parameterStates, compositionState} from '../../src/state';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {parameterStates, compositionState} from '../../src/state.js';
 
 function makeEffectUtils(mod: any) {
 	return new EffectUtils(mod);
@@ -17,7 +17,6 @@ function makeMockModule() {
 		log: vi.fn(),
 		rebuildDynamicDefinitions: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
-		parseVariablesInString: vi.fn((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
 	};
 	mod.getEffectUtils = vi.fn().mockImplementation(() => makeEffectUtils(mod));
@@ -37,8 +36,7 @@ describe('EffectUtils — bypass subscribe / unsubscribe', () => {
 	it('subscribes to WS path on first effectBypassedFeedbackSubscribe', async () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('2')} as any;
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '2', 'a'), ctx);
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '2', 'a'));
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/1/video/effects/2/bypassed');
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1);
 	});
@@ -46,30 +44,25 @@ describe('EffectUtils — bypass subscribe / unsubscribe', () => {
 	it('does not subscribe twice for same layer+effect', async () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		const ctx1 = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		const ctx2 = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'), ctx1);
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'b'), ctx2);
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'));
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'b'));
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1);
 	});
 
 	it('unsubscribes from WS path when last feedback unsubscribes', async () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		const sub = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		const unsub = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'), sub);
-		await eu.effectBypassedFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'a'), unsub);
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'));
+		await eu.effectBypassedFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'a'));
 		expect(mod._wsApi.unsubscribePath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed');
 	});
 
 	it('does not unsubscribe while other feedbacks remain', async () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		const mkCtx = () => ({parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any);
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'), mkCtx());
-		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'b'), mkCtx());
-		await eu.effectBypassedFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'a'), mkCtx());
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'a'));
+		await eu.effectBypassedFeedbackSubscribe('layer', makeFeedback('1', '1', 'b'));
+		await eu.effectBypassedFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'a'));
 		expect(mod._wsApi.unsubscribePath).not.toHaveBeenCalled();
 	});
 });
@@ -78,23 +71,20 @@ describe('EffectUtils — effectBypassedFeedbackCallback', () => {
 	it('returns true when parameterStates value is true', async () => {
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: true} as any});
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '1'), ctx);
+		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '1'));
 		expect(result).toBe(true);
 	});
 
 	it('returns false when parameterStates value is false', async () => {
 		parameterStates.set({'/composition/layers/2/video/effects/3/bypassed': {value: false} as any});
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('2').mockResolvedValueOnce('3')} as any;
-		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('2', '3'), ctx);
+		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('2', '3'));
 		expect(result).toBe(false);
 	});
 
 	it('returns false when path not in parameterStates', async () => {
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('1')} as any;
-		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '1'), ctx);
+		const result = await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '1'));
 		expect(result).toBe(false);
 	});
 });
@@ -102,14 +92,12 @@ describe('EffectUtils — effectBypassedFeedbackCallback', () => {
 describe('EffectUtils — effectBypassedFeedbackCallback early-return guard', () => {
 	it('returns false when layer resolves to 0', async () => {
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('0').mockResolvedValueOnce('1')} as any;
-		expect(await eu.effectBypassedFeedbackCallback('layer', makeFeedback('0', '1'), ctx)).toBe(false);
+		expect(await eu.effectBypassedFeedbackCallback('layer', makeFeedback('0', '1'))).toBe(false);
 	});
 
 	it('returns false when effectIdx resolves to 0', async () => {
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = {parseVariablesInString: vi.fn().mockResolvedValueOnce('1').mockResolvedValueOnce('0')} as any;
-		expect(await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '0'), ctx)).toBe(false);
+		expect(await eu.effectBypassedFeedbackCallback('layer', makeFeedback('1', '0'))).toBe(false);
 	});
 });
 
@@ -144,7 +132,7 @@ describe('effectBypass action callback', () => {
 	it('sets bypassed=true when bypass=on', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
@@ -153,7 +141,7 @@ describe('effectBypass action callback', () => {
 	it('sets bypassed=false when bypass=off', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: true} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'off'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', false);
@@ -162,7 +150,7 @@ describe('effectBypass action callback', () => {
 	it('toggles bypassed when bypass=toggle', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/1/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'toggle'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/1/video/effects/1/bypassed', true);
@@ -170,7 +158,7 @@ describe('effectBypass action callback', () => {
 
 	it('does nothing when websocketApi is null', async () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'layer');
 		await expect((action.callback as Function)({options: {effectChoice: '__manual__', layer: '1', effectIdx: '1', bypass: 'on'}})).resolves.not.toThrow();
 	});
@@ -178,7 +166,7 @@ describe('effectBypass action callback', () => {
 	it('bypasses composition-level effect', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'composition');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/video/effects/1/bypassed', true);
@@ -187,7 +175,7 @@ describe('effectBypass action callback', () => {
 	it('bypasses clip-level effect', async () => {
 		const mod = makeMockModule();
 		parameterStates.set({'/composition/layers/2/clips/3/video/effects/1/bypassed': {value: false} as any});
-		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass');
+		const {effectBypass} = await import('../../src/actions/effect/actions/effect-bypass.js');
 		const action = effectBypass(mod as any, 'clip');
 		await (action.callback as Function)({options: {effectChoice: '__manual__', layer: '2', column: '3', effectIdx: '1', bypass: 'on'}});
 		expect(mod._wsApi.setPath).toHaveBeenCalledWith('/composition/layers/2/clips/3/video/effects/1/bypassed', true);

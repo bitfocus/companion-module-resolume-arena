@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ClipUtils } from '../../src/domain/clip/clip-utils'
-import { parameterStates, compositionState } from '../../src/state'
+import { ClipUtils } from '../../src/domain/clip/clip-utils.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
+import { parameterStates, compositionState } from '../../src/state.js'
+import { FeedbackSubscriptionRegistry } from '../../src/feedbacks/with-subscription.js'
 
 const stubProxy = new Proxy({}, { get: () => vi.fn() })
 
@@ -21,16 +23,11 @@ function makeMockModule() {
 		getConfig: vi.fn().mockReturnValue({ useCroppedThumbs: false }),
 		getClipUtils: vi.fn().mockReturnValue(stubProxy),
 		getLayerUtils: vi.fn().mockReturnValue(stubProxy),
+		getFeedbackSubscriptions: vi.fn().mockReturnValue(new FeedbackSubscriptionRegistry()),
 		restApi: undefined,
 		_wsApi: wsApi,
 	}
 	return instance as any
-}
-
-function makeContext(_layer: string, _column?: string) {
-	return {
-		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
-	} as any
 }
 
 function makeFeedback(layer: string, column: string, id = 'fb1') {
@@ -244,7 +241,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/1/clips/2/connect': { value: 'Previewing' },
 			'/composition/layers/1/clips/2/name': { value: 'MyAwesomeClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '2'), makeContext('1', '2'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '2'))
 		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'MyAwesomeClip' })
 	})
 
@@ -255,7 +252,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/3/clips/4/connect': { value: 'Connected & previewing' },
 			'/composition/layers/3/clips/4/name': { value: 'OtherClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('3', '4'), makeContext('3', '4'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('3', '4'))
 		expect(mod.setVariableValues).toHaveBeenCalledWith({ previewedClipName: 'OtherClip' })
 	})
 
@@ -266,7 +263,7 @@ describe('ClipUtils.clipConnectedFeedbackCallback — previewedClipName', () => 
 			'/composition/layers/1/clips/1/connect': { value: 'Connected' },
 			'/composition/layers/1/clips/1/name': { value: 'SomeClip' },
 		} as any)
-		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '1'), makeContext('1', '1'))
+		await cu.clipConnectedFeedbackCallback(makeConnectedFeedback('1', '1'))
 		expect(mod.setVariableValues).not.toHaveBeenCalledWith({ previewedClipName: expect.anything() })
 	})
 })
@@ -279,7 +276,7 @@ describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 			'/composition/layers/1/clips/2/select': { value: true },
 			'/composition/layers/1/clips/2/name': { value: 'TestClip' },
 		} as any)
-		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'), makeContext('1', '2'))
+		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'))
 		expect(result).toBe(true)
 	})
 
@@ -289,7 +286,55 @@ describe('ClipUtils.clipSelectedFeedbackCallback', () => {
 		parameterStates.set({
 			'/composition/layers/1/clips/2/select': { value: false },
 		} as any)
-		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'), makeContext('1', '2'))
+		const result = await cu.clipSelectedFeedbackCallback(makeFeedback('1', '2'))
 		expect(result).toBeFalsy()
+	})
+})
+
+// ── Clip Info thumbnail ───────────────────────────────────────────────────────
+
+describe('ClipUtils.clipDetailsFeedbackCallback — thumbnail', () => {
+	// 4×4 grey RGBA PNG
+	const TINY_PNG_B64 =
+		'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAGUlEQVR4AWNsAAIGJMDEgAaYGNAAEwMaAACEVAIIK43mlwAAAABJRU5ErkJggg=='
+	const isPng = (png64: unknown) => typeof png64 === 'string' && Buffer.from(png64, 'base64').subarray(0, 4).toString('hex') === '89504e47'
+
+	function setup(useCroppedThumbs: boolean) {
+		const mod = makeMockModule()
+		mod.getConfig.mockReturnValue({ useCroppedThumbs })
+		mod.restApi = { Clips: { getThumb: vi.fn().mockResolvedValue(TINY_PNG_B64) } }
+		compositionState.set({ video: { width: { value: 1920 }, height: { value: 1080 } }, layers: [] } as any)
+		return { mod, cu: new ClipUtils(mod) }
+	}
+	const thumbFeedback = { id: 'fb1', options: { layer: '1', column: '1', showThumb: true, showName: false } } as any
+
+	// Companion 5 draws png64 below the button text and an image buffer above it
+	it('returns the cropped thumbnail as png64, so the button text stays in front of it', async () => {
+		const { mod, cu } = setup(true)
+		await cu.getThumbs(new ClipId(1, 1), 'fb1')
+		expect(mod.checkFeedbacksById).toHaveBeenCalledWith('fb1')
+
+		const result = await cu.clipDetailsFeedbackCallback(thumbFeedback)
+		expect(isPng(result.png64)).toBe(true)
+		expect(result).not.toHaveProperty('imageBuffer')
+		expect(result).not.toHaveProperty('imageBufferPosition')
+	})
+
+	it('returns the original thumbnail as png64 when cropping is off', async () => {
+		const { cu } = setup(false)
+		await cu.clipDetailsFeedbackSubscribe(thumbFeedback)
+		await cu.initDetailsFromComposition()
+
+		const result = await cu.clipDetailsFeedbackCallback(thumbFeedback)
+		expect(result.png64).toBe(TINY_PNG_B64)
+		expect(result).not.toHaveProperty('imageBuffer')
+	})
+
+	it('returns no image when Show Thumbnail is off', async () => {
+		const { cu } = setup(true)
+		await cu.getThumbs(new ClipId(1, 1), 'fb1')
+		const result = await cu.clipDetailsFeedbackCallback({ id: 'fb1', options: { layer: '1', column: '1', showThumb: false } } as any)
+		expect(result.png64).toBeUndefined()
+		expect(result).not.toHaveProperty('imageBuffer')
 	})
 })

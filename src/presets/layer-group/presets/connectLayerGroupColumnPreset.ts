@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultStyleGreen} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultStyleGreen} from '../../../defaults.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function connectLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function connectLayerGroupColumnPreset(category: string): CategorizedPreset {return {
+	type: 'simple',
 	category,
 	name: 'Connect Layer Group Column',
 	style: {

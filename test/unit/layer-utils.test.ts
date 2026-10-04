@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { LayerUtils } from '../../src/domain/layers/layer-util'
-import { parameterStates, compositionState } from '../../src/state'
+import { LayerUtils } from '../../src/domain/layers/layer-util.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {
@@ -18,10 +18,6 @@ function makeMockModule() {
 		_wsApi: wsApi,
 	}
 	return instance as any
-}
-
-function makeContext(resolved: string) {
-	return { parseVariablesInString: vi.fn().mockResolvedValue(resolved) } as any
 }
 
 function makeFeedback(layer: string, id = 'fb1') {
@@ -67,7 +63,7 @@ describe('LayerUtils — bypass subscribe / unsubscribe', () => {
 	it('subscribes to WebSocket path on first layerBypassedFeedbackSubscribe call', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'), makeContext('1'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'))
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledWith('/composition/layers/1/bypassed')
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1)
 	})
@@ -75,25 +71,25 @@ describe('LayerUtils — bypass subscribe / unsubscribe', () => {
 	it('does not subscribe twice for same layer', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'), makeContext('1'))
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'b'), makeContext('1'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'b'))
 		expect(mod._wsApi.subscribePath).toHaveBeenCalledTimes(1)
 	})
 
 	it('calls unsubscribePath when last subscriber is removed', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'), makeContext('1'))
-		await lu.layerBypassedFeedbackUnsubscribe(makeFeedback('1', 'a'), makeContext('1'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'))
+		await lu.layerBypassedFeedbackUnsubscribe(makeFeedback('1', 'a'))
 		expect(mod._wsApi.unsubscribePath).toHaveBeenCalledWith('/composition/layers/1/bypassed')
 	})
 
 	it('does not unsubscribe while other subscribers remain', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'), makeContext('1'))
-		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'b'), makeContext('1'))
-		await lu.layerBypassedFeedbackUnsubscribe(makeFeedback('1', 'a'), makeContext('1'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'a'))
+		await lu.layerBypassedFeedbackSubscribe(makeFeedback('1', 'b'))
+		await lu.layerBypassedFeedbackUnsubscribe(makeFeedback('1', 'a'))
 		expect(mod._wsApi.unsubscribePath).not.toHaveBeenCalled()
 	})
 })
@@ -150,7 +146,7 @@ describe('LayerUtils.layerActiveFeedbackCallback', () => {
 	it('returns false when layer has no active clip', async () => {
 		const mod = makeMockModule()
 		const lu = new LayerUtils(mod)
-		const result = await lu.layerActiveFeedbackCallback(makeFeedback('1'), makeContext('1'))
+		const result = await lu.layerActiveFeedbackCallback(makeFeedback('1'))
 		expect(result).toBe(false)
 	})
 
@@ -163,7 +159,7 @@ describe('LayerUtils.layerActiveFeedbackCallback', () => {
 
 		lu.updateActiveLayers()
 
-		const result = await lu.layerActiveFeedbackCallback(makeFeedback('1'), makeContext('1'))
+		const result = await lu.layerActiveFeedbackCallback(makeFeedback('1'))
 		expect(result).toBe(true)
 	})
 })

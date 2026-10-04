@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function disconnectAllPreset(category: string): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function disconnectAllPreset(category: string): CategorizedPreset {return {
+	type: 'simple',
 	category,
 	name: 'Disconnect All Clips',
 	style: {

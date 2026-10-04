@@ -6,20 +6,20 @@
  * - Layer transition duration read structure
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import ArenaOscApi from '../../src/arena-api/osc'
-import { ClipId } from '../../src/domain/clip/clip-id'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import ArenaOscApi from '../../src/arena-api/osc.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
 import {
 	TEST_HOST,
 	REST_PORT,
 	OSC_SEND_PORT,
 	TEST_LAYER,
 	TEST_COLUMN,
-} from './config'
-import { isResolumeReachable, pause } from './helpers'
+} from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const osc = require('osc') as {
+import oscPackage from 'osc'
+const osc = oscPackage as unknown as {
 	UDPPort: new (opts: { localAddress: string; localPort: number; metadata: boolean }) => any
 }
 

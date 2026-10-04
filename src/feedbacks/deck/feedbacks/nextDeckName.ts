@@ -1,10 +1,11 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function nextDeckName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
 		name: 'Next Deck Name',
+		affectedProperties: ['text'],
 		options: [{
 			id: 'next',
 			type: 'number',

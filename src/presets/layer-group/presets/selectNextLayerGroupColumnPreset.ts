@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectNextLayerGroupColumnPreset(category: string): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function selectNextLayerGroupColumnPreset(category: string): CategorizedPreset {return {
+	type: 'simple',
 	category,
 	name: 'Select Next Layer Group Column',
 	style: {

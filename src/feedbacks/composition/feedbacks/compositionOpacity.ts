@@ -1,10 +1,11 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function compositionOpacity(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
 		name: 'Composition Opacity',
+		affectedProperties: ['text', 'imageBuffer'],
 		options: [],
 		callback: resolumeArenaInstance.getCompositionUtils()!.compositionOpacityFeedbackCallback.bind(resolumeArenaInstance.getCompositionUtils()!)
 	};

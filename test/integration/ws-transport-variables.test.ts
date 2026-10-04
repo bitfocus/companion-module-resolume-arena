@@ -15,17 +15,17 @@
  *   - Clip with media at TEST_LAYER / TEST_COLUMN
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import { ClipId } from '../../src/domain/clip/clip-id'
-import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, pause } from './helpers'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
+import { TEST_HOST, REST_PORT, OSC_SEND_PORT, TEST_LAYER, TEST_COLUMN } from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
 const resolume = await isResolumeReachable()
 
 const api = new ArenaRestApi(TEST_HOST, REST_PORT)
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const osc = require('osc') as {
+import oscPackage from 'osc'
+const osc = oscPackage as unknown as {
 	UDPPort: new (opts: { localAddress: string; localPort: number; metadata: boolean }) => any
 }
 

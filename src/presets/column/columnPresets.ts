@@ -1,14 +1,14 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
-import {connectPreviousColumnPreset} from './presets/connectPreviousColumnPreset';
-import {selectedColumnNamePreset} from './presets/selectedColumnNamePreset';
-import {connectColumnPreset} from './presets/connectColumnPreset';
-import {selectColumnPreset} from './presets/selectColumnPreset';
-import {connectNextColumnPreset} from './presets/connectNextColumnPreset';
-import {selectPreviousColumnPreset} from './presets/selectPreviousColumnPreset';
-import {selectNextColumnPreset} from './presets/selectNextColumnPreset';
-import {connectedColumnNamePreset} from './presets/connectedColumnNamePreset';
+import type {CategorizedPresets} from '../preset-structure.js';
+import {connectPreviousColumnPreset} from './presets/connectPreviousColumnPreset.js';
+import {selectedColumnNamePreset} from './presets/selectedColumnNamePreset.js';
+import {connectColumnPreset} from './presets/connectColumnPreset.js';
+import {selectColumnPreset} from './presets/selectColumnPreset.js';
+import {connectNextColumnPreset} from './presets/connectNextColumnPreset.js';
+import {selectPreviousColumnPreset} from './presets/selectPreviousColumnPreset.js';
+import {selectNextColumnPreset} from './presets/selectNextColumnPreset.js';
+import {connectedColumnNamePreset} from './presets/connectedColumnNamePreset.js';
 
-export function getColumnApiPresets(): CompanionPresetDefinitions {
+export function getColumnApiPresets(): CategorizedPresets {
 	return {
 		connectColumnPreset: connectColumnPreset(),
 		selectColumnPreset: selectColumnPreset(),

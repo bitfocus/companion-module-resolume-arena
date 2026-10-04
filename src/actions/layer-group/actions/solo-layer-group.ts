@@ -1,15 +1,15 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {getLayerGroupOption} from '../../../defaults';
-import {parameterStates} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
-import {ResolumeArenaModuleInstance} from '../../../index';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {getLayerGroupOption} from '../../../defaults.js';
+import {parameterStates} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 
 export function soloLayerGroup(
 	restApi: () => (ArenaRestApi | null),
 	websocketApi: () => (WebsocketInstance | null),
-	_oscApi: () => (ArenaOscApi | null), resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_oscApi: () => (ArenaOscApi | null), _resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Solo Layer Group',
@@ -41,7 +41,7 @@ export function soloLayerGroup(
 			let thewebsocketApi = websocketApi();
 			if (theApi) {
 				let solo;
-				const layerGroup = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
+				const layerGroup = +options.layer;
 				if (options.solo == 'toggle') {
 					solo = !parameterStates.get()['/composition/groups/' + layerGroup + '/solo']?.value;
 				} else {

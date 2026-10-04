@@ -1,16 +1,16 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {parameterStates} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
-import {getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {parameterStates} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
+import {getLayerGroupOption} from '../../../defaults.js';
 
 export function layerGroupMasterChange(
 	restApi: () => ArenaRestApi | null,
 	websocketApi: () => WebsocketInstance | null,
 	_oscApi: () => ArenaOscApi | null,
-	resolumeArenaInstance: ResolumeArenaModuleInstance
+	_resolumeArenaInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Layer Group Master Change',
@@ -46,8 +46,8 @@ export function layerGroupMasterChange(
 		callback: async ({options}: {options: any}) => {
 			let theApi = restApi();
 			if (theApi) {
-				const layerGroup = +await resolumeArenaInstance.parseVariablesInString(options.layer);
-				const inputValue: number = (+(await resolumeArenaInstance.parseVariablesInString(options.value)))/100;
+				const layerGroup = +options.layer;
+				const inputValue: number = (+options.value)/100;
 				const currentValue: number = +parameterStates.get()['/composition/groups/' + layerGroup + '/master']?.value;
 
 				let value: number | undefined;

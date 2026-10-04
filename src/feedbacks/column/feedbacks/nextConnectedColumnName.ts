@@ -1,9 +1,10 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function nextConnectedColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {return {
 	type: 'advanced',
 	name: 'Next Connected Column Name',
+	affectedProperties: ['text'],
 	options: [{
 		id: 'next',
 		type: 'number',

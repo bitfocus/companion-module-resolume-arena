@@ -1,7 +1,7 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {effectBypassed} from './feedbacks/effectBypassed';
-import {effectParameter} from './feedbacks/effectParameter';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {effectBypassed} from './feedbacks/effectBypassed.js';
+import {effectParameter} from './feedbacks/effectParameter.js';
 
 export function getEffectApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {

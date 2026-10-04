@@ -1,10 +1,10 @@
 import {CompanionFeedbackDefinitions} from '@companion-module/base';
-import {ResolumeArenaModuleInstance} from '../../index';
-import {deckSelected} from './feedbacks/deckSelected';
-import {deckName} from './feedbacks/deckName';
-import {selectedDeckName} from './feedbacks/selectedDeckName';
-import {nextDeckName} from './feedbacks/nextDeckName';
-import {previousDeckName} from './feedbacks/previousDeckName';
+import {ResolumeArenaModuleInstance} from '../../index.js';
+import {deckSelected} from './feedbacks/deckSelected.js';
+import {deckName} from './feedbacks/deckName.js';
+import {selectedDeckName} from './feedbacks/selectedDeckName.js';
+import {nextDeckName} from './feedbacks/nextDeckName.js';
+import {previousDeckName} from './feedbacks/previousDeckName.js';
 
 export function getDeckApiFeedbacks(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinitions {
 	return {

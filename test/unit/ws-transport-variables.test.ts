@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ClipUtils } from '../../src/domain/clip/clip-utils'
-import { parameterStates, compositionState } from '../../src/state'
+import { ClipUtils } from '../../src/domain/clip/clip-utils.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {
@@ -185,21 +185,21 @@ describe('ClipUtils — ws_layer_N_elapsed timecode format', () => {
 describe('getAllWsVariables', () => {
 	it('falls back to defaults (10 layers × 8 + 5 groups × 2) when compositionState is undefined', async () => {
 		compositionState.set(undefined)
-		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
+		const { getAllWsVariables } = await import('../../src/variables/ws-variables.js')
 		const vars = getAllWsVariables()
 		expect(vars).toHaveLength(90) // 10 × 8 + 5 × 2
 	})
 
 	it('uses actual layer and group counts from compositionState', async () => {
 		compositionState.set({ layers: [{}, {}, {}], layergroups: [{}, {}] } as any)
-		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
+		const { getAllWsVariables } = await import('../../src/variables/ws-variables.js')
 		const vars = getAllWsVariables()
 		expect(vars).toHaveLength(3 * 8 + 2 * 2) // 3 layers × 8 + 2 groups × 2
 		compositionState.set(undefined)
 	})
 
 	it('includes elapsed_seconds and remaining_seconds for layer 1', async () => {
-		const { getAllWsVariables } = await import('../../src/variables/ws-variables')
+		const { getAllWsVariables } = await import('../../src/variables/ws-variables.js')
 		const ids = getAllWsVariables().map(v => v.variableId)
 		expect(ids).toContain('ws_layer_1_elapsed_seconds')
 		expect(ids).toContain('ws_layer_1_remaining_seconds')

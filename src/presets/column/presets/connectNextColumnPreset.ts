@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function connectNextColumnPreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function connectNextColumnPreset(): CategorizedPreset {return {
+	type: 'simple',
 	category: 'Column',
 	name: 'Connect Next Column',
 	style: {
