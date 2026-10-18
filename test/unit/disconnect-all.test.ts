@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { disconnectAll } from '../../src/actions/composition/actions/disconnect-all'
+import { disconnectAll } from '../../src/actions/composition/actions/disconnect-all.js'
 
 describe('disconnectAll — REST path', () => {
 	it('triggers /composition/disconnect-all via websocket', async () => {

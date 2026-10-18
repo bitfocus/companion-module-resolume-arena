@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {parameterStates, compositionState} from '../../src/state';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {parameterStates, compositionState} from '../../src/state.js';
 
 function makeEffectUtils(mod: any) {
 	return new EffectUtils(mod);
@@ -20,7 +20,6 @@ function makeMockModule() {
 		log: vi.fn(),
 		rebuildDynamicDefinitions: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
-		parseVariablesInString: vi.fn((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
 	};
 	mod.getEffectUtils = vi.fn().mockImplementation(() => makeEffectUtils(mod));
@@ -52,15 +51,6 @@ function makeFeedback(layer: string, effectIdx: string, collection: string, para
 	return {id, options: {layer, effectIdx, collection, paramName}} as any;
 }
 
-function makeCtx(layer: string, effectIdx: string, paramName = 'speed') {
-	return {
-		parseVariablesInString: vi.fn()
-			.mockResolvedValueOnce(layer)
-			.mockResolvedValueOnce(effectIdx)
-			.mockResolvedValueOnce(paramName),
-	} as any;
-}
-
 beforeEach(() => {
 	parameterStates.set({});
 	compositionState.set(undefined);
@@ -71,7 +61,7 @@ describe('EffectUtils — effectParameter subscribe / unsubscribe', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
 		expect(mod._wsApi.subscribeParam).toHaveBeenCalledWith(301);
 		expect(mod._wsApi.subscribeParam).toHaveBeenCalledTimes(1);
 	});
@@ -80,8 +70,8 @@ describe('EffectUtils — effectParameter subscribe / unsubscribe', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'), makeCtx('1', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'));
 		expect(mod._wsApi.subscribeParam).toHaveBeenCalledTimes(1);
 	});
 
@@ -89,8 +79,8 @@ describe('EffectUtils — effectParameter subscribe / unsubscribe', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
+		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
 		expect(mod._wsApi.unsubscribeParam).toHaveBeenCalledWith(301);
 	});
 
@@ -98,9 +88,9 @@ describe('EffectUtils — effectParameter subscribe / unsubscribe', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'), makeCtx('1', '1', 'speed'));
-		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'b'));
+		await eu.effectParameterFeedbackUnsubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
 		expect(mod._wsApi.unsubscribeParam).not.toHaveBeenCalled();
 	});
 });
@@ -110,39 +100,34 @@ describe('EffectUtils — effectParameterFeedbackCallback', () => {
 		compositionState.set(makeLayerComposition(301));
 		parameterStates.set({'/parameter/by-id/301': {value: 0.75} as any});
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = makeCtx('1', '1', 'speed');
-		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'));
 		expect(result).toMatchObject({text: '0.75'});
 	});
 
 	it('returns "?" when param not in parameterStates', async () => {
 		compositionState.set(makeLayerComposition(301));
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = makeCtx('1', '1', 'speed');
-		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'));
 		expect(result).toMatchObject({text: '?'});
 	});
 
 	it('returns "?" when param not found in compositionState', async () => {
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = makeCtx('1', '1', 'speed');
-		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'), ctx);
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', 'speed'));
 		expect(result).toMatchObject({text: '?'});
 	});
 
 	it('returns "?" when layer is 0', async () => {
 		compositionState.set(makeLayerComposition(301));
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = makeCtx('0', '1', 'speed');
-		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('0', '1', 'params', 'speed'), ctx);
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('0', '1', 'params', 'speed'));
 		expect(result).toMatchObject({text: '?'});
 	});
 
 	it('returns "?" when paramName is empty', async () => {
 		compositionState.set(makeLayerComposition(301));
 		const eu = new EffectUtils(makeMockModule());
-		const ctx = makeCtx('1', '1', '');
-		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', ''), ctx);
+		const result = await eu.effectParameterFeedbackCallback('layer', makeFeedback('1', '1', 'params', ''));
 		expect(result).toMatchObject({text: '?'});
 	});
 });
@@ -152,7 +137,7 @@ describe('EffectUtils — effectParameterFeedbackSubscribe guard', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('0', '1', 'params', 'speed', 'a'), makeCtx('0', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('0', '1', 'params', 'speed', 'a'));
 		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
 	});
 
@@ -160,14 +145,14 @@ describe('EffectUtils — effectParameterFeedbackSubscribe guard', () => {
 		compositionState.set(makeLayerComposition(301));
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '0', 'params', 'speed', 'a'), makeCtx('1', '0', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '0', 'params', 'speed', 'a'));
 		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
 	});
 
 	it('does not subscribe when param not in compositionState', async () => {
 		const mod = makeMockModule();
 		const eu = new EffectUtils(mod);
-		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'), makeCtx('1', '1', 'speed'));
+		await eu.effectParameterFeedbackSubscribe('layer', makeFeedback('1', '1', 'params', 'speed', 'a'));
 		expect(mod._wsApi.subscribeParam).not.toHaveBeenCalled();
 	});
 });
@@ -201,7 +186,7 @@ describe('EffectUtils.messageUpdates — effectParameter path', () => {
 describe('coerceValue (via effectParameterSet action)', () => {
 	async function makeAction(mod: any) {
 		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
 	}
 
@@ -273,7 +258,7 @@ describe('coerceValue (via effectParameterSet action)', () => {
 
 	it('does nothing when ws is null', async () => {
 		const mod = {...makeMockModule(), getWebsocketApi: () => null};
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		const action = effectParameterSet({...mod, getEffectUtils: () => new EffectUtils(mod as any)} as any, 'layer');
 		await expect((action.callback as Function)({options: {...BASE_MANUAL, paramName: 'speed', value: '1'}})).resolves.not.toThrow();
 	});
@@ -287,7 +272,7 @@ describe('effectParameterSet — relative modes', () => {
 
 	async function makeAction(mod: any) {
 		const eu = new EffectUtils(mod);
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		return effectParameterSet({...mod, getWebsocketApi: () => mod._wsApi, getEffectUtils: () => eu} as any, 'layer');
 	}
 

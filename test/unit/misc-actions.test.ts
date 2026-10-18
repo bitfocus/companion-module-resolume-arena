@@ -8,19 +8,19 @@
  * - selectNextDeck / selectPreviousDeck
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { compNextCol } from '../../src/actions/composition/actions/comp-next-col'
-import { compPrevCol } from '../../src/actions/composition/actions/comp-prev-col'
-import { clearAllLayers } from '../../src/actions/composition/actions/clear-all-layers'
-import { tempoTap } from '../../src/actions/composition/actions/tempo-tap'
-import { tempoResync } from '../../src/actions/composition/actions/tempo-resync'
-import { layerGroupNextCol } from '../../src/actions/layer-group/actions/layer-group-next-col'
-import { layerGroupPrevCol } from '../../src/actions/layer-group/actions/layer-group-prev-col'
-import { selectLayerGroup } from '../../src/actions/layer-group/actions/select-layer-group'
-import { layerGroupSpeedChange } from '../../src/actions/layer-group/actions/layer-group-speed-change'
-import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change'
-import { selectNextDeck } from '../../src/actions/deck/actions/select-next-deck'
-import { selectPreviousDeck } from '../../src/actions/deck/actions/select-previous-deck'
-import { compositionState, parameterStates } from '../../src/state'
+import { compNextCol } from '../../src/actions/composition/actions/comp-next-col.js'
+import { compPrevCol } from '../../src/actions/composition/actions/comp-prev-col.js'
+import { clearAllLayers } from '../../src/actions/composition/actions/clear-all-layers.js'
+import { tempoTap } from '../../src/actions/composition/actions/tempo-tap.js'
+import { tempoResync } from '../../src/actions/composition/actions/tempo-resync.js'
+import { layerGroupNextCol } from '../../src/actions/layer-group/actions/layer-group-next-col.js'
+import { layerGroupPrevCol } from '../../src/actions/layer-group/actions/layer-group-prev-col.js'
+import { selectLayerGroup } from '../../src/actions/layer-group/actions/select-layer-group.js'
+import { layerGroupSpeedChange } from '../../src/actions/layer-group/actions/layer-group-speed-change.js'
+import { layerGroupVolumeChange } from '../../src/actions/layer-group/actions/layer-group-volume-change.js'
+import { selectNextDeck } from '../../src/actions/deck/actions/select-next-deck.js'
+import { selectPreviousDeck } from '../../src/actions/deck/actions/select-previous-deck.js'
+import { compositionState, parameterStates } from '../../src/state.js'
 
 function makeWsApi() {
 	return { triggerPath: vi.fn(), triggerParam: vi.fn(), setPath: vi.fn(), setParam: vi.fn() }
@@ -39,11 +39,9 @@ function makeOscApi() {
 	}
 }
 
-function makeInstance(...results: string[]) {
-	let idx = 0
+function makeInstance() {
 	return {
 		log: vi.fn(),
-		parseVariablesInString: vi.fn().mockImplementation(() => Promise.resolve(results[idx++] ?? '1')),
 	} as any
 }
 
@@ -141,7 +139,7 @@ describe('tempoResync — OSC path', () => {
 describe('layerGroupNextCol', () => {
 	it('calls oscApi.layerGroupNextCol with layer group', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = layerGroupNextCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '2', lastColumn: '4' } })
 		expect(osc.layerGroupNextCol).toHaveBeenCalledWith(2, '4')
@@ -151,7 +149,7 @@ describe('layerGroupNextCol', () => {
 describe('layerGroupPrevCol', () => {
 	it('calls oscApi.groupPrevCol with layer group and last column', async () => {
 		const osc = makeOscApi()
-		const instance = makeInstance('1', '3')
+		const instance = makeInstance()
 		const action = layerGroupPrevCol(() => null, () => osc as any, instance)
 		await (action.callback as any)({ options: { layer: '1', lastColumn: '3' } })
 		expect(osc.groupPrevCol).toHaveBeenCalledWith(1, 3)
@@ -163,7 +161,7 @@ describe('layerGroupPrevCol', () => {
 describe('selectLayerGroup', () => {
 	it('triggers select path via websocket', async () => {
 		const ws = makeWsApi()
-		const instance = makeInstance('2')
+		const instance = makeInstance()
 		const action = selectLayerGroup(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '2' } })
 		expect(ws.triggerPath).toHaveBeenCalledWith('/composition/layergroups/2/select')
@@ -184,9 +182,6 @@ describe('layerGroupSpeedChange', () => {
 		const ws = makeWsApi()
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('50'),
 		} as any
 		const action = layerGroupSpeedChange(() => ({} as any), () => ws as any, () => null, instance)
 		await (action.callback as any)({ options: { layer: '1', action: 'set', value: '50' } })
@@ -211,9 +206,6 @@ describe('layerGroupVolumeChange', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('-12'),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),
@@ -234,9 +226,6 @@ describe('layerGroupVolumeChange', () => {
 		}
 		const instance = {
 			log: vi.fn(),
-			parseVariablesInString: vi.fn()
-				.mockResolvedValueOnce('1')
-				.mockResolvedValueOnce('6'),
 		} as any
 		const action = layerGroupVolumeChange(
 			() => ({} as any),

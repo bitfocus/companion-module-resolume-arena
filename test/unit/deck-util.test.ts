@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { DeckUtils } from '../../src/domain/deck/deck-util'
-import { parameterStates, compositionState } from '../../src/state'
+import { DeckUtils } from '../../src/domain/deck/deck-util.js'
+import { parameterStates, compositionState } from '../../src/state.js'
 
 function makeMockModule() {
 	const wsApi = {
@@ -12,7 +12,6 @@ function makeMockModule() {
 		setVariableValues: vi.fn(),
 		log: vi.fn(),
 		getWebsocketApi: vi.fn().mockReturnValue(wsApi),
-		parseVariablesInString: vi.fn().mockImplementation((s: string) => Promise.resolve(s)),
 		_wsApi: wsApi,
 	}
 	return instance as any

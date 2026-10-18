@@ -7,6 +7,12 @@ See [HELP](companion/HELP.md) and [LICENSE](LICENSE)
 ## Resolume Arena
 This module is for controlling Resolume Arena.
 
+### Requirements
+* Companion 5.0 or newer (this version uses Companion module API 2.1).
+
+#### Connected Clip shows no colour after moving to Companion 5
+Buttons made with a very old version of this module, when **Connected Clip** was still a simple on/off feedback, can carry a fixed style that Companion 5 does not apply to this feedback: the clip connects, but the background (the coloured border around the thumbnail) stays black. Remove the **Connected Clip** feedback from the button and add it again.
+
 ### Configuration
 * Type in the IP address of the device.
 * Type in the OSC port of the device (default is 7000).

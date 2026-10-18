@@ -4,6 +4,8 @@
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+	// The bundled esbuild does not know the es2024 target from the tsconfig preset
+	esbuild: { tsconfigRaw: { compilerOptions: { target: 'es2022' } } },
 	test: {
 		environment: 'node',
 		fileParallelism: false,

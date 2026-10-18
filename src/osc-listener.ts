@@ -1,29 +1,7 @@
 import {InstanceStatus} from '@companion-module/base'
-import type {ResolumeArenaModuleInstance} from './index'
-// No @types/osc package exists; require() with manual interface is the only option
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const osc = require('osc') as {
-	UDPPort: new (options: {localAddress: string; localPort: number; metadata: boolean}) => OscUDPPort
-}
+import type {ResolumeArenaModuleInstance} from './index.js'
+import osc, {type OscArg, type OscMessage, type OscUDPPort} from 'osc'
 
-interface OscUDPPort {
-	on(event: 'message', callback: (msg: OscMessage, timeTag: unknown, info: unknown) => void): void
-	on(event: 'error', callback: (err: {code?: string; message: string}) => void): void
-	on(event: 'ready', callback: () => void): void
-	open(): void
-	close(): void
-	send(msg: {address: string; args: OscArg[]}, host: string, port: number): void
-}
-
-interface OscMessage {
-	address: string
-	args: Array<{type: string; value: number | string}>
-}
-
-interface OscArg {
-	type: string
-	value: number | string
-}
 /**
  * UDP OSC Listener for receiving Resolume's OSC output.
  *

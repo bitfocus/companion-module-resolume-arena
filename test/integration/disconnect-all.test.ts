@@ -5,11 +5,11 @@
  * disconnects a connected clip in Resolume.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaRestApi from '../../src/arena-api/rest'
-import { WebsocketInstance } from '../../src/websocket'
-import { ClipId } from '../../src/domain/clip/clip-id'
-import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config'
-import { isResolumeReachable, pause } from './helpers'
+import ArenaRestApi from '../../src/arena-api/rest.js'
+import { WebsocketInstance } from '../../src/websocket.js'
+import { ClipId } from '../../src/domain/clip/clip-id.js'
+import { TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN } from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
 const resolume = await isResolumeReachable()
 

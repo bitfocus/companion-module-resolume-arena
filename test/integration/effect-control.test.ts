@@ -10,13 +10,13 @@
  * for effect parameters and was removed in favour of setParam.
  */
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
-import ArenaRestApi from '../../src/arena-api/rest';
-import {WebsocketInstance} from '../../src/websocket';
-import {compositionState, parameterStates} from '../../src/state';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {ClipId} from '../../src/domain/clip/clip-id';
-import {TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN} from './config';
-import {isResolumeReachable, pause, waitFor} from './helpers';
+import ArenaRestApi from '../../src/arena-api/rest.js';
+import {WebsocketInstance} from '../../src/websocket.js';
+import {compositionState, parameterStates} from '../../src/state.js';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {ClipId} from '../../src/domain/clip/clip-id.js';
+import {TEST_HOST, REST_PORT, TEST_LAYER, TEST_COLUMN} from './config.js';
+import {isResolumeReachable, pause, waitFor} from './helpers.js';
 
 const resolume = await isResolumeReachable();
 
@@ -33,7 +33,6 @@ const mockInstance: any = {
 	checkFeedbacks: () => {},
 	rebuildDynamicDefinitions: () => {},
 	getWebsocketApi: () => ws,
-	parseVariablesInString: (s: string) => Promise.resolve(s),
 };
 
 const mockConfig: any = {host: TEST_HOST, webapiPort: REST_PORT, useSSL: false};
@@ -187,7 +186,7 @@ describe.skipIf(!resolume)('effect control — effectParameterSet action: set ro
 	it('set mode sends value to Resolume via setParam', async () => {
 		if (paramId === undefined) return;
 		const target = (originalValue + 0.1) % 1; // stay within [0,1]
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
 		await (action.callback as Function)({
 			options: {
@@ -237,7 +236,7 @@ describe.skipIf(!resolume)('effect control — effectParameterSet action: increa
 	it('calling increase twice accumulates — second press uses updated base, not stale compositionState', async () => {
 		if (paramId === undefined) return;
 		const delta = 0.05;
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
 		const opts = {
 			effectChoice: '__manual__',
@@ -266,7 +265,7 @@ describe.skipIf(!resolume)('effect control — effectParameterSet action: increa
 	it('decrease is the mirror — repeated presses subtract further', async () => {
 		if (paramId === undefined) return;
 		const delta = 0.05;
-		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set');
+		const {effectParameterSet} = await import('../../src/actions/effect/actions/effect-parameter-set.js');
 		const action = effectParameterSet({...mockInstance, getEffectUtils: () => effectUtils} as any, 'layer');
 		const opts = {
 			effectChoice: '__manual__',

@@ -1,10 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {getDefaultStyleGreen} from '../../../defaults';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import {getDefaultStyleGreen} from '../../../defaults.js';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectLayerGroupPreset(category: string): CompanionButtonPresetDefinition {
+export function selectLayerGroupPreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Select Layer Group',
 		style: {

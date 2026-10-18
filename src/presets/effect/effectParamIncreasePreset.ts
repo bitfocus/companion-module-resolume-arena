@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../preset-structure.js';
 
-export function effectParamIncreasePreset(category: string): CompanionButtonPresetDefinition {
+export function effectParamIncreasePreset(category: string): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: 'Increase Effect Parameter (Layer)',
 		style: {

@@ -3,12 +3,12 @@ import {
 	CompanionStaticUpgradeResult,
 	CompanionUpgradeContext
 } from '@companion-module/base';
-import {ResolumeArenaConfig} from '../config-fields';
+import {ResolumeArenaConfig} from '../config-fields.js';
 
 export function upgrade_v3_10_0(
 	_context: CompanionUpgradeContext<ResolumeArenaConfig>,
-	props: CompanionStaticUpgradeProps<ResolumeArenaConfig>
-): CompanionStaticUpgradeResult<ResolumeArenaConfig> {
+	props: CompanionStaticUpgradeProps<ResolumeArenaConfig, undefined>
+): CompanionStaticUpgradeResult<ResolumeArenaConfig, undefined> {
 	let updateFeedbacks = [];
 
 	for (const feedback of props.feedbacks) {
@@ -50,6 +50,7 @@ export function upgrade_v3_10_0(
 
 	return {
 		updatedConfig: null,
+		updatedSecrets: null,
 		updatedActions: updateActions,
 		updatedFeedbacks: updateFeedbacks
 	};

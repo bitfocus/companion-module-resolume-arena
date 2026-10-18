@@ -1,7 +1,7 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {WebsocketInstance} from '../../../websocket';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {WebsocketInstance} from '../../../websocket.js';
 
 export function disconnectAll(
 	restApi: () => ArenaRestApi | null,

@@ -1,13 +1,13 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
-import {effectBypassTogglePreset} from './effectBypassTogglePreset';
-import {effectBypassClipTogglePreset} from './effectBypassClipTogglePreset';
-import {effectBypassClipListTogglePreset} from './effectBypassClipListTogglePreset';
-import {effectParamIncreasePreset} from './effectParamIncreasePreset';
-import {effectParamDecreasePreset} from './effectParamDecreasePreset';
-import {effectParamClipListIncreasePreset} from './effectParamClipListIncreasePreset';
-import {effectParamClipListDecreasePreset} from './effectParamClipListDecreasePreset';
+import type {CategorizedPresets} from '../preset-structure.js';
+import {effectBypassTogglePreset} from './effectBypassTogglePreset.js';
+import {effectBypassClipTogglePreset} from './effectBypassClipTogglePreset.js';
+import {effectBypassClipListTogglePreset} from './effectBypassClipListTogglePreset.js';
+import {effectParamIncreasePreset} from './effectParamIncreasePreset.js';
+import {effectParamDecreasePreset} from './effectParamDecreasePreset.js';
+import {effectParamClipListIncreasePreset} from './effectParamClipListIncreasePreset.js';
+import {effectParamClipListDecreasePreset} from './effectParamClipListDecreasePreset.js';
 
-export function getEffectApiPresets(category: string): CompanionPresetDefinitions {
+export function getEffectApiPresets(category: string): CategorizedPresets {
 	return {
 		effectBypassToggle: effectBypassTogglePreset(category),
 		effectBypassClipToggle: effectBypassClipTogglePreset(category),

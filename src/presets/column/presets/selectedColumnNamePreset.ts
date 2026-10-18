@@ -1,8 +1,8 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
+import type {CategorizedPreset} from '../../preset-structure.js';
 
-export function selectedColumnNamePreset(): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function selectedColumnNamePreset(): CategorizedPreset {return {
+	type: 'simple',
 	category: 'Column',
 	name: 'Selected Column Name',
 	style: {

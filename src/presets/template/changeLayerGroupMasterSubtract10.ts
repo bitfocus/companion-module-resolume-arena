@@ -1,9 +1,9 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {CompanionOptionValues} from '@companion-module/base/dist/module-api/input';
+import type {CategorizedPreset} from '../preset-structure.js';
+import type {CompanionOptionValues} from '@companion-module/base';
 
-export function changeTemplateSubtract10(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CompanionButtonPresetDefinition {return {
-	type: 'button',
+export function changeTemplateSubtract10(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CategorizedPreset {return {
+	type: 'simple',
 	category,
 	name: paramName+' Subtract ' + (isDecibels ? '3db' : '10%'),
 	style: {
