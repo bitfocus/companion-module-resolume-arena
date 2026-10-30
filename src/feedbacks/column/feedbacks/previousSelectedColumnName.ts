@@ -1,9 +1,10 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function previousSelectedColumnName(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {return {
 	type: 'advanced',
 	name: 'Previous Selected Column Name',
+	affectedProperties: ['text'],
 	options: [{
 		id: 'previous',
 		type: 'number',

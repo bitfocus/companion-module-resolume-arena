@@ -1,6 +1,6 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
-import {getColumnOption, getDefaultStyleCyan} from '../../../defaults';
+import {getColumnOption, getDefaultStyleCyan} from '../../../defaults.js';
 
 export function columnConnected(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {

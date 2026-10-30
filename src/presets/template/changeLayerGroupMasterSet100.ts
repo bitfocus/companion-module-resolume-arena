@@ -1,10 +1,10 @@
 import {combineRgb} from '@companion-module/base';
-import {CompanionButtonPresetDefinition} from '@companion-module/base/dist/module-api/preset';
-import {CompanionOptionValues} from '@companion-module/base/dist/module-api/input';
+import type {CategorizedPreset} from '../preset-structure.js';
+import type {CompanionOptionValues} from '@companion-module/base';
 
-export function changeTemplateSet100(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CompanionButtonPresetDefinition {
+export function changeTemplateSet100(category: string, entityName: string, paramName: string, isDecibels: boolean = false, options: CompanionOptionValues = {[entityName]: '1'}): CategorizedPreset {
 	return {
-		type: 'button',
+		type: 'simple',
 		category,
 		name: paramName + ' set ' + (isDecibels ? '0db' : '100%'),
 		style: {

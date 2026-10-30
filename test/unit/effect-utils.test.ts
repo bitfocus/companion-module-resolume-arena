@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {EffectUtils} from '../../src/domain/effects/effect-utils';
-import {compositionState} from '../../src/state';
+import {EffectUtils} from '../../src/domain/effects/effect-utils.js';
+import {compositionState} from '../../src/state.js';
 
 function makeMockModule() {
 	return {

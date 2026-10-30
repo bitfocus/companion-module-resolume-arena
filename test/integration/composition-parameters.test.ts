@@ -5,12 +5,12 @@
  * - tempoResync via OSC
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import ArenaOscApi from '../../src/arena-api/osc'
-import { TEST_HOST, REST_PORT, OSC_SEND_PORT } from './config'
-import { isResolumeReachable, pause } from './helpers'
+import ArenaOscApi from '../../src/arena-api/osc.js'
+import { TEST_HOST, REST_PORT, OSC_SEND_PORT } from './config.js'
+import { isResolumeReachable, pause } from './helpers.js'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const osc = require('osc') as {
+import oscPackage from 'osc'
+const osc = oscPackage as unknown as {
 	UDPPort: new (opts: { localAddress: string; localPort: number; metadata: boolean }) => any
 }
 

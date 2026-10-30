@@ -1,22 +1,22 @@
-import {CompanionPresetDefinitions} from '@companion-module/base';
-import {bypassLayerGroupPreset} from './presets/bypassLayerGroupPreset';
-import {soloLayerGroupPreset} from './presets/soloLayerGroupPreset';
-import {clearLayerGroupPreset} from './presets/clearLayerGroupPreset';
-import {selectLayerGroupPreset} from './presets/selectLayerGroupPreset';
-import {selectLayerGroupColumnPreset} from './presets/selectLayerGroupColumnPreset';
-import {selectNextLayerGroupColumnPreset} from './presets/selectNextLayerGroupColumnPreset';
-import {selectedLayerGroupColumnNamePreset} from './presets/selectedLayerGroupColumnNamePreset';
-import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100';
-import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0';
-import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10';
-import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10';
-import {connectLayerGroupColumnPreset} from './presets/connectLayerGroupColumnPreset';
-import {selectPreviousLayerGroupColumnPreset} from './presets/selectPreviousLayerGroupColumnPreset';
-import {connectNextLayerGroupColumnPreset} from './presets/connectNextLayerGroupColumnPreset';
-import {connectPreviousLayerGroupColumnPreset} from './presets/connectPreviousLayerGroupColumnPreset';
-import {connectedLayerGroupColumnNamePreset} from './presets/connectedLayerGroupColumnNamePreset';
+import type {CategorizedPresets} from '../preset-structure.js';
+import {bypassLayerGroupPreset} from './presets/bypassLayerGroupPreset.js';
+import {soloLayerGroupPreset} from './presets/soloLayerGroupPreset.js';
+import {clearLayerGroupPreset} from './presets/clearLayerGroupPreset.js';
+import {selectLayerGroupPreset} from './presets/selectLayerGroupPreset.js';
+import {selectLayerGroupColumnPreset} from './presets/selectLayerGroupColumnPreset.js';
+import {selectNextLayerGroupColumnPreset} from './presets/selectNextLayerGroupColumnPreset.js';
+import {selectedLayerGroupColumnNamePreset} from './presets/selectedLayerGroupColumnNamePreset.js';
+import {changeTemplateSet100} from '../template/changeLayerGroupMasterSet100.js';
+import {changeTemplateSet0} from '../template/changeLayerGroupMasterSet0.js';
+import {changeTemplateAdd10} from '../template/changeLayerGroupMasterAdd10.js';
+import {changeTemplateSubtract10} from '../template/changeLayerGroupMasterSubtract10.js';
+import {connectLayerGroupColumnPreset} from './presets/connectLayerGroupColumnPreset.js';
+import {selectPreviousLayerGroupColumnPreset} from './presets/selectPreviousLayerGroupColumnPreset.js';
+import {connectNextLayerGroupColumnPreset} from './presets/connectNextLayerGroupColumnPreset.js';
+import {connectPreviousLayerGroupColumnPreset} from './presets/connectPreviousLayerGroupColumnPreset.js';
+import {connectedLayerGroupColumnNamePreset} from './presets/connectedLayerGroupColumnNamePreset.js';
 
-export function getLayerGroupApiPresets(category: string): CompanionPresetDefinitions {
+export function getLayerGroupApiPresets(category: string): CategorizedPresets {
 	return {
 		bypassLayerGroup: bypassLayerGroupPreset(category),
 		soloLayerGroup: soloLayerGroupPreset(category),

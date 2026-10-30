@@ -1,5 +1,5 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getDefaultStyleBlue, getLayerGroupOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getDefaultStyleBlue, getLayerGroupOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerGroupActive(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {

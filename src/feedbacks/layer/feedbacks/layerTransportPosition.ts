@@ -1,11 +1,12 @@
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getLayerOption} from '../../../defaults';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getLayerOption} from '../../../defaults.js';
 import {CompanionFeedbackDefinition} from '@companion-module/base';
 
 export function layerTransportPosition(resolumeArenaInstance: ResolumeArenaModuleInstance): CompanionFeedbackDefinition {
 	return {
 		type: 'advanced',
 		name: 'Layer Active Clip Transport Position',
+		affectedProperties: ['text', 'size'],
 		options: [...getLayerOption(),
 			{
 				id: 'view',

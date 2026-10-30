@@ -66,6 +66,20 @@ export function getDefaultLayerColumnOptions() {
 	};
 }
 
+/**
+ * Default colours of the Connected Clip feedback, as Companion colour numbers.
+ * These must be numbers: the fields are number colour pickers, and Companion 5 skips a feedback
+ * whose option value does not validate against its field.
+ */
+export function getDefaultConnectedClipColors() {
+	return {
+		color_connected: combineRgb(0, 255, 0),
+		color_connected_selected: combineRgb(0, 255, 255),
+		color_connected_preview: combineRgb(255, 255, 0),
+		color_preview: combineRgb(255, 0, 0)
+	};
+}
+
 export function getDefaultDeckOptions() {
 	return {
 		deck: '1'

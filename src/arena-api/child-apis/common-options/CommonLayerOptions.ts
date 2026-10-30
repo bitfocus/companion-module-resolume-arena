@@ -1,8 +1,8 @@
-import {LayerOptionsAudioEffect} from './LayerOptionsAudioEffect';
-import { CommonOptionsPropertyBoolean } from './properties/CommonOptionsPropertyBoolean';
-import { CommonOptionsPropertyChoice } from './properties/CommonOptionsPropertyChoice';
-import { CommonOptionsPropertyRange } from './properties/CommonOptionsPropertyRange';
-import { CommonOptionsPropertyString } from './properties/CommonOptionsPropertyString';
+import {LayerOptionsAudioEffect} from './LayerOptionsAudioEffect.js';
+import { CommonOptionsPropertyBoolean } from './properties/CommonOptionsPropertyBoolean.js';
+import { CommonOptionsPropertyChoice } from './properties/CommonOptionsPropertyChoice.js';
+import { CommonOptionsPropertyRange } from './properties/CommonOptionsPropertyRange.js';
+import { CommonOptionsPropertyString } from './properties/CommonOptionsPropertyString.js';
 
 export interface CommonLayerOptions {
 	id: number;

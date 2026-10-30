@@ -1,14 +1,14 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaRestApi from '../../../arena-api/rest';
-import {ClipId} from '../../../domain/clip/clip-id';
-import {ClipUtils} from '../../../domain/clip/clip-utils';
-import {ResolumeArenaModuleInstance} from '../../../index';
-import {getClipOption} from '../../../defaults';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {ClipId} from '../../../domain/clip/clip-id.js';
+import {ClipUtils} from '../../../domain/clip/clip-utils.js';
+import {ResolumeArenaModuleInstance} from '../../../index.js';
+import {getClipOption} from '../../../defaults.js';
 
 export function updateClipThumbnail(
 	restApi: () => ArenaRestApi | null,
 	clipUtils: () => ClipUtils | null,
-	resolumeArenaModuleInstance: ResolumeArenaModuleInstance
+	_resolumeArenaModuleInstance: ResolumeArenaModuleInstance
 ): CompanionActionDefinition {
 	return {
 		name: 'Update Clip Thumbnail',
@@ -22,8 +22,10 @@ export function updateClipThumbnail(
 					{id: 'selected', label: 'Selected clip'},
 				],
 				default: 'layerColumn',
+				// referenced by isVisibleExpression below, so it cannot be an expression itself
+				disableAutoExpression: true,
 			},
-			...getClipOption().map((opt) => ({...opt, isVisible: (options: any) => options.target === 'layerColumn'})),
+			...getClipOption().map((opt) => ({...opt, isVisibleExpression: '$(options:target) == "layerColumn"'})),
 		],
 		callback: async ({options}: {options: any}): Promise<void> => {
 			const rest = restApi();
@@ -32,8 +34,8 @@ export function updateClipThumbnail(
 			if (options.target === 'selected') {
 				await rest.Clips.updateSelectedThumb();
 			} else {
-				const layer = +await resolumeArenaModuleInstance.parseVariablesInString(options.layer);
-				const column = +await resolumeArenaModuleInstance.parseVariablesInString(options.column);
+				const layer = +options.layer;
+				const column = +options.column;
 				await rest.Clips.updateThumb(new ClipId(layer, column));
 			}
 

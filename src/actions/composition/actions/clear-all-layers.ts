@@ -1,8 +1,8 @@
 import {CompanionActionDefinition} from '@companion-module/base';
-import ArenaOscApi from '../../../arena-api/osc';
-import ArenaRestApi from '../../../arena-api/rest';
-import {compositionState} from '../../../state';
-import {WebsocketInstance} from '../../../websocket';
+import ArenaOscApi from '../../../arena-api/osc.js';
+import ArenaRestApi from '../../../arena-api/rest.js';
+import {compositionState} from '../../../state.js';
+import {WebsocketInstance} from '../../../websocket.js';
 
 export function clearAllLayers(
 	restApi: () => ArenaRestApi | null,
